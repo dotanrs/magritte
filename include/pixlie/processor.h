@@ -5,28 +5,13 @@
 #ifndef PIXLIE_PROCESSOR_H
 #define PIXLIE_PROCESSOR_H
 
-#include <cstddef>
-#include <cstdint>
 #include <filesystem>
 #include <string>
 #include <vector>
 
+#include "pixlie/file_utils/file_data.h"
+
 namespace fs = std::filesystem;
-
-struct Pixel {
-    std::uint8_t red;
-    std::uint8_t green;
-    std::uint8_t blue;
-    std::uint8_t alpha;
-};
-
-static_assert(sizeof(Pixel) == 4);
-
-struct FileData {
-    std::size_t width;
-    std::size_t height;
-    std::vector<Pixel> pixels;
-};
 
 struct Options {
     fs::path input;
@@ -36,7 +21,6 @@ struct Options {
 
 struct ProcessorCommand;
 
-FileData read_file(const fs::path& input);
 FileData process_file(
     FileData data,
     const std::vector<ProcessorCommand>& commands

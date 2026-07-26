@@ -8,6 +8,9 @@ add_executable(pixlie main.cpp
         include/pixlie/inputValidation.h
         src/processor.cpp
         include/pixlie/processor.h
+        src/file_utils/file_utils.cpp
+        include/pixlie/file_utils/file_utils.h
+        include/pixlie/file_utils/file_data.h
         src/parser.cpp
         include/pixlie/parser.h
         src/processors/rotate.cpp
