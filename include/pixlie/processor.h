@@ -14,6 +14,6 @@ struct Options {
     fs::path output;
 };
 
-void copy_image(const Options& options);
+void process_image(const Options& options);
 
 #endif //PIXLIE_PROCESSOR_H

@@ -66,8 +66,8 @@ int main(int argc, char* argv[]) {
 
     try {
         const Options options = parse_arguments(argc, argv);
-        log(LogLevel::info, "pixlie started1");
-        copy_image(options);
+        log(LogLevel::info, "pixlie started");
+        process_image(options);
         return 0;
     } catch (const std::invalid_argument& error) {
         log(LogLevel::error, error.what());

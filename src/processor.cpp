@@ -13,7 +13,7 @@
 
 namespace fs = std::filesystem;
 
-void copy_image(const Options& options) {
+void process_image(const Options& options) {
     const fs::path input = fs::absolute(options.input).lexically_normal();
     const fs::path output = fs::absolute(options.output).lexically_normal();
 

@@ -10,7 +10,7 @@
 #include <sstream>
 #include <string>
 #include <string_view>
-#include "../../include/utils/logging.h"
+#include "pixlie/utils/logging.h"
 
 namespace {
     std::string timestamp() {
