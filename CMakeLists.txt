@@ -3,7 +3,16 @@ project(pixlie VERSION 0.1.0 LANGUAGES CXX)
 
 add_executable(pixlie main.cpp
         src/utils/logging.cpp
-        src/utils/logging.h)
+        include/pixlie/utils/logging.h
+        src/inputValidation.cpp
+        include/pixlie/inputValidation.h
+        src/processor.cpp
+        include/pixlie/processor.h)
+
+target_include_directories(pixlie PRIVATE
+        "${CMAKE_CURRENT_SOURCE_DIR}/include"
+)
+
 target_compile_features(pixlie PRIVATE cxx_std_20)
 
 if(MSVC)
@@ -14,6 +23,3 @@ endif()
 
 install(TARGETS pixlie RUNTIME DESTINATION bin)
 
-target_include_directories(pixlie PRIVATE
-        "${CMAKE_CURRENT_SOURCE_DIR}/src"
-)

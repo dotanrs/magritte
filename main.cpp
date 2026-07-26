@@ -1,22 +1,15 @@
-#include <array>
-#include <cstdint>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
 #include <string>
 #include <string_view>
-#include "utils/logging.h"
+#include "pixlie/utils/logging.h"
+#include "pixlie/processor.h"
 
 namespace fs = std::filesystem;
 
 namespace {
-
-
-struct Options {
-    fs::path input;
-    fs::path output;
-};
 
 void print_usage(std::ostream& output, std::string_view program) {
     output << "Usage: " << program << " <input.jpg> [-o <output.jpg>]\n"
@@ -58,76 +51,6 @@ Options parse_arguments(int argc, char* argv[]) {
     }
 
     return options;
-}
-
-bool has_jpeg_markers(const fs::path& path) {
-    std::ifstream image(path, std::ios::binary);
-    if (!image) {
-        throw std::runtime_error("could not open input image");
-    }
-
-    std::array<std::uint8_t, 2> start{};
-    image.read(reinterpret_cast<char*>(start.data()), static_cast<std::streamsize>(start.size()));
-    if (image.gcount() != static_cast<std::streamsize>(start.size())) {
-        return false;
-    }
-
-    image.seekg(-2, std::ios::end);
-    if (!image) {
-        return false;
-    }
-
-    std::array<std::uint8_t, 2> end{};
-    image.read(reinterpret_cast<char*>(end.data()), static_cast<std::streamsize>(end.size()));
-
-    return start[0] == 0xFF && start[1] == 0xD8 &&
-           end[0] == 0xFF && end[1] == 0xD9;
-}
-
-void validate_input(const fs::path& input) {
-    std::error_code error;
-    if (!fs::exists(input, error) || error) {
-        throw std::runtime_error("input image does not exist: " + input.string());
-    }
-    if (!fs::is_regular_file(input, error) || error) {
-        throw std::runtime_error("input path is not a regular file: " + input.string());
-    }
-    if (!has_jpeg_markers(input)) {
-        throw std::runtime_error("input is not a valid JPEG file: " + input.string());
-    }
-}
-
-void copy_image(const Options& options) {
-    const fs::path input = fs::absolute(options.input).lexically_normal();
-    const fs::path output = fs::absolute(options.output).lexically_normal();
-
-    if (input == output) {
-        throw std::runtime_error("input and output paths must be different");
-    }
-
-    log(LogLevel::info, "Reading JPEG: " + input.string());
-    validate_input(input);
-
-    if (!output.parent_path().empty()) {
-        std::error_code error;
-        fs::create_directories(output.parent_path(), error);
-        if (error) {
-            throw std::runtime_error("could not create output directory: " + error.message());
-        }
-    }
-
-    log(LogLevel::info, "Writing copy: " + output.string());
-    std::error_code error;
-    fs::copy_file(input, output, fs::copy_options::overwrite_existing, error);
-    if (error) {
-        throw std::runtime_error("could not copy image: " + error.message());
-    }
-
-    const auto bytes = fs::file_size(output, error);
-    if (error) {
-        throw std::runtime_error("could not read output size: " + error.message());
-    }
-    log(LogLevel::info, "Copy complete (" + std::to_string(bytes) + " bytes)");
 }
 
 }  // namespace
