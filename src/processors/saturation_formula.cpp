@@ -8,29 +8,27 @@
 #include "pixlie/processors/utils/formula_parse.h"
 
 namespace {
-
-class SaturationFormulaProcessor final : public ImageProcessor {
-public:
+  class SaturationFormulaProcessor final : public ImageProcessor {
+  public:
     [[nodiscard]] std::string_view name() const noexcept override {
-        return "saturation formula";
+      return "saturation formula";
     }
 
-    void validate(const std::vector<std::string>& arguments) const override {
-        static_cast<void>(parse_saturation_formula(arguments));
+    void validate(const std::vector<std::string> &arguments) const override {
+      static_cast<void>(parse_saturation_formula(arguments));
     }
 
     [[nodiscard]] FileData apply(
-        FileData data,
-        const std::vector<std::string>& arguments
+      FileData data,
+      const std::vector<std::string> &arguments
     ) const override {
-        const Formula formula = parse_saturation_formula(arguments);
-        return apply_saturation_formula(std::move(data), *formula);
+      const Formula formula = parse_saturation_formula(arguments);
+      return apply_saturation_formula(std::move(data), *formula);
     }
-};
-
+  };
 } // namespace
 
-const ImageProcessor& saturation_formula_processor() {
-    static const SaturationFormulaProcessor processor;
-    return processor;
+const ImageProcessor &saturation_formula_processor() {
+  static const SaturationFormulaProcessor processor;
+  return processor;
 }

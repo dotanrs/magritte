@@ -9,33 +9,31 @@
 #include "pixlie/processors/utils/formula_parse.h"
 
 namespace {
-
-class RedFormulaProcessor final : public ImageProcessor {
-public:
+  class RedFormulaProcessor final : public ImageProcessor {
+  public:
     [[nodiscard]] std::string_view name() const noexcept override {
-        return "red formula";
+      return "red formula";
     }
 
-    void validate(const std::vector<std::string>& arguments) const override {
-        static_cast<void>(parse_formula(arguments));
+    void validate(const std::vector<std::string> &arguments) const override {
+      static_cast<void>(parse_formula(arguments));
     }
 
     [[nodiscard]] FileData apply(
-        FileData data,
-        const std::vector<std::string>& arguments
+      FileData data,
+      const std::vector<std::string> &arguments
     ) const override {
-        const Formula formula = parse_formula(arguments);
-        return apply_formula(
-            std::move(data),
-            *formula,
-            ColorChannel::red
-        );
+      const Formula formula = parse_formula(arguments);
+      return apply_formula(
+        std::move(data),
+        *formula,
+        ColorChannel::red
+      );
     }
-};
-
+  };
 } // namespace
 
-const ImageProcessor& red_formula_processor() {
-    static const RedFormulaProcessor processor;
-    return processor;
+const ImageProcessor &red_formula_processor() {
+  static const RedFormulaProcessor processor;
+  return processor;
 }
