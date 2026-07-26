@@ -55,8 +55,8 @@ errors occurred.
 ## Processors
 
 - `rotate <int>` rotates clockwise by 90 degrees `int % 4` times. Negative values rotate in the opposite direction.
-- `mirror x` reflects across the x-axis, exchanging the top and bottom.
-- `mirror y` reflects across the y-axis, exchanging the left and right.
+- `mirror x` mirrors the image horizontally.
+- `mirror y` mirrors the image vertically.
 - `blur <radius>` applies a box blur to RGB using a nonnegative integer pixel radius. Pixels near an edge average only
   the available neighborhood; alpha is preserved.
 - `r = <formula>` changes only the red channel.
