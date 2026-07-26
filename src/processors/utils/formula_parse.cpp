@@ -12,7 +12,10 @@ namespace {
 
 class FormulaParser {
 public:
-    explicit FormulaParser(std::string_view formula) : formula_(formula) {}
+    explicit FormulaParser(
+        std::string_view formula,
+        bool saturation_formula = false
+    ) : formula_(formula), saturation_formula_(saturation_formula) {}
 
     [[nodiscard]] Formula parse() {
         if (formula_.empty()) {
@@ -102,9 +105,17 @@ private:
         if (std::isalpha(static_cast<unsigned char>(token)) != 0) {
             ++position_;
             auto node = std::make_unique<FormulaNode>();
-            switch (static_cast<char>(
+            const char variable = static_cast<char>(
                 std::tolower(static_cast<unsigned char>(token))
-            )) {
+            );
+            if (saturation_formula_) {
+                if (variable != 's') {
+                    fail("only the S variable is supported");
+                }
+                node->kind = FormulaNodeKind::saturation;
+                return node;
+            }
+            switch (variable) {
                 case 'r':
                     node->kind = FormulaNodeKind::red;
                     break;
@@ -194,6 +205,7 @@ private:
 
     std::string_view formula_;
     std::size_t position_ = 0;
+    bool saturation_formula_;
 };
 
 } // namespace
@@ -203,4 +215,13 @@ Formula parse_formula(const std::vector<std::string>& arguments) {
         throw std::invalid_argument("formula processor expects one formula");
     }
     return FormulaParser(arguments.front()).parse();
+}
+
+Formula parse_saturation_formula(const std::vector<std::string>& arguments) {
+    if (arguments.size() != 1) {
+        throw std::invalid_argument(
+            "saturation formula processor expects one formula"
+        );
+    }
+    return FormulaParser(arguments.front(), true).parse();
 }

@@ -42,7 +42,9 @@ status `0` on success, `1` for file-processing errors, or `2` for invalid
 command-line arguments.
 
 Invalid processor commands are logged and skipped without preventing other
-processor commands from running.
+processor commands from running. At the end, `pixlie` prints successful
+processor commands in green followed by invalid commands and their errors in
+yellow when any errors occurred.
 
 ## Processors
 
@@ -51,10 +53,16 @@ processor commands from running.
 - `r = <formula>` changes only the red channel.
 - `g = <formula>` changes only the green channel.
 - `b = <formula>` changes only the blue channel.
+- `s = <formula>` changes HSL saturation while preserving hue and lightness.
+- `x <-> y` swaps channels `x` and `y`, where each channel is `r`, `g`, or
+  `b`.
 
 Formulas support `R`, `G`, and `B`, numeric constants, parentheses, unary
 signs, and `+`, `-`, `*`, and `/`. Results are rounded and clamped to the range
 `[0, 255]`.
+
+Saturation formulas support the same arithmetic with `S`, where saturation is
+also represented in the range `[0, 255]`.
 
 ## Tests
 

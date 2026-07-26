@@ -10,6 +10,7 @@ enum class FormulaNodeKind {
     red,
     green,
     blue,
+    saturation,
     add,
     subtract,
     multiply,
@@ -27,6 +28,10 @@ struct FormulaNode {
 using Formula = std::unique_ptr<FormulaNode>;
 
 [[nodiscard]] Formula parse_formula(
+    const std::vector<std::string>& arguments
+);
+
+[[nodiscard]] Formula parse_saturation_formula(
     const std::vector<std::string>& arguments
 );
 

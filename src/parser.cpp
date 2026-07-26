@@ -6,10 +6,11 @@
 #include <string>
 #include <vector>
 #include "pixlie/processors/blue_formula.h"
+#include "pixlie/processors/color_swap.h"
 #include "pixlie/processors/green_formula.h"
 #include "pixlie/processors/red_formula.h"
 #include "pixlie/processors/rotate.h"
-#include "pixlie/utils/logging.h"
+#include "pixlie/processors/saturation_formula.h"
 
 namespace {
 
@@ -35,22 +36,24 @@ std::vector<std::string> split_words(std::string_view value) {
 }
 
 std::optional<ProcessorCommand> invalid(
-    std::string_view command,
-    std::string_view reason
+    std::string_view reason,
+    std::string* error_message
 ) {
-    log(
-        LogLevel::error,
-        "Invalid processor \"" + std::string(command) + "\": " + std::string(reason)
-    );
+    if (error_message != nullptr) {
+        *error_message = reason;
+    }
     return std::nullopt;
 }
 
 } // namespace
 
-std::optional<ProcessorCommand> parse_processor_command(std::string_view command) {
+std::optional<ProcessorCommand> parse_processor_command(
+    std::string_view command,
+    std::string* error_message
+) {
     const std::string_view value = trim(command);
     if (value.empty()) {
-        return invalid(command, "command is empty");
+        return invalid("command is empty", error_message);
     }
 
     const ImageProcessor* processor = nullptr;
@@ -60,10 +63,13 @@ std::optional<ProcessorCommand> parse_processor_command(std::string_view command
     if (!words.empty() && words.front() == "rotate") {
         processor = &rotate_processor();
         arguments.assign(words.begin() + 1, words.end());
+    } else if (words.size() == 3 && words[1] == "<->") {
+        processor = &color_swap_processor();
+        arguments = {words[0], words[2]};
     } else {
         const std::size_t equals = value.find('=');
         if (equals == std::string_view::npos) {
-            return invalid(command, "unknown processor");
+            return invalid("unknown processor", error_message);
         }
 
         const std::string_view channel = trim(value.substr(0, equals));
@@ -73,8 +79,10 @@ std::optional<ProcessorCommand> parse_processor_command(std::string_view command
             processor = &green_formula_processor();
         } else if (channel == "b") {
             processor = &blue_formula_processor();
+        } else if (channel == "s") {
+            processor = &saturation_formula_processor();
         } else {
-            return invalid(command, "unknown processor");
+            return invalid("unknown processor", error_message);
         }
 
         const std::string_view formula = trim(value.substr(equals + 1));
@@ -84,7 +92,7 @@ std::optional<ProcessorCommand> parse_processor_command(std::string_view command
     try {
         processor->validate(arguments);
     } catch (const std::exception& error) {
-        return invalid(command, error.what());
+        return invalid(error.what(), error_message);
     }
 
     return ProcessorCommand{

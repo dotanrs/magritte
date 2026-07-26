@@ -16,4 +16,9 @@ enum class ColorChannel {
     ColorChannel channel
 );
 
+[[nodiscard]] FileData apply_saturation_formula(
+    FileData data,
+    const FormulaNode& formula
+);
+
 #endif //PIXLIE_FORMULA_APPLY_H
