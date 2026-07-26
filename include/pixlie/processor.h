@@ -22,11 +22,18 @@ struct Options {
 
 struct ProcessorCommand;
 
+/// Applies validated processor commands in order, checking the image invariant
+/// after every transformation.
 FileData process_file(
     FileData data,
     const std::vector<ProcessorCommand> &commands
 );
 
+/// Runs the complete CLI workflow: validates paths, parses commands, reads the
+/// input, applies valid processors, and writes the output JPEG.
+///
+/// Invalid processor command strings are reported and skipped. If the output
+/// exists and overwrite is disabled, this function prompts before replacing it.
 void process_image(const Options &options);
 
 #endif //PIXLIE_PROCESSOR_H

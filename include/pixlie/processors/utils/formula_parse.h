@@ -63,18 +63,27 @@ struct WarpFormula {
     Formula source_y;
 };
 
+/// Parses one color-channel expression from a single processor argument.
+/// @throws std::invalid_argument for a missing argument or invalid expression.
 [[nodiscard]] Formula parse_formula(
     const std::vector<std::string> &arguments
 );
 
+/// Parses a parenthesized `(red, green, blue)` expression tuple.
+/// @throws std::invalid_argument for a missing argument or invalid tuple.
 [[nodiscard]] RgbFormula parse_rgb_formula(
     const std::vector<std::string> &arguments
 );
 
+/// Parses a parenthesized `(source_x, source_y)` expression pair.
+/// @throws std::invalid_argument for a missing argument or invalid pair.
 [[nodiscard]] WarpFormula parse_warp_formula(
     const std::vector<std::string> &arguments
 );
 
+/// Parses an expression in the saturation dialect, where `S` replaces the RGB
+/// channel variables.
+/// @throws std::invalid_argument for a missing argument or invalid expression.
 [[nodiscard]] Formula parse_saturation_formula(
     const std::vector<std::string> &arguments
 );

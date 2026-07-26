@@ -10,6 +10,8 @@
 #include "pixlie/processors/image_processor.h"
 #include "pixlie/processors/utils/argument_parse.h"
 
+/// Base for processors whose commands use `<keyword> = <value>` syntax.
+/// Matching assignments are validated before their right-hand side is returned.
 class AssignmentProcessor : public ImageProcessor {
 protected:
     explicit AssignmentProcessor(std::string keyword)

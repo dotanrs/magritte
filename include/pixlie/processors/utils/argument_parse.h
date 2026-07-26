@@ -31,6 +31,8 @@ namespace processor_argument_parse {
         return words;
     }
 
+    /// Recognizes `<keyword> [arguments...]` and returns the words following
+    /// the keyword, or `std::nullopt` when the first word does not match.
     inline std::optional<std::vector<std::string>> after_keyword(
         std::string_view command,
         std::string_view keyword
@@ -43,6 +45,8 @@ namespace processor_argument_parse {
         return std::vector<std::string>(words.begin() + 1, words.end());
     }
 
+    /// Recognizes `<keyword> = <value>` and returns the trimmed right-hand side
+    /// as one argument, preserving internal whitespace.
     inline std::optional<std::vector<std::string>> after_assignment(
         std::string_view command,
         std::string_view keyword
@@ -59,6 +63,8 @@ namespace processor_argument_parse {
         };
     }
 
+    /// Recognizes `<left> <keyword> <right...>` and returns all words except
+    /// the infix keyword.
     inline std::optional<std::vector<std::string>> around_keyword(
         std::string_view command,
         std::string_view keyword

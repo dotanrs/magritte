@@ -65,6 +65,8 @@ std::uint8_t rounded_average(std::uint64_t sum, std::size_t count) {
     );
 }
 
+/// Applies an edge-truncated RGB box blur using rolling column and row sums.
+/// The original alpha channel is left unchanged.
 FileData apply_box_blur(FileData data, std::size_t radius) {
     if (radius == 0 || data.width == 0 || data.height == 0) {
         return data;

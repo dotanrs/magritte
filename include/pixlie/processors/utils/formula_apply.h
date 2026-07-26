@@ -10,22 +10,30 @@ enum class ColorChannel {
     blue,
 };
 
+/// Evaluates a formula for every pixel and replaces only `channel`.
+/// Results are rounded and clamped to the byte range; NaN becomes zero.
 [[nodiscard]] FileData apply_formula(
     FileData data,
     const FormulaNode &formula,
     ColorChannel channel
 );
 
+/// Replaces all RGB channels, evaluating every expression against the same
+/// original value of each pixel. Alpha is preserved.
 [[nodiscard]] FileData apply_rgb_formula(
     FileData data,
     const RgbFormula &formula
 );
 
+/// Remaps each output pixel from the unmodified input using bilinear sampling.
+/// Source coordinates outside the image are clamped to its nearest edge.
 [[nodiscard]] FileData apply_warp_formula(
     FileData data,
     const WarpFormula &formula
 );
 
+/// Replaces HSL saturation from a formula while preserving hue, lightness, and
+/// alpha. Formula saturation values use the byte range `[0, 255]`.
 [[nodiscard]] FileData apply_saturation_formula(
     FileData data,
     const FormulaNode &formula

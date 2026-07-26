@@ -13,6 +13,7 @@ enum class LogLevel {
     error,
 };
 
+/// Writes a UTC-timestamped message to the info or error stream.
 void log(LogLevel level, std::string_view message);
 
 #endif //PIXLIE_LOGGING_H

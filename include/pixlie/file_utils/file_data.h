@@ -14,6 +14,8 @@ struct Pixel {
 
 static_assert(sizeof(Pixel) == 4);
 
+/// An image stored as tightly packed, top-to-bottom rows of RGBA pixels.
+/// A valid buffer contains exactly `width * height` pixels.
 struct FileData {
     std::size_t width;
     std::size_t height;
