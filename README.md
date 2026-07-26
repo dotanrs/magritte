@@ -20,6 +20,13 @@ Normalize and save an image as `photo_copy.jpg`:
 ./build/pixlie photo.jpg
 ```
 
+If the output file already exists, `pixlie` asks before replacing it. Pass
+`--overwrite` to replace it without prompting:
+
+```sh
+./build/pixlie photo.jpg --output results/edited.jpg --overwrite
+```
+
 Rotate clockwise by 90 degrees:
 
 ```sh
@@ -98,6 +105,74 @@ the square root of a negative number become `0`.
 
 Saturation formulas support the same coordinates, constants, and functions with `S`, where saturation is represented in
 the range `[0, 255]`.
+
+### Formula examples
+
+Each snippet below is a processor argument that can be appended to a `pixlie` command.
+
+Horizontal red waves:
+
+```sh
+-p "r = 127 + 127 * sin(X / 12)"
+```
+
+Concentric blue rings:
+
+```sh
+-p "b = 127 + 127 * cos(D / 6)"
+```
+
+Green spokes radiating from the image center:
+
+```sh
+-p "g = 127 + 127 * sin(A * 12)"
+```
+
+A coordinate checker pattern mixed with the original red channel:
+
+```sh
+-p "r = R * (0.5 + 0.5 * sin(X / 8) * sin(Y / 8))"
+```
+
+Color contours derived from the original pixel brightness:
+
+```sh
+-p "b = 255 * abs(sin((R + G + B) / 24))"
+```
+
+A nonlinear red-channel color hash:
+
+```sh
+-p "r = mod(R * R + G * B, 256)"
+```
+
+A radial brightness falloff:
+
+```sh
+-p "r = R * (1 - D / max(W, H))" \
+-p "g = G * (1 - D / max(W, H))" \
+-p "b = B * (1 - D / max(W, H))"
+```
+
+Curved interference bands:
+
+```sh
+-p "r = 127 + 127 * sin((X * X + Y * Y) / 500)"
+```
+
+Saturation alternating in diagonal waves:
+
+```sh
+-p "s = S * (0.5 + 0.5 * sin((X + Y) / 16))"
+```
+
+The three-channel radial interference pattern used for the CLI smoke test:
+
+```sh
+-p "r = 127 + 127 * sin(D / 8 + A * 6)" \
+-p "g = 127 + 127 * sin(D / 11 - A * 4)" \
+-p "b = 127 + 127 * cos(D / 6)"
+```
 
 ## Tests
 

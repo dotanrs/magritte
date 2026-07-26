@@ -17,6 +17,7 @@ struct Options {
     fs::path input;
     fs::path output;
     std::vector<std::string> processor_commands;
+    bool overwrite = false;
 };
 
 struct ProcessorCommand;

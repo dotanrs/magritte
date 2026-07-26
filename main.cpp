@@ -12,13 +12,15 @@ namespace fs = std::filesystem;
 namespace {
     void print_usage(std::ostream &output, std::string_view program) {
         output << "Usage: " << program
-                << " <input.jpg> [-o <output.jpg>] [-p <processor>]...\n"
+                << " <input.jpg> [-o <output.jpg>] [--overwrite]"
+                   " [-p <processor>]...\n"
                 << "\n"
                 << "Processes a JPEG image using commands in the order provided.\n"
                 << "If no output is supplied, <input>_copy.jpg is used.\n"
                 << "\n"
                 << "Options:\n"
                 << "  -o, --output <path>  Destination image path\n"
+                << "      --overwrite      Replace an existing output without prompting\n"
                 << "  -p, --processor <command>\n"
                 << "                       Processor command; may be repeated\n"
                 << "  -h, --help           Show this help message\n";
@@ -57,6 +59,8 @@ namespace {
                     throw std::invalid_argument("missing command after " + std::string(argument));
                 }
                 options.processor_commands.emplace_back(argv[index]);
+            } else if (argument == "--overwrite") {
+                options.overwrite = true;
             } else {
                 throw std::invalid_argument("unknown argument: " + std::string(argument));
             }
