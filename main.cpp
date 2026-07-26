@@ -12,14 +12,21 @@ namespace fs = std::filesystem;
 namespace {
 
 void print_usage(std::ostream& output, std::string_view program) {
-    output << "Usage: " << program << " <input.jpg> [-o <output.jpg>]\n"
+    output << "Usage: " << program
+           << " <input.jpg> [-o <output.jpg>] [-p <processor>]...\n"
            << "\n"
-           << "Creates an exact copy of a JPEG image.\n"
+           << "Processes a JPEG image using commands in the order provided.\n"
            << "If no output is supplied, <input>_copy.jpg is used.\n"
            << "\n"
            << "Options:\n"
            << "  -o, --output <path>  Destination image path\n"
+           << "  -p, --processor <command>\n"
+           << "                       Processor command; may be repeated\n"
            << "  -h, --help           Show this help message\n";
+    output << "\n"
+           << "Processors:\n"
+           << "  rotate <int>         Rotate clockwise by 90 degrees <int> times\n"
+           << "  r = <formula>        Replace red using R, G, and B variables\n";
 }
 
 fs::path default_output_path(const fs::path& input) {
@@ -41,6 +48,11 @@ Options parse_arguments(int argc, char* argv[]) {
                 throw std::invalid_argument("missing path after " + std::string(argument));
             }
             options.output = argv[index];
+        } else if (argument == "-p" || argument == "--processor") {
+            if (++index >= argc) {
+                throw std::invalid_argument("missing command after " + std::string(argument));
+            }
+            options.processor_commands.emplace_back(argv[index]);
         } else {
             throw std::invalid_argument("unknown argument: " + std::string(argument));
         }

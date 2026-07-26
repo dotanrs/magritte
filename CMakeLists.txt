@@ -7,13 +7,32 @@ add_executable(pixlie main.cpp
         src/inputValidation.cpp
         include/pixlie/inputValidation.h
         src/processor.cpp
-        include/pixlie/processor.h)
+        include/pixlie/processor.h
+        src/parser.cpp
+        include/pixlie/parser.h
+        src/processors/rotate.cpp
+        include/pixlie/processors/rotate.h
+        src/processors/red_formula.cpp
+        include/pixlie/processors/red_formula.h
+        include/pixlie/processors/image_processor.h)
 
 target_include_directories(pixlie PRIVATE
         "${CMAKE_CURRENT_SOURCE_DIR}/include"
 )
 
 target_compile_features(pixlie PRIVATE cxx_std_20)
+
+if(APPLE)
+    find_library(CORE_FOUNDATION_FRAMEWORK CoreFoundation REQUIRED)
+    find_library(CORE_GRAPHICS_FRAMEWORK CoreGraphics REQUIRED)
+    find_library(IMAGE_IO_FRAMEWORK ImageIO REQUIRED)
+    target_link_libraries(pixlie PRIVATE
+            "${CORE_FOUNDATION_FRAMEWORK}"
+            "${CORE_GRAPHICS_FRAMEWORK}"
+            "${IMAGE_IO_FRAMEWORK}")
+else()
+    message(FATAL_ERROR "JPEG encoding and decoding currently require macOS ImageIO")
+endif()
 
 if(MSVC)
     target_compile_options(pixlie PRIVATE /W4 /permissive-)
@@ -23,3 +42,24 @@ endif()
 
 install(TARGETS pixlie RUNTIME DESTINATION bin)
 
+include(CTest)
+if(BUILD_TESTING)
+    add_executable(pixlie_processor_tests
+            tests/processors_test.cpp
+            src/parser.cpp
+            src/processors/rotate.cpp
+            src/processors/red_formula.cpp
+            src/utils/logging.cpp)
+    target_include_directories(pixlie_processor_tests PRIVATE
+            "${CMAKE_CURRENT_SOURCE_DIR}/include")
+    target_compile_features(pixlie_processor_tests PRIVATE cxx_std_20)
+
+    if(MSVC)
+        target_compile_options(pixlie_processor_tests PRIVATE /W4 /permissive-)
+    else()
+        target_compile_options(pixlie_processor_tests PRIVATE
+                -Wall -Wextra -Wpedantic)
+    endif()
+
+    add_test(NAME processors COMMAND pixlie_processor_tests)
+endif()
