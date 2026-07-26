@@ -6,8 +6,10 @@
 #include <string>
 #include <vector>
 #include "pixlie/processors/blue_formula.h"
+#include "pixlie/processors/blur.h"
 #include "pixlie/processors/color_swap.h"
 #include "pixlie/processors/green_formula.h"
+#include "pixlie/processors/mirror.h"
 #include "pixlie/processors/red_formula.h"
 #include "pixlie/processors/rotate.h"
 #include "pixlie/processors/saturation_formula.h"
@@ -60,6 +62,12 @@ std::optional<ProcessorCommand> parse_processor_command(
     const auto words = split_words(value);
     if (!words.empty() && words.front() == "rotate") {
         processor = &rotate_processor();
+        arguments.assign(words.begin() + 1, words.end());
+    } else if (!words.empty() && words.front() == "mirror") {
+        processor = &mirror_processor();
+        arguments.assign(words.begin() + 1, words.end());
+    } else if (!words.empty() && words.front() == "blur") {
+        processor = &blur_processor();
         arguments.assign(words.begin() + 1, words.end());
     } else if (words.size() == 3 && words[1] == "<->") {
         processor = &color_swap_processor();

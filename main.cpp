@@ -25,6 +25,8 @@ namespace {
         output << "\n"
                 << "Processors:\n"
                 << "  rotate <int>         Rotate clockwise by 90 degrees <int> times\n"
+                << "  mirror <x|y>         Reflect across the x-axis or y-axis\n"
+                << "  blur <radius>        Box blur with a nonnegative integer radius\n"
                 << "  r = <formula>        Replace red using R, G, and B variables\n"
                 << "  g = <formula>        Replace green using R, G, and B variables\n"
                 << "  b = <formula>        Replace blue using R, G, and B variables\n"

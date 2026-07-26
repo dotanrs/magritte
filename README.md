@@ -27,6 +27,14 @@ Rotate clockwise by 90 degrees:
   -p "rotate 1"
 ```
 
+Mirror across the y-axis and apply a three-pixel-radius blur:
+
+```sh
+./build/pixlie photo.jpg --output results/soft-mirror.jpg \
+  -p "mirror y" \
+  -p "blur 3"
+```
+
 Run multiple processors sequentially:
 
 ```sh
@@ -47,6 +55,10 @@ errors occurred.
 ## Processors
 
 - `rotate <int>` rotates clockwise by 90 degrees `int % 4` times. Negative values rotate in the opposite direction.
+- `mirror x` reflects across the x-axis, exchanging the top and bottom.
+- `mirror y` reflects across the y-axis, exchanging the left and right.
+- `blur <radius>` applies a box blur to RGB using a nonnegative integer pixel radius. Pixels near an edge average only
+  the available neighborhood; alpha is preserved.
 - `r = <formula>` changes only the red channel.
 - `g = <formula>` changes only the green channel.
 - `b = <formula>` changes only the blue channel.

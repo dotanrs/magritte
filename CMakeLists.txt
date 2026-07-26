@@ -15,6 +15,10 @@ add_executable(pixlie main.cpp
         include/pixlie/parser.h
         src/processors/rotate.cpp
         include/pixlie/processors/rotate.h
+        src/processors/mirror.cpp
+        include/pixlie/processors/mirror.h
+        src/processors/blur.cpp
+        include/pixlie/processors/blur.h
         src/processors/red_formula.cpp
         include/pixlie/processors/red_formula.h
         src/processors/green_formula.cpp
@@ -63,6 +67,8 @@ if (BUILD_TESTING)
             tests/processors_test.cpp
             src/parser.cpp
             src/processors/rotate.cpp
+            src/processors/mirror.cpp
+            src/processors/blur.cpp
             src/processors/red_formula.cpp
             src/processors/green_formula.cpp
             src/processors/blue_formula.cpp

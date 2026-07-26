@@ -4,8 +4,10 @@
 #include <vector>
 #include "pixlie/parser.h"
 #include "pixlie/processors/blue_formula.h"
+#include "pixlie/processors/blur.h"
 #include "pixlie/processors/color_swap.h"
 #include "pixlie/processors/green_formula.h"
+#include "pixlie/processors/mirror.h"
 #include "pixlie/processors/red_formula.h"
 #include "pixlie/processors/rotate.h"
 #include "pixlie/processors/saturation_formula.h"
@@ -50,6 +52,73 @@ namespace {
         expect(
             red_values(rotated) == std::vector<std::uint8_t>{2, 4, 6, 1, 3, 5},
             "90-degree rotation should map pixels clockwise"
+        );
+    }
+
+    void test_mirror() {
+        const auto image = [] {
+            FileData result{
+                .width = 3,
+                .height = 2,
+                .pixels = std::vector<Pixel>(
+                    6,
+                    Pixel{.red = 0, .green = 0, .blue = 0, .alpha = 255}
+                ),
+            };
+            for (std::size_t index = 0; index < result.pixels.size(); ++index) {
+                result.pixels[index].red =
+                    static_cast<std::uint8_t>(index + 1);
+            }
+            return result;
+        };
+
+        const FileData across_x = mirror_processor().apply(image(), {"x"});
+        expect(
+            red_values(across_x) ==
+            std::vector<std::uint8_t>{4, 5, 6, 1, 2, 3},
+            "mirror x should exchange the top and bottom"
+        );
+
+        const FileData across_y = mirror_processor().apply(image(), {"y"});
+        expect(
+            red_values(across_y) ==
+            std::vector<std::uint8_t>{3, 2, 1, 6, 5, 4},
+            "mirror y should exchange the left and right"
+        );
+    }
+
+    void test_blur() {
+        FileData image{
+            .width = 3,
+            .height = 3,
+            .pixels = std::vector<Pixel>(
+                9,
+                Pixel{.red = 0, .green = 0, .blue = 0, .alpha = 40}
+            ),
+        };
+        image.pixels[4] =
+            Pixel{.red = 90, .green = 180, .blue = 45, .alpha = 200};
+
+        const FileData blurred = blur_processor().apply(
+            std::move(image),
+            {"1"}
+        );
+        expect(
+            red_values(blurred) ==
+            std::vector<std::uint8_t>{23, 15, 23, 15, 10, 15, 23, 15, 23},
+            "blur should average the available square neighborhood"
+        );
+        expect(
+            blurred.pixels[0].green == 45 &&
+            blurred.pixels[4].green == 20 &&
+            blurred.pixels[0].blue == 11 &&
+            blurred.pixels[4].blue == 5,
+            "blur should process every RGB channel"
+        );
+        expect(
+            blurred.pixels[0].alpha == 40 &&
+            blurred.pixels[4].alpha == 200,
+            "blur should preserve each pixel's alpha"
         );
     }
 
@@ -199,6 +268,14 @@ namespace {
             "parser should accept a valid rotate command"
         );
         expect(
+            parse_processor_command("mirror x").has_value(),
+            "parser should accept a valid mirror command"
+        );
+        expect(
+            parse_processor_command("blur 3").has_value(),
+            "parser should accept a valid blur command"
+        );
+        expect(
             parse_processor_command("r = (R + G) / 2").has_value(),
             "parser should accept a valid red formula"
         );
@@ -228,6 +305,24 @@ namespace {
         );
         error_message.clear();
         expect(
+            !parse_processor_command("mirror z", &error_message).has_value(),
+            "parser should reject an invalid mirror axis"
+        );
+        expect(
+            error_message == "mirror expects exactly one axis: x or y",
+            "parser should describe an invalid mirror axis"
+        );
+        error_message.clear();
+        expect(
+            !parse_processor_command("blur -1", &error_message).has_value(),
+            "parser should reject a negative blur radius"
+        );
+        expect(
+            error_message == "blur radius must be a nonnegative integer",
+            "parser should describe an invalid blur radius"
+        );
+        error_message.clear();
+        expect(
             !parse_processor_command("rotate nope", &error_message).has_value(),
             "parser should reject a non-integer rotation"
         );
@@ -249,6 +344,8 @@ namespace {
 
 int main() {
     test_rotation();
+    test_mirror();
+    test_blur();
     test_red_formula_and_clamping();
     test_green_formula();
     test_blue_formula();
