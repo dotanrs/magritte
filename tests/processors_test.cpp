@@ -9,6 +9,8 @@
 #include "pixlie/processors/color_swap.h"
 #include "pixlie/processors/fisheye.h"
 #include "pixlie/processors/green_formula.h"
+#include "pixlie/processors/loop_assignment_processor.h"
+#include "pixlie/processors/loop_warp.h"
 #include "pixlie/processors/mirror.h"
 #include "pixlie/processors/red_formula.h"
 #include "pixlie/processors/rgb_formula.h"
@@ -413,6 +415,65 @@ namespace {
         );
     }
 
+    void test_loop_processor() {
+        const auto image = [] {
+            return FileData{
+                .width = 4,
+                .height = 1,
+                .pixels = {
+                    Pixel{.red = 10, .green = 1, .blue = 2, .alpha = 20},
+                    Pixel{.red = 20, .green = 3, .blue = 4, .alpha = 40},
+                    Pixel{.red = 30, .green = 5, .blue = 6, .alpha = 60},
+                    Pixel{.red = 40, .green = 7, .blue = 8, .alpha = 80},
+                },
+            };
+        };
+
+        const FileData twice = loop_warp_processor().apply(
+            image(),
+            {"2", "(X - 1, Y)"}
+        );
+        expect(
+            red_values(twice) == std::vector<std::uint8_t>{10, 10, 10, 20} &&
+            twice.pixels[0].alpha == 20 &&
+            twice.pixels[3].alpha == 40,
+            "loop-warp should feed each warp result into the next iteration"
+        );
+
+        const FileData zero_times = loop_warp_processor().apply(
+            image(),
+            {"0", "(X - 1, Y)"}
+        );
+        expect(
+            red_values(zero_times) ==
+            std::vector<std::uint8_t>{10, 20, 30, 40},
+            "zero loop iterations should preserve the image"
+        );
+
+        const LoopAssignmentProcessor loop_rgb{
+            "rgb",
+            rgb_formula_processor()
+        };
+        const FileData cycled = loop_rgb.apply(
+            FileData{
+                .width = 1,
+                .height = 1,
+                .pixels = {
+                    Pixel{.red = 10, .green = 20, .blue = 30, .alpha = 40}
+                },
+            },
+            {"2", "(G, B, R)"}
+        );
+        expect(
+            loop_rgb.name() == "loop-rgb" &&
+            cycled.pixels[0].red == 30 &&
+            cycled.pixels[0].green == 10 &&
+            cycled.pixels[0].blue == 20 &&
+            cycled.pixels[0].alpha == 40,
+            "the generic loop wrapper should work with other processors"
+        );
+    }
+
     void test_fisheye() {
         const auto image = [] {
             FileData result{
@@ -635,6 +696,24 @@ namespace {
             "warp processor should require its own assignment keyword"
         );
 
+        const auto loop_warp_arguments =
+            loop_warp_processor().parse_arguments(
+                "loop-warp 3 = (X + sin(Y), Y)"
+            );
+        expect(
+            loop_warp_arguments ==
+            std::optional<std::vector<std::string>>{
+                {"3", "(X + sin(Y), Y)"}
+            },
+            "loop-warp should parse a count and preserve its warp formula"
+        );
+        expect(
+            !loop_warp_processor().parse_arguments(
+                "warp = (X, Y)"
+            ).has_value(),
+            "loop-warp should require its own assignment keyword"
+        );
+
         const auto fisheye_arguments =
             fisheye_processor().parse_arguments("fisheye 50 50 1 25");
         expect(
@@ -708,6 +787,12 @@ namespace {
                 "warp = (X + sin(Y), clamp(Y, 0, H - 1))"
             ).has_value(),
             "parser should accept a mathematical warp formula"
+        );
+        expect(
+            parse_processor_command(
+                "loop-warp 3 = (X + sin(Y), clamp(Y, 0, H - 1))"
+            ).has_value(),
+            "parser should accept a counted loop-warp formula"
         );
         expect(
             parse_processor_command("g = B * 2").has_value(),
@@ -913,6 +998,42 @@ namespace {
             error_message.find("expected ')'") != std::string::npos,
             "parser should describe an oversized warp coordinate pair"
         );
+        error_message.clear();
+        expect(
+            !parse_processor_command(
+                "loop-warp -1 = (X, Y)",
+                &error_message
+            ).has_value(),
+            "parser should reject a negative loop count"
+        );
+        expect(
+            error_message.find("nonnegative integer") != std::string::npos,
+            "parser should describe an invalid loop count"
+        );
+        error_message.clear();
+        expect(
+            !parse_processor_command(
+                "loop-warp = (X, Y)",
+                &error_message
+            ).has_value(),
+            "parser should require a loop count"
+        );
+        expect(
+            error_message.find("iteration count") != std::string::npos,
+            "parser should describe a missing loop count"
+        );
+        error_message.clear();
+        expect(
+            !parse_processor_command(
+                "loop-warp 2 = (X)",
+                &error_message
+            ).has_value(),
+            "parser should validate the wrapped processor's arguments"
+        );
+        expect(
+            !error_message.empty(),
+            "parser should return the wrapped processor's validation error"
+        );
     }
 } // namespace
 
@@ -928,6 +1049,7 @@ int main() {
     test_formula_math_functions();
     test_simultaneous_rgb_formula();
     test_warp_formula();
+    test_loop_processor();
     test_fisheye();
     test_saturation_formula();
     test_color_swap();

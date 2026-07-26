@@ -4,6 +4,7 @@
 #include <cctype>
 #include <optional>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -59,6 +60,39 @@ namespace processor_argument_parse {
         }
 
         return std::vector<std::string>{
+            std::string(trim(value.substr(equals + 1)))
+        };
+    }
+
+    /// Recognizes `<keyword> <count> = <value>` and returns the count followed
+    /// by the trimmed right-hand side.
+    inline std::optional<std::vector<std::string>> after_counted_assignment(
+        std::string_view command,
+        std::string_view keyword
+    ) {
+        const std::string_view value = trim(command);
+        const auto words = split_words(value);
+        if (words.empty() || words.front() != keyword) {
+            return std::nullopt;
+        }
+
+        const std::size_t equals = value.find('=');
+        if (equals == std::string_view::npos) {
+            throw std::invalid_argument(
+                std::string(keyword) + " expects '<iterations> = <value>'"
+            );
+        }
+
+        const auto left_words = split_words(trim(value.substr(0, equals)));
+        if (left_words.size() != 2) {
+            throw std::invalid_argument(
+                std::string(keyword) +
+                " expects one iteration count before '='"
+            );
+        }
+
+        return std::vector<std::string>{
+            left_words[1],
             std::string(trim(value.substr(equals + 1)))
         };
     }

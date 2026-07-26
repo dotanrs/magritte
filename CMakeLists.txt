@@ -32,6 +32,11 @@ add_executable(pixlie main.cpp
         include/pixlie/processors/saturation_formula.h
         src/processors/warp_formula.cpp
         include/pixlie/processors/warp_formula.h
+        src/processors/loop_processor.cpp
+        include/pixlie/processors/loop_processor.h
+        include/pixlie/processors/loop_assignment_processor.h
+        src/processors/loop_warp.cpp
+        include/pixlie/processors/loop_warp.h
         src/processors/color_swap.cpp
         include/pixlie/processors/color_swap.h
         src/processors/utils/formula_parse.cpp
@@ -82,6 +87,8 @@ if (BUILD_TESTING)
             src/processors/rgb_formula.cpp
             src/processors/saturation_formula.cpp
             src/processors/warp_formula.cpp
+            src/processors/loop_processor.cpp
+            src/processors/loop_warp.cpp
             src/processors/color_swap.cpp
             src/processors/utils/formula_parse.cpp
             src/processors/utils/formula_apply.cpp

@@ -82,6 +82,7 @@ errors occurred.
 - `rgb = (<red>, <green>, <blue>)` changes all three channels simultaneously. Every expression reads the original pixel.
 - `s = <formula>` changes HSL saturation while preserving hue and lightness.
 - `warp = (<source-x>, <source-y>)` remaps pixels with mathematical source coordinates.
+- `loop-warp <iterations> = (<source-x>, <source-y>)` repeatedly applies a warp, feeding each result into the next.
 - `x <-> y` swaps channels `x` and `y`, where each channel is `r`, `g`, or
   `b`.
 
@@ -144,6 +145,17 @@ A distance-dependent swirl:
 -p "warp = ((W - 1) / 2 + D * cos(A + D / 200), \
   (H - 1) / 2 + D * sin(A + D / 200))"
 ```
+
+To build up a transformation over several smaller steps, use `loop-warp`.
+This applies a slight rotation twelve times:
+
+```sh
+-p "loop-warp 12 = ((W - 1) / 2 + D * cos(A + 0.01), \
+  (H - 1) / 2 + D * sin(A + 0.01))"
+```
+
+Each iteration samples the image produced by the preceding iteration. An
+iteration count of `0` leaves the image unchanged.
 
 ### Fisheye shortcut
 

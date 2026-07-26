@@ -10,6 +10,7 @@
 #include "pixlie/processors/color_swap.h"
 #include "pixlie/processors/fisheye.h"
 #include "pixlie/processors/green_formula.h"
+#include "pixlie/processors/loop_warp.h"
 #include "pixlie/processors/mirror.h"
 #include "pixlie/processors/red_formula.h"
 #include "pixlie/processors/rgb_formula.h"
@@ -40,7 +41,7 @@ namespace {
         return std::nullopt;
     }
 
-    const std::array<std::reference_wrapper<const ImageProcessor>, 11>
+    const std::array<std::reference_wrapper<const ImageProcessor>, 12>
     processors{
         rotate_processor(),
         mirror_processor(),
@@ -52,6 +53,7 @@ namespace {
         blue_formula_processor(),
         rgb_formula_processor(),
         saturation_formula_processor(),
+        loop_warp_processor(),
         warp_formula_processor(),
     };
 } // namespace
