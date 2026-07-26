@@ -3,6 +3,6 @@
 
 #include "pixlie/processors/image_processor.h"
 
-[[nodiscard]] const ImageProcessor& color_swap_processor();
+[[nodiscard]] const ImageProcessor &color_swap_processor();
 
 #endif //PIXLIE_COLOR_SWAP_PROCESSOR_H

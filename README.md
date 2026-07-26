@@ -1,7 +1,7 @@
 # pixlie
 
-`pixlie` is a C++ command-line JPEG processor. Processor commands are supplied
-with repeatable `-p` flags and run from left to right.
+`pixlie` is a C++ command-line JPEG processor. Processor commands are supplied with repeatable `-p` flags and run from
+left to right.
 
 JPEG decoding and encoding currently use the macOS ImageIO framework.
 
@@ -37,19 +37,16 @@ Run multiple processors sequentially:
   -p "b = 255 - b"
 ```
 
-The command writes timestamped progress logs to standard error and exits with
-status `0` on success, `1` for file-processing errors, or `2` for invalid
-command-line arguments.
+The command writes timestamped progress logs to standard error and exits with status `0` on success, `1` for
+file-processing errors, or `2` for invalid command-line arguments.
 
-Invalid processor commands are logged and skipped without preventing other
-processor commands from running. At the end, `pixlie` prints successful
-processor commands in green followed by invalid commands and their errors in
-yellow when any errors occurred.
+Invalid processor commands are logged and skipped without preventing other processor commands from running. At the end,
+`pixlie` prints successful processor commands in green followed by invalid commands and their errors in yellow when any
+errors occurred.
 
 ## Processors
 
-- `rotate <int>` rotates clockwise by 90 degrees `int % 4` times. Negative
-  values rotate in the opposite direction.
+- `rotate <int>` rotates clockwise by 90 degrees `int % 4` times. Negative values rotate in the opposite direction.
 - `r = <formula>` changes only the red channel.
 - `g = <formula>` changes only the green channel.
 - `b = <formula>` changes only the blue channel.
@@ -57,12 +54,11 @@ yellow when any errors occurred.
 - `x <-> y` swaps channels `x` and `y`, where each channel is `r`, `g`, or
   `b`.
 
-Formulas support `R`, `G`, and `B`, numeric constants, parentheses, unary
-signs, and `+`, `-`, `*`, and `/`. Results are rounded and clamped to the range
+Formulas support `R`, `G`, and `B`, numeric constants, parentheses, unary signs, and `+`, `-`, `*`, and `/`. Results are
+rounded and clamped to the range
 `[0, 255]`.
 
-Saturation formulas support the same arithmetic with `S`, where saturation is
-also represented in the range `[0, 255]`.
+Saturation formulas support the same arithmetic with `S`, where saturation is also represented in the range `[0, 255]`.
 
 ## Tests
 

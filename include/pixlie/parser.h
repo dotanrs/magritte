@@ -8,7 +8,7 @@
 
 [[nodiscard]] std::optional<ProcessorCommand> parse_processor_command(
     std::string_view command,
-    std::string* error_message = nullptr
+    std::string *error_message = nullptr
 );
 
 #endif //PIXLIE_PARSER_H

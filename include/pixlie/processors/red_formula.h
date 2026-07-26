@@ -3,6 +3,6 @@
 
 #include "pixlie/processors/image_processor.h"
 
-[[nodiscard]] const ImageProcessor& red_formula_processor();
+[[nodiscard]] const ImageProcessor &red_formula_processor();
 
 #endif //PIXLIE_RED_FORMULA_PROCESSOR_H

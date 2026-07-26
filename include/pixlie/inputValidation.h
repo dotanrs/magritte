@@ -8,6 +8,6 @@
 #include <tuple>
 #include "pixlie/processor.h"
 
-std::tuple<fs::path, fs::path> validate_input(const Options& options);
+std::tuple<fs::path, fs::path> validate_input(const Options &options);
 
 #endif //PIXLIE_INPUTVALIDATION_H

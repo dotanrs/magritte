@@ -37,7 +37,7 @@ target_include_directories(pixlie PRIVATE
 
 target_compile_features(pixlie PRIVATE cxx_std_20)
 
-if(APPLE)
+if (APPLE)
     find_library(CORE_FOUNDATION_FRAMEWORK CoreFoundation REQUIRED)
     find_library(CORE_GRAPHICS_FRAMEWORK CoreGraphics REQUIRED)
     find_library(IMAGE_IO_FRAMEWORK ImageIO REQUIRED)
@@ -45,20 +45,20 @@ if(APPLE)
             "${CORE_FOUNDATION_FRAMEWORK}"
             "${CORE_GRAPHICS_FRAMEWORK}"
             "${IMAGE_IO_FRAMEWORK}")
-else()
+else ()
     message(FATAL_ERROR "JPEG encoding and decoding currently require macOS ImageIO")
-endif()
+endif ()
 
-if(MSVC)
+if (MSVC)
     target_compile_options(pixlie PRIVATE /W4 /permissive-)
-else()
+else ()
     target_compile_options(pixlie PRIVATE -Wall -Wextra -Wpedantic)
-endif()
+endif ()
 
 install(TARGETS pixlie RUNTIME DESTINATION bin)
 
 include(CTest)
-if(BUILD_TESTING)
+if (BUILD_TESTING)
     add_executable(pixlie_processor_tests
             tests/processors_test.cpp
             src/parser.cpp
@@ -75,12 +75,12 @@ if(BUILD_TESTING)
             "${CMAKE_CURRENT_SOURCE_DIR}/include")
     target_compile_features(pixlie_processor_tests PRIVATE cxx_std_20)
 
-    if(MSVC)
+    if (MSVC)
         target_compile_options(pixlie_processor_tests PRIVATE /W4 /permissive-)
-    else()
+    else ()
         target_compile_options(pixlie_processor_tests PRIVATE
                 -Wall -Wextra -Wpedantic)
-    endif()
+    endif ()
 
     add_test(NAME processors COMMAND pixlie_processor_tests)
-endif()
+endif ()

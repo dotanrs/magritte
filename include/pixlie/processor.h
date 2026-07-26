@@ -23,8 +23,9 @@ struct ProcessorCommand;
 
 FileData process_file(
     FileData data,
-    const std::vector<ProcessorCommand>& commands
+    const std::vector<ProcessorCommand> &commands
 );
-void process_image(const Options& options);
+
+void process_image(const Options &options);
 
 #endif //PIXLIE_PROCESSOR_H

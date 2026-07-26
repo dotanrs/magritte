@@ -12,13 +12,13 @@ enum class ColorChannel {
 
 [[nodiscard]] FileData apply_formula(
     FileData data,
-    const FormulaNode& formula,
+    const FormulaNode &formula,
     ColorChannel channel
 );
 
 [[nodiscard]] FileData apply_saturation_formula(
     FileData data,
-    const FormulaNode& formula
+    const FormulaNode &formula
 );
 
 #endif //PIXLIE_FORMULA_APPLY_H
