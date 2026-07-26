@@ -34,6 +34,15 @@ public:
         FileData data,
         const std::vector<std::string> &arguments
     ) const = 0;
+
+    /// Adds visual debugging hints for this processor to an already transformed
+    /// image. Processors without debug visualization return the image unchanged.
+    [[nodiscard]] virtual FileData add_debug_hints(
+        FileData data,
+        const std::vector<std::string> &
+    ) const {
+        return data;
+    }
 };
 
 struct ProcessorCommand {

@@ -50,6 +50,17 @@ Run multiple processors sequentially:
   -p "rgb = (r * 2 - g, (r + b) / 2, 255 - b)"
 ```
 
+Add `--debug` (or `-d`) to include visual guides in the output:
+
+```sh
+./build/pixlie photo.jpg --output results/fisheye-debug.jpg --debug \
+  -p "fisheye 50 50 1 25"
+```
+
+Debug mode runs the same processor commands and then adds any hints supported
+by those processors. Currently only `fisheye` provides hints: it draws the
+circle and radius in yellow and marks its center with a magenta crosshair.
+
 Generate a radial interference pattern from the image coordinates:
 
 ```sh

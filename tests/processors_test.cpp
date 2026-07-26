@@ -559,6 +559,64 @@ namespace {
         );
     }
 
+    void test_fisheye_debug_hints() {
+        FileData image{
+            .width = 11,
+            .height = 11,
+            .pixels = std::vector<Pixel>(
+                121,
+                Pixel{.red = 10, .green = 20, .blue = 30, .alpha = 200}
+            ),
+        };
+        image.pixels[5 * image.width + 5].alpha = 40;
+        image.pixels[2 * image.width + 5].alpha = 80;
+
+        const std::vector<std::string> arguments{"50", "50", "1", "30"};
+        const FileData processed = fisheye_processor().apply(image, arguments);
+        const FileData debugged = fisheye_processor().add_debug_hints(
+            fisheye_processor().apply(std::move(image), arguments),
+            arguments
+        );
+
+        const Pixel &center = debugged.pixels[5 * debugged.width + 5];
+        expect(
+            center.red == 255 &&
+            center.green == 0 &&
+            center.blue == 255 &&
+            center.alpha == processed.pixels[5 * processed.width + 5].alpha,
+            "fisheye debug hints should mark the center without changing alpha"
+        );
+
+        const Pixel &boundary = debugged.pixels[2 * debugged.width + 5];
+        expect(
+            boundary.red == 255 &&
+            boundary.green == 215 &&
+            boundary.blue == 0 &&
+            boundary.alpha == processed.pixels[2 * processed.width + 5].alpha,
+            "fisheye debug hints should mark the radius boundary"
+        );
+
+        const Pixel &outside = debugged.pixels.front();
+        const Pixel &processed_outside = processed.pixels.front();
+        expect(
+            outside.red == processed_outside.red &&
+            outside.green == processed_outside.green &&
+            outside.blue == processed_outside.blue &&
+            outside.alpha == processed_outside.alpha,
+            "fisheye debug hints should leave pixels away from the guide unchanged"
+        );
+
+        const FileData other_processor = rotate_processor().add_debug_hints(
+            blank_image(2, 2),
+            {"1"}
+        );
+        expect(
+            red_values(other_processor) ==
+            std::vector<std::uint8_t>{0, 0, 0, 0},
+            "processors without debug hints should leave the image unchanged"
+        );
+    }
+
     void test_saturation_formula() {
         FileData image{
             .width = 3,
@@ -1051,6 +1109,7 @@ int main() {
     test_warp_formula();
     test_loop_processor();
     test_fisheye();
+    test_fisheye_debug_hints();
     test_saturation_formula();
     test_color_swap();
     test_processor_argument_parsing();

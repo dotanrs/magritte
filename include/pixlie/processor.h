@@ -18,15 +18,18 @@ struct Options {
     fs::path output;
     std::vector<std::string> processor_commands;
     bool overwrite = false;
+    bool debug = false;
 };
 
 struct ProcessorCommand;
 
-/// Applies validated processor commands in order, checking the image invariant
-/// after every transformation.
+/// Applies validated processor commands in order, optionally adding each
+/// processor's visual debug hints, and checks the image invariant after every
+/// transformation.
 FileData process_file(
     FileData data,
-    const std::vector<ProcessorCommand> &commands
+    const std::vector<ProcessorCommand> &commands,
+    bool debug = false
 );
 
 /// Runs the complete CLI workflow: validates paths, parses commands, reads the

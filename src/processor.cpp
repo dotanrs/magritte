@@ -113,7 +113,8 @@ namespace {
 
 FileData process_file(
     FileData data,
-    const std::vector<ProcessorCommand> &commands
+    const std::vector<ProcessorCommand> &commands,
+    bool debug
 ) {
     for (const ProcessorCommand &command: commands) {
         log(
@@ -124,6 +125,12 @@ FileData process_file(
             std::move(data),
             command.arguments
         );
+        if (debug) {
+            data = command.processor.get().add_debug_hints(
+                std::move(data),
+                command.arguments
+            );
+        }
         validate_file_data(data);
     }
     return data;
@@ -151,7 +158,7 @@ void process_image(const Options &options) {
         }
     }
 
-    const FileData data = process_file(read_file(input), commands);
+    const FileData data = process_file(read_file(input), commands, options.debug);
     for (const ProcessorCommand &command: commands) {
         results.successful.push_back(command.source);
     }

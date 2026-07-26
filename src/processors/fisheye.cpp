@@ -19,6 +19,25 @@ namespace {
         double radius_percent;
     };
 
+    struct FisheyeGeometry {
+        double center_x;
+        double center_y;
+        double radius;
+    };
+
+    constexpr Pixel radius_hint{
+        .red = 255,
+        .green = 215,
+        .blue = 0,
+        .alpha = 255,
+    };
+    constexpr Pixel center_hint{
+        .red = 255,
+        .green = 0,
+        .blue = 255,
+        .alpha = 255,
+    };
+
     double parse_number(const std::string &text, std::string_view name) {
         char *end = nullptr;
         const double value = std::strtod(text.c_str(), &end);
@@ -68,6 +87,104 @@ namespace {
         return result;
     }
 
+    FisheyeGeometry calculate_geometry(
+        const FileData &data,
+        const FisheyeArguments &arguments
+    ) {
+        const double last_x = static_cast<double>(data.width - 1);
+        const double last_y = static_cast<double>(data.height - 1);
+        const double radius =
+                static_cast<double>(std::min(data.width, data.height)) *
+                arguments.radius_percent / 100.0;
+        if (!std::isfinite(radius)) {
+            throw std::invalid_argument("fisheye radius is too large");
+        }
+
+        return FisheyeGeometry{
+            .center_x = last_x * arguments.center_x_percent / 100.0,
+            .center_y = last_y * arguments.center_y_percent / 100.0,
+            .radius = radius,
+        };
+    }
+
+    void mark_pixel(
+        FileData &data,
+        long x,
+        long y,
+        const Pixel &hint
+    ) {
+        if (x < 0 || y < 0 ||
+            static_cast<std::size_t>(x) >= data.width ||
+            static_cast<std::size_t>(y) >= data.height) {
+            return;
+        }
+
+        Pixel &pixel = data.pixels[
+            static_cast<std::size_t>(y) * data.width +
+            static_cast<std::size_t>(x)
+        ];
+        pixel.red = hint.red;
+        pixel.green = hint.green;
+        pixel.blue = hint.blue;
+    }
+
+    FileData add_fisheye_debug_hints(
+        FileData data,
+        const FisheyeArguments &arguments
+    ) {
+        if (data.width == 0 || data.height == 0) {
+            return data;
+        }
+
+        const FisheyeGeometry geometry =
+                calculate_geometry(data, arguments);
+        const double line_half_width = std::max(
+            0.75,
+            static_cast<double>(std::min(data.width, data.height)) / 500.0
+        );
+
+        for (std::size_t y = 0; y < data.height; ++y) {
+            for (std::size_t x = 0; x < data.width; ++x) {
+                const double distance = std::hypot(
+                    static_cast<double>(x) - geometry.center_x,
+                    static_cast<double>(y) - geometry.center_y
+                );
+                if (std::abs(distance - geometry.radius) <= line_half_width) {
+                    mark_pixel(
+                        data,
+                        static_cast<long>(x),
+                        static_cast<long>(y),
+                        radius_hint
+                    );
+                }
+            }
+        }
+
+        const long center_x = std::lround(geometry.center_x);
+        const long center_y = std::lround(geometry.center_y);
+        const long radius_end_x = std::lround(std::min(
+            geometry.center_x + geometry.radius,
+            static_cast<double>(data.width - 1)
+        ));
+        for (long x = center_x; x <= radius_end_x; ++x) {
+            mark_pixel(data, x, center_y, radius_hint);
+        }
+
+        const long cross_arm = std::clamp(
+            std::lround(
+                static_cast<double>(std::min(data.width, data.height)) / 100.0
+            ),
+            2L,
+            8L
+        );
+        for (long offset = -cross_arm; offset <= cross_arm; ++offset) {
+            mark_pixel(data, center_x + offset, center_y, center_hint);
+            mark_pixel(data, center_x, center_y + offset, center_hint);
+        }
+
+        return data;
+    }
+
     FileData apply_fisheye(
         FileData data,
         const FisheyeArguments &arguments
@@ -76,19 +193,9 @@ namespace {
             return data;
         }
 
-        const double last_x = static_cast<double>(data.width - 1);
-        const double last_y = static_cast<double>(data.height - 1);
-        const double center_x =
-                last_x * arguments.center_x_percent / 100.0;
-        const double center_y =
-                last_y * arguments.center_y_percent / 100.0;
-        const double radius =
-                static_cast<double>(std::min(data.width, data.height)) *
-                arguments.radius_percent / 100.0;
-        if (!std::isfinite(radius)) {
-            throw std::invalid_argument("fisheye radius is too large");
-        }
-        if (radius == 0.0) {
+        const FisheyeGeometry geometry =
+                calculate_geometry(data, arguments);
+        if (geometry.radius == 0.0) {
             return data;
         }
 
@@ -101,25 +208,26 @@ namespace {
         for (std::size_t y = 0; y < data.height; ++y) {
             for (std::size_t x = 0; x < data.width; ++x) {
                 const double offset_x =
-                        static_cast<double>(x) - center_x;
+                        static_cast<double>(x) - geometry.center_x;
                 const double offset_y =
-                        static_cast<double>(y) - center_y;
+                        static_cast<double>(y) - geometry.center_y;
                 const double distance = std::hypot(offset_x, offset_y);
                 const std::size_t index = y * data.width + x;
-                if (distance >= radius) {
+                if (distance >= geometry.radius) {
                     result.pixels[index] = data.pixels[index];
                     continue;
                 }
 
                 const double angle = std::atan2(offset_y, offset_x);
-                const double normalized_distance = distance / radius;
+                const double normalized_distance =
+                        distance / geometry.radius;
                 const double source_distance = distance / (
                     1.0 + arguments.amount * (1.0 - normalized_distance)
                 );
                 const double source_x =
-                        center_x + source_distance * std::cos(angle);
+                        geometry.center_x + source_distance * std::cos(angle);
                 const double source_y =
-                        center_y + source_distance * std::sin(angle);
+                        geometry.center_y + source_distance * std::sin(angle);
 
                 result.pixels[index] =
                         sample_bilinear(data, source_x, source_y);
@@ -154,6 +262,16 @@ namespace {
             const std::vector<std::string> &arguments
         ) const override {
             return apply_fisheye(
+                std::move(data),
+                parse_fisheye_arguments(arguments)
+            );
+        }
+
+        [[nodiscard]] FileData add_debug_hints(
+            FileData data,
+            const std::vector<std::string> &arguments
+        ) const override {
+            return add_fisheye_debug_hints(
                 std::move(data),
                 parse_fisheye_arguments(arguments)
             );
