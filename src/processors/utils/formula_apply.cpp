@@ -7,34 +7,73 @@
 #include <stdexcept>
 
 namespace {
+    struct FormulaContext {
+        const Pixel &pixel;
+        double x;
+        double y;
+        double width;
+        double height;
+        double saturation = 0.0;
+    };
+
+    double normalized_coordinate(double coordinate, double extent) {
+        if (extent <= 1.0) {
+            return 0.0;
+        }
+        return 2.0 * coordinate / (extent - 1.0) - 1.0;
+    }
+
     double evaluate(
         const FormulaNode &node,
-        const Pixel &pixel,
-        double saturation = 0.0
+        const FormulaContext &context
     ) {
         switch (node.kind) {
             case FormulaNodeKind::number:
                 return node.number;
             case FormulaNodeKind::red:
-                return pixel.red;
+                return context.pixel.red;
             case FormulaNodeKind::green:
-                return pixel.green;
+                return context.pixel.green;
             case FormulaNodeKind::blue:
-                return pixel.blue;
+                return context.pixel.blue;
             case FormulaNodeKind::saturation:
-                return saturation;
+                return context.saturation;
+            case FormulaNodeKind::x:
+                return context.x;
+            case FormulaNodeKind::y:
+                return context.y;
+            case FormulaNodeKind::width:
+                return context.width;
+            case FormulaNodeKind::height:
+                return context.height;
+            case FormulaNodeKind::normalized_x:
+                return normalized_coordinate(context.x, context.width);
+            case FormulaNodeKind::normalized_y:
+                return normalized_coordinate(context.y, context.height);
+            case FormulaNodeKind::distance: {
+                const double offset_x =
+                        context.x - (context.width - 1.0) / 2.0;
+                const double offset_y =
+                        context.y - (context.height - 1.0) / 2.0;
+                return std::hypot(offset_x, offset_y);
+            }
+            case FormulaNodeKind::angle:
+                return std::atan2(
+                    context.y - (context.height - 1.0) / 2.0,
+                    context.x - (context.width - 1.0) / 2.0
+                );
             case FormulaNodeKind::add:
-                return evaluate(*node.left, pixel, saturation) +
-                       evaluate(*node.right, pixel, saturation);
+                return evaluate(*node.left, context) +
+                       evaluate(*node.right, context);
             case FormulaNodeKind::subtract:
-                return evaluate(*node.left, pixel, saturation) -
-                       evaluate(*node.right, pixel, saturation);
+                return evaluate(*node.left, context) -
+                       evaluate(*node.right, context);
             case FormulaNodeKind::multiply:
-                return evaluate(*node.left, pixel, saturation) *
-                       evaluate(*node.right, pixel, saturation);
+                return evaluate(*node.left, context) *
+                       evaluate(*node.right, context);
             case FormulaNodeKind::divide: {
-                const double numerator = evaluate(*node.left, pixel, saturation);
-                const double denominator = evaluate(*node.right, pixel, saturation);
+                const double numerator = evaluate(*node.left, context);
+                const double denominator = evaluate(*node.right, context);
                 if (denominator == 0.0) {
                     if (numerator == 0.0) {
                         return 0.0;
@@ -47,9 +86,81 @@ namespace {
                 return numerator / denominator;
             }
             case FormulaNodeKind::negate:
-                return -evaluate(*node.left, pixel, saturation);
+                return -evaluate(*node.left, context);
+            case FormulaNodeKind::sine:
+                return std::sin(evaluate(*node.left, context));
+            case FormulaNodeKind::cosine:
+                return std::cos(evaluate(*node.left, context));
+            case FormulaNodeKind::tangent:
+                return std::tan(evaluate(*node.left, context));
+            case FormulaNodeKind::arc_tangent_2:
+                return std::atan2(
+                    evaluate(*node.left, context),
+                    evaluate(*node.right, context)
+                );
+            case FormulaNodeKind::square_root:
+                return std::sqrt(evaluate(*node.left, context));
+            case FormulaNodeKind::power:
+                return std::pow(
+                    evaluate(*node.left, context),
+                    evaluate(*node.right, context)
+                );
+            case FormulaNodeKind::modulo:
+                return std::fmod(
+                    evaluate(*node.left, context),
+                    evaluate(*node.right, context)
+                );
+            case FormulaNodeKind::absolute:
+                return std::abs(evaluate(*node.left, context));
+            case FormulaNodeKind::minimum:
+                return std::min(
+                    evaluate(*node.left, context),
+                    evaluate(*node.right, context)
+                );
+            case FormulaNodeKind::maximum:
+                return std::max(
+                    evaluate(*node.left, context),
+                    evaluate(*node.right, context)
+                );
+            case FormulaNodeKind::clamp: {
+                const double value = evaluate(*node.left, context);
+                const double first_bound = evaluate(*node.right, context);
+                const double second_bound = evaluate(*node.third, context);
+                return std::clamp(
+                    value,
+                    std::min(first_bound, second_bound),
+                    std::max(first_bound, second_bound)
+                );
+            }
+            case FormulaNodeKind::floor:
+                return std::floor(evaluate(*node.left, context));
+            case FormulaNodeKind::ceiling:
+                return std::ceil(evaluate(*node.left, context));
+            case FormulaNodeKind::round:
+                return std::round(evaluate(*node.left, context));
+            case FormulaNodeKind::exponential:
+                return std::exp(evaluate(*node.left, context));
+            case FormulaNodeKind::logarithm:
+                return std::log(evaluate(*node.left, context));
         }
         throw std::logic_error("unknown formula node");
+    }
+
+    FormulaContext make_context(
+        const FileData &data,
+        const Pixel &pixel,
+        std::size_t x,
+        std::size_t y,
+        double saturation = 0.0
+    ) {
+        return FormulaContext{
+            .pixel = pixel,
+            .x = static_cast<double>(x),
+            .y = static_cast<double>(y),
+            .width = static_cast<double>(data.width),
+            .height = static_cast<double>(data.height),
+            .saturation = saturation,
+        };
     }
 
     double formula_value(double value) {
@@ -159,8 +270,15 @@ FileData apply_formula(
     const FormulaNode &formula,
     ColorChannel channel
 ) {
-    for (Pixel &pixel: data.pixels) {
-        set_channel(pixel, channel, channel_value(evaluate(formula, pixel)));
+    for (std::size_t y = 0; y < data.height; ++y) {
+        for (std::size_t x = 0; x < data.width; ++x) {
+            Pixel &pixel = data.pixels[y * data.width + x];
+            set_channel(
+                pixel,
+                channel,
+                channel_value(evaluate(formula, make_context(data, pixel, x, y)))
+            );
+        }
     }
     return data;
 }
@@ -169,12 +287,18 @@ FileData apply_saturation_formula(
     FileData data,
     const FormulaNode &formula
 ) {
-    for (Pixel &pixel: data.pixels) {
-        Hsl hsl = to_hsl(pixel);
-        hsl.saturation =
-                formula_value(evaluate(formula, pixel, hsl.saturation * 255.0)) /
-                255.0;
-        set_hsl(pixel, hsl);
+    for (std::size_t y = 0; y < data.height; ++y) {
+        for (std::size_t x = 0; x < data.width; ++x) {
+            Pixel &pixel = data.pixels[y * data.width + x];
+            Hsl hsl = to_hsl(pixel);
+            hsl.saturation = formula_value(
+                evaluate(
+                    formula,
+                    make_context(data, pixel, x, y, hsl.saturation * 255.0)
+                )
+            ) / 255.0;
+            set_hsl(pixel, hsl);
+        }
     }
     return data;
 }

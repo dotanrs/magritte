@@ -11,11 +11,35 @@ enum class FormulaNodeKind {
     green,
     blue,
     saturation,
+    x,
+    y,
+    width,
+    height,
+    normalized_x,
+    normalized_y,
+    distance,
+    angle,
     add,
     subtract,
     multiply,
     divide,
     negate,
+    sine,
+    cosine,
+    tangent,
+    arc_tangent_2,
+    square_root,
+    power,
+    modulo,
+    absolute,
+    minimum,
+    maximum,
+    clamp,
+    floor,
+    ceiling,
+    round,
+    exponential,
+    logarithm,
 };
 
 struct FormulaNode {
@@ -23,6 +47,7 @@ struct FormulaNode {
     double number = 0.0;
     std::unique_ptr<FormulaNode> left;
     std::unique_ptr<FormulaNode> right;
+    std::unique_ptr<FormulaNode> third;
 };
 
 using Formula = std::unique_ptr<FormulaNode>;

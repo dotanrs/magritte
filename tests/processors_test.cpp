@@ -72,18 +72,18 @@ namespace {
             return result;
         };
 
-        const FileData across_x = mirror_processor().apply(image(), {"x"});
+        const FileData across_x = mirror_processor().apply(image(), {"y"});
         expect(
             red_values(across_x) ==
             std::vector<std::uint8_t>{4, 5, 6, 1, 2, 3},
-            "mirror x should exchange the top and bottom"
+            "mirror y should exchange the top and bottom"
         );
 
-        const FileData across_y = mirror_processor().apply(image(), {"y"});
+        const FileData across_y = mirror_processor().apply(image(), {"x"});
         expect(
             red_values(across_y) ==
             std::vector<std::uint8_t>{3, 2, 1, 6, 5, 4},
-            "mirror y should exchange the left and right"
+            "mirror x should exchange the left and right"
         );
     }
 
@@ -190,6 +190,118 @@ namespace {
         );
     }
 
+    FileData blank_image(std::size_t width, std::size_t height) {
+        return FileData{
+            .width = width,
+            .height = height,
+            .pixels = std::vector<Pixel>(
+                width * height,
+                Pixel{.red = 0, .green = 0, .blue = 0, .alpha = 255}
+            ),
+        };
+    }
+
+    void test_formula_coordinates_and_dimensions() {
+        const FileData processed = red_formula_processor().apply(
+            blank_image(3, 2),
+            {"X + Y * 10 + W + H"}
+        );
+
+        expect(
+            red_values(processed) ==
+            std::vector<std::uint8_t>{5, 6, 7, 15, 16, 17},
+            "formula coordinates should be zero-based and expose image dimensions"
+        );
+    }
+
+    void test_formula_normalized_and_polar_coordinates() {
+        const FileData horizontal = red_formula_processor().apply(
+            blank_image(3, 1),
+            {"(U + 1) * 100"}
+        );
+        expect(
+            red_values(horizontal) == std::vector<std::uint8_t>{0, 100, 200},
+            "U should range from -1 to 1"
+        );
+
+        const FileData vertical = red_formula_processor().apply(
+            blank_image(1, 3),
+            {"(V + 1) * 100"}
+        );
+        expect(
+            red_values(vertical) == std::vector<std::uint8_t>{0, 100, 200},
+            "V should range from -1 to 1"
+        );
+
+        const FileData single_pixel = red_formula_processor().apply(
+            blank_image(1, 1),
+            {"100 + U + V"}
+        );
+        expect(
+            single_pixel.pixels[0].red == 100,
+            "normalized coordinates should be zero for one-pixel dimensions"
+        );
+
+        const FileData distance = red_formula_processor().apply(
+            blank_image(3, 3),
+            {"D * 100"}
+        );
+        expect(
+            red_values(distance) ==
+            std::vector<std::uint8_t>{
+                141, 100, 141,
+                100, 0, 100,
+                141, 100, 141,
+            },
+            "D should be pixel distance from the image center"
+        );
+
+        const FileData angle = red_formula_processor().apply(
+            blank_image(3, 3),
+            {"round((A + PI) * 10)"}
+        );
+        expect(
+            angle.pixels[5].red == 31 &&
+            angle.pixels[7].red == 47 &&
+            angle.pixels[3].red == 63 &&
+            angle.pixels[1].red == 16,
+            "A should be the clockwise image-space angle from the positive x-axis"
+        );
+    }
+
+    void test_formula_math_functions() {
+        const FileData trigonometry = red_formula_processor().apply(
+            blank_image(1, 1),
+            {"10 * (sin(PI / 2) + cos(0) + tan(PI / 4))"}
+        );
+        expect(
+            trigonometry.pixels[0].red == 30,
+            "formula should evaluate trigonometric functions and PI"
+        );
+
+        const FileData arithmetic = red_formula_processor().apply(
+            blank_image(1, 1),
+            {
+                "abs(-2) + sqrt(9) + pow(2, 3) + mod(7, 4) + "
+                "min(9, 5) + max(2, 6) + floor(2.9) + ceil(2.1) + "
+                "round(2.5) + exp(0) + log(E) + atan2(0, -1)"
+            }
+        );
+        expect(
+            arithmetic.pixels[0].red == 40,
+            "formula should evaluate arithmetic functions and E"
+        );
+
+        const FileData clamped = red_formula_processor().apply(
+            blank_image(1, 1),
+            {"clamp(300, 200, 10)"}
+        );
+        expect(
+            clamped.pixels[0].red == 200,
+            "formula clamp should accept bounds in either order"
+        );
+    }
+
     void test_saturation_formula() {
         FileData image{
             .width = 3,
@@ -226,6 +338,30 @@ namespace {
             processed.pixels[2].blue == 100 &&
             processed.pixels[2].alpha == 120,
             "saturation formula should leave grayscale pixels unchanged"
+        );
+
+        FileData coordinate_image{
+            .width = 3,
+            .height = 1,
+            .pixels = std::vector<Pixel>(
+                3,
+                Pixel{.red = 191, .green = 64, .blue = 64, .alpha = 255}
+            ),
+        };
+        const FileData coordinate_processed =
+                saturation_formula_processor().apply(
+                    std::move(coordinate_image),
+                    {"(U + 1) * 127.5"}
+                );
+        expect(
+            coordinate_processed.pixels[0].red == 128 &&
+            coordinate_processed.pixels[0].green == 128 &&
+            coordinate_processed.pixels[0].blue == 128 &&
+            coordinate_processed.pixels[1].red == 191 &&
+            coordinate_processed.pixels[1].green == 64 &&
+            coordinate_processed.pixels[2].red == 255 &&
+            coordinate_processed.pixels[2].green == 0,
+            "saturation formulas should support coordinate variables"
         );
     }
 
@@ -278,6 +414,12 @@ namespace {
         expect(
             parse_processor_command("r = (R + G) / 2").has_value(),
             "parser should accept a valid red formula"
+        );
+        expect(
+            parse_processor_command(
+                "r = 127 + 127 * sin(X / 12 + A)"
+            ).has_value(),
+            "parser should accept coordinate-aware mathematical formulas"
         );
         expect(
             parse_processor_command("g = B * 2").has_value(),
@@ -339,6 +481,27 @@ namespace {
             error_message == "unknown processor",
             "parser should describe an unknown processor"
         );
+        error_message.clear();
+        expect(
+            !parse_processor_command(
+                "r = mystery(X)",
+                &error_message
+            ).has_value(),
+            "parser should reject unknown mathematical functions"
+        );
+        expect(
+            error_message.find("unknown function") != std::string::npos,
+            "parser should describe an unknown mathematical function"
+        );
+        error_message.clear();
+        expect(
+            !parse_processor_command("r = pow(2)", &error_message).has_value(),
+            "parser should reject a function with the wrong arity"
+        );
+        expect(
+            error_message.find("expects 2 arguments") != std::string::npos,
+            "parser should describe incorrect function arity"
+        );
     }
 } // namespace
 
@@ -349,6 +512,9 @@ int main() {
     test_red_formula_and_clamping();
     test_green_formula();
     test_blue_formula();
+    test_formula_coordinates_and_dimensions();
+    test_formula_normalized_and_polar_coordinates();
+    test_formula_math_functions();
     test_saturation_formula();
     test_color_swap();
     test_command_parser();

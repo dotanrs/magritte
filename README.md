@@ -45,6 +45,15 @@ Run multiple processors sequentially:
   -p "b = 255 - b"
 ```
 
+Generate a radial interference pattern from the image coordinates:
+
+```sh
+./build/pixlie photo.jpg --output results/interference.jpg \
+  -p "r = 127 + 127 * sin(D / 8 + A * 6)" \
+  -p "g = 127 + 127 * sin(D / 11 - A * 4)" \
+  -p "b = 127 + 127 * cos(D / 6)"
+```
+
 The command writes timestamped progress logs to standard error and exits with status `0` on success, `1` for
 file-processing errors, or `2` for invalid command-line arguments.
 
@@ -66,11 +75,29 @@ errors occurred.
 - `x <-> y` swaps channels `x` and `y`, where each channel is `r`, `g`, or
   `b`.
 
-Formulas support `R`, `G`, and `B`, numeric constants, parentheses, unary signs, and `+`, `-`, `*`, and `/`. Results are
-rounded and clamped to the range
-`[0, 255]`.
+Formulas support numeric constants, parentheses, unary signs, and `+`, `-`, `*`, and `/`. Identifiers and function
+names are case-insensitive.
 
-Saturation formulas support the same arithmetic with `S`, where saturation is also represented in the range `[0, 255]`.
+Color formulas can use `R`, `G`, and `B`, as well as these image variables:
+
+- `X`, `Y`: zero-based pixel coordinates.
+- `W`, `H`: image width and height.
+- `U`, `V`: coordinates normalized to `[-1, 1]`. A dimension containing one pixel has normalized coordinate `0`.
+- `D`: distance in pixels from the image center.
+- `A`: angle in radians around the image center. Zero points right and positive angles turn clockwise in image space.
+- `PI`, `E`: mathematical constants.
+
+Available functions are:
+
+- One argument: `sin`, `cos`, `tan`, `sqrt`, `abs`, `floor`, `ceil`, `round`, `exp`, and `log`.
+- Two arguments: `atan2`, `pow`, `mod`, `min`, and `max`.
+- Three arguments: `clamp(value, lower, upper)`. Reversed bounds are accepted.
+
+Trigonometric functions use radians. Formula results are rounded and clamped to `[0, 255]`; undefined results such as
+the square root of a negative number become `0`.
+
+Saturation formulas support the same coordinates, constants, and functions with `S`, where saturation is represented in
+the range `[0, 255]`.
 
 ## Tests
 
