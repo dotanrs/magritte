@@ -87,10 +87,17 @@ errors occurred.
 - `fisheye <x> <y> <amount> [radius]` applies a radial lens centered on the given percentage coordinates. Positive
   amounts magnify; amounts between `-1` and `0` shrink. Radius is an optional percentage of the image's shorter
   dimension and defaults to `100`.
+- `lighting <angle> <#RRGGBB> <threshold> [strength]` casts visible parallel rays from the given source angle. Each ray
+  screen-blends the light color along its path through its first threshold-reaching pixel, then stops. Strength is
+  optional and defaults to `1`.
 - `r = <formula>` changes only the red channel.
 - `g = <formula>` changes only the green channel.
 - `b = <formula>` changes only the blue channel.
 - `rgb = (<red>, <green>, <blue>)` changes all three channels simultaneously. Every expression reads the original pixel.
+- `loop-rgb <iterations> = (<red>, <green>, <blue>)` repeatedly applies an RGB formula, feeding each completed result
+  into the next iteration.
+- `local-rgb = (<red>, <green>, <blue>)` changes all three channels using formulas that can sample neighboring pixels
+  from the unmodified input image.
 - `s = <formula>` changes HSL saturation while preserving hue and lightness.
 - `warp = (<source-x>, <source-y>)` remaps pixels with mathematical source coordinates.
 - `loop-warp <iterations> = (<source-x>, <source-y>)` repeatedly applies a warp, feeding each result into the next.
@@ -131,6 +138,48 @@ original `R`, `G`, and `B` values:
 Three separate assignments would behave differently because processors run sequentially and later formulas see changes
 made by earlier processors.
 
+### Iterated RGB formulas
+
+`loop-rgb` treats an RGB formula as a discrete dynamical system in color space. Each tuple is evaluated simultaneously,
+then its complete output becomes the input to the next iteration:
+
+```sh
+-p "loop-rgb 7 = (\
+  mod(R * 1.17 + G * 0.31 + 17, 256), \
+  mod(G * 1.13 + B * 0.29 + 31, 256), \
+  mod(B * 1.11 + R * 0.27 + 47, 256)\
+)"
+```
+
+An iteration count of `0` leaves the image unchanged. Coordinates retain the same meaning in every iteration, while
+`R`, `G`, and `B` come from the preceding iteration.
+
+### Local RGB formulas
+
+A `local-rgb` formula can read the unmodified input image around each current pixel with three additional functions:
+
+- `red(dx, dy)`
+- `green(dx, dy)`
+- `blue(dx, dy)`
+
+The arguments are offsets relative to the current `X`, `Y` coordinate. They may be fractional or formula-defined.
+Sampling is bilinear, coordinates beyond an edge clamp to that edge, and interpolated channel values remain
+floating-point until the final RGB result is rounded and clamped. The ordinary `R`, `G`, and `B` variables still mean
+the source pixel at the current coordinate.
+
+This diagonal color emboss compares pixels on opposite sides of the current pixel:
+
+```sh
+-p "local-rgb = (\
+  128 + 2 * (red(2, 2) - red(-2, -2)), \
+  128 + 2 * (green(2, 2) - green(-2, -2)), \
+  128 + 2 * (blue(2, 2) - blue(-2, -2))\
+)"
+```
+
+All output pixels read the same unmodified source, so results never depend on traversal order. Alpha is preserved from
+the current source pixel.
+
 ### Warp formulas
 
 A warp formula is evaluated once for every output pixel. Its two expressions select the source coordinate to sample from
@@ -167,6 +216,36 @@ This applies a slight rotation twelve times:
 
 Each iteration samples the image produced by the preceding iteration. An
 iteration count of `0` leaves the image unchanged.
+
+### Directional lighting
+
+`lighting` draws colored directional beams that terminate against exposed
+surfaces:
+
+```sh
+-p "lighting 315 #FFD080 64 0.7"
+```
+
+The angle is measured in degrees clockwise in image space and describes where
+the light source sits: `0` is right, `90` is bottom, `180` is left, and `270`
+is top. Angles wrap, so `-45` and `315` are equivalent.
+
+The color uses six-digit hexadecimal RGB. The integer threshold ranges from
+`0` to `255`; a pixel is hit when its Rec. 709 luminance is greater than or
+equal to that threshold. Darker pixels transmit the ray. The hit
+pixel and every transmitting pixel leading to it receive a screen blend, making
+the beam visible without replacing existing texture. The ray stops before
+pixels behind the hit, producing a shadow. The optional strength ranges from
+`0` to `1`, and alpha is preserved.
+
+This behavior works especially well on images with a dark or transparent-looking
+background and brighter subject pixels. A preprocessing formula can create
+that field from a bright photograph:
+
+```sh
+-p "rgb = (255 - R, 255 - G, 255 - B)" \
+-p "lighting 315 #FFB45C 150 0.9"
+```
 
 ### Fisheye shortcut
 

@@ -40,6 +40,9 @@ enum class FormulaNodeKind {
     round,
     exponential,
     logarithm,
+    sample_red,
+    sample_green,
+    sample_blue,
 };
 
 struct FormulaNode {
@@ -72,6 +75,14 @@ struct WarpFormula {
 /// Parses a parenthesized `(red, green, blue)` expression tuple.
 /// @throws std::invalid_argument for a missing argument or invalid tuple.
 [[nodiscard]] RgbFormula parse_rgb_formula(
+    const std::vector<std::string> &arguments
+);
+
+/// Parses a parenthesized `(red, green, blue)` expression tuple in the local
+/// RGB dialect, which additionally supports `red(dx, dy)`, `green(dx, dy)`,
+/// and `blue(dx, dy)` source-image sampling functions.
+/// @throws std::invalid_argument for a missing argument or invalid tuple.
+[[nodiscard]] RgbFormula parse_local_rgb_formula(
     const std::vector<std::string> &arguments
 );
 

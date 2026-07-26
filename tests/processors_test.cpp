@@ -9,7 +9,9 @@
 #include "pixlie/processors/color_swap.h"
 #include "pixlie/processors/fisheye.h"
 #include "pixlie/processors/green_formula.h"
-#include "pixlie/processors/loop_assignment_processor.h"
+#include "pixlie/processors/lighting.h"
+#include "pixlie/processors/local_rgb.h"
+#include "pixlie/processors/loop_rgb.h"
 #include "pixlie/processors/loop_warp.h"
 #include "pixlie/processors/mirror.h"
 #include "pixlie/processors/red_formula.h"
@@ -125,6 +127,123 @@ namespace {
             blurred.pixels[0].alpha == 40 &&
             blurred.pixels[4].alpha == 200,
             "blur should preserve each pixel's alpha"
+        );
+    }
+
+    void test_lighting() {
+        const Pixel dark{
+            .red = 10,
+            .green = 10,
+            .blue = 10,
+            .alpha = 40,
+        };
+        FileData image{
+            .width = 5,
+            .height = 2,
+            .pixels = std::vector<Pixel>(10, dark),
+        };
+        image.pixels[1] =
+            Pixel{.red = 100, .green = 100, .blue = 100, .alpha = 80};
+        image.pixels[3] =
+            Pixel{.red = 150, .green = 150, .blue = 150, .alpha = 120};
+        image.pixels[9] =
+            Pixel{.red = 80, .green = 80, .blue = 80, .alpha = 160};
+
+        const FileData from_left = lighting_processor().apply(
+            image,
+            {"180", "#FF0000", "50"}
+        );
+        expect(
+            from_left.pixels[0].red == 255 &&
+            from_left.pixels[0].green == 10 &&
+            from_left.pixels[0].blue == 10 &&
+            from_left.pixels[1].red == 255 &&
+            from_left.pixels[1].green == 100 &&
+            from_left.pixels[1].blue == 100,
+            "lighting should screen its color along the ray and onto its hit"
+        );
+        expect(
+            from_left.pixels[2].red == 10 &&
+            from_left.pixels[3].red == 150 &&
+            from_left.pixels[8].red == 255 &&
+            from_left.pixels[9].red == 255,
+            "lighting should stop each visible ray independently after its hit"
+        );
+        expect(
+            from_left.pixels[0].alpha == 40 &&
+            from_left.pixels[1].alpha == 80 &&
+            from_left.pixels[9].alpha == 160,
+            "lighting should preserve alpha along beams and at collision pixels"
+        );
+
+        const FileData from_right = lighting_processor().apply(
+            std::move(image),
+            {"0", "#0000FF", "50"}
+        );
+        expect(
+            from_right.pixels[4].blue == 255 &&
+            from_right.pixels[3].blue == 255 &&
+            from_right.pixels[2].blue == 10 &&
+            from_right.pixels[1].blue == 100,
+            "zero degrees should place the light source to the image's right"
+        );
+
+        FileData threshold_image{
+            .width = 2,
+            .height = 1,
+            .pixels = {
+                Pixel{.red = 49, .green = 49, .blue = 49, .alpha = 20},
+                Pixel{.red = 50, .green = 50, .blue = 50, .alpha = 30},
+            },
+        };
+        const FileData threshold_result = lighting_processor().apply(
+            std::move(threshold_image),
+            {"180", "#FF0000", "50"}
+        );
+        expect(
+            threshold_result.pixels[0].red == 255 &&
+            threshold_result.pixels[0].green == 49 &&
+            threshold_result.pixels[1].red == 255 &&
+            threshold_result.pixels[1].green == 50,
+            "lighting should show the beam below threshold and include the hit"
+        );
+
+        FileData strength_image{
+            .width = 1,
+            .height = 1,
+            .pixels = {
+                Pixel{.red = 100, .green = 100, .blue = 100, .alpha = 42},
+            },
+        };
+        const FileData partial = lighting_processor().apply(
+            std::move(strength_image),
+            {"-180", "#C86432", "50", "0.5"}
+        );
+        expect(
+            partial.pixels[0].red == 161 &&
+            partial.pixels[0].green == 130 &&
+            partial.pixels[0].blue == 115 &&
+            partial.pixels[0].alpha == 42,
+            "lighting strength should scale screen blending and preserve alpha"
+        );
+
+        FileData diagonal_image{
+            .width = 3,
+            .height = 3,
+            .pixels = std::vector<Pixel>(
+                9,
+                Pixel{.red = 100, .green = 100, .blue = 100, .alpha = 255}
+            ),
+        };
+        const FileData diagonal = lighting_processor().apply(
+            std::move(diagonal_image),
+            {"315", "#FF0000", "50"}
+        );
+        expect(
+            diagonal.pixels[1].red == 255 &&
+            diagonal.pixels[5].red == 255 &&
+            diagonal.pixels[4].red == 100,
+            "diagonal lighting should cover source-facing edges without reaching behind them"
         );
     }
 
@@ -359,6 +478,63 @@ namespace {
         );
     }
 
+    void test_local_rgb_formula() {
+        const auto image = [] {
+            return FileData{
+                .width = 3,
+                .height = 1,
+                .pixels = {
+                    Pixel{.red = 10, .green = 1, .blue = 100, .alpha = 40},
+                    Pixel{.red = 20, .green = 2, .blue = 110, .alpha = 80},
+                    Pixel{.red = 30, .green = 3, .blue = 120, .alpha = 120},
+                },
+            };
+        };
+
+        const FileData neighboring = local_rgb_processor().apply(
+            image(),
+            {"(red(-1, 0), green(1, 0), blue(0, 0))"}
+        );
+        expect(
+            neighboring.pixels[0].red == 10 &&
+            neighboring.pixels[0].green == 2 &&
+            neighboring.pixels[0].blue == 100 &&
+            neighboring.pixels[0].alpha == 40 &&
+            neighboring.pixels[1].red == 10 &&
+            neighboring.pixels[1].green == 3 &&
+            neighboring.pixels[1].blue == 110 &&
+            neighboring.pixels[1].alpha == 80 &&
+            neighboring.pixels[2].red == 20 &&
+            neighboring.pixels[2].green == 3 &&
+            neighboring.pixels[2].blue == 120 &&
+            neighboring.pixels[2].alpha == 120,
+            "local-rgb should sample the immutable source and clamp at edges"
+        );
+
+        const FileData interpolated = local_rgb_processor().apply(
+            image(),
+            {
+                "("
+                "red(0.5, 0), "
+                "green(-0.5, 0) * 10, "
+                "blue(sin(PI / 2), 0)"
+                ")"
+            }
+        );
+        expect(
+            interpolated.pixels[0].red == 15 &&
+            interpolated.pixels[0].green == 10 &&
+            interpolated.pixels[0].blue == 110 &&
+            interpolated.pixels[1].red == 25 &&
+            interpolated.pixels[1].green == 15 &&
+            interpolated.pixels[1].blue == 120 &&
+            interpolated.pixels[2].red == 30 &&
+            interpolated.pixels[2].green == 25 &&
+            interpolated.pixels[2].blue == 120,
+            "local-rgb should bilinearly sample formula-defined offsets"
+        );
+    }
+
     void test_warp_formula() {
         const auto image = [] {
             return FileData{
@@ -450,11 +626,7 @@ namespace {
             "zero loop iterations should preserve the image"
         );
 
-        const LoopAssignmentProcessor loop_rgb{
-            "rgb",
-            rgb_formula_processor()
-        };
-        const FileData cycled = loop_rgb.apply(
+        const FileData cycled = loop_rgb_processor().apply(
             FileData{
                 .width = 1,
                 .height = 1,
@@ -465,12 +637,22 @@ namespace {
             {"2", "(G, B, R)"}
         );
         expect(
-            loop_rgb.name() == "loop-rgb" &&
+            loop_rgb_processor().name() == "loop-rgb" &&
             cycled.pixels[0].red == 30 &&
             cycled.pixels[0].green == 10 &&
             cycled.pixels[0].blue == 20 &&
             cycled.pixels[0].alpha == 40,
-            "the generic loop wrapper should work with other processors"
+            "loop-rgb should feed each RGB result into the next iteration"
+        );
+
+        const FileData zero_rgb_iterations = loop_rgb_processor().apply(
+            image(),
+            {"0", "(G, B, R)"}
+        );
+        expect(
+            red_values(zero_rgb_iterations) ==
+            std::vector<std::uint8_t>{10, 20, 30, 40},
+            "zero loop-rgb iterations should preserve the image"
         );
     }
 
@@ -736,6 +918,24 @@ namespace {
             "RGB processor should require its own assignment keyword"
         );
 
+        const auto local_rgb_arguments =
+            local_rgb_processor().parse_arguments(
+                "local-rgb = (red(-1, 0), G, blue(1, 0))"
+            );
+        expect(
+            local_rgb_arguments ==
+            std::optional<std::vector<std::string>>{
+                {"(red(-1, 0), G, blue(1, 0))"}
+            },
+            "local-rgb should parse its sampling formula"
+        );
+        expect(
+            !local_rgb_processor().parse_arguments(
+                "rgb = (R, G, B)"
+            ).has_value(),
+            "local-rgb should require its own assignment keyword"
+        );
+
         const auto warp_arguments =
             warp_formula_processor().parse_arguments(
                 "warp = (X + sin(Y), Y)"
@@ -772,6 +972,24 @@ namespace {
             "loop-warp should require its own assignment keyword"
         );
 
+        const auto loop_rgb_arguments =
+            loop_rgb_processor().parse_arguments(
+                "loop-rgb 4 = (G, B, R)"
+            );
+        expect(
+            loop_rgb_arguments ==
+            std::optional<std::vector<std::string>>{
+                {"4", "(G, B, R)"}
+            },
+            "loop-rgb should parse a count and preserve its RGB formula"
+        );
+        expect(
+            !loop_rgb_processor().parse_arguments(
+                "rgb = (R, G, B)"
+            ).has_value(),
+            "loop-rgb should require its own assignment keyword"
+        );
+
         const auto fisheye_arguments =
             fisheye_processor().parse_arguments("fisheye 50 50 1 25");
         expect(
@@ -784,6 +1002,22 @@ namespace {
         expect(
             !fisheye_processor().parse_arguments("blur 3").has_value(),
             "fisheye processor should decline another processor's command"
+        );
+
+        const auto lighting_arguments =
+            lighting_processor().parse_arguments(
+                "lighting 315 #FFD080 64 0.7"
+            );
+        expect(
+            lighting_arguments ==
+            std::optional<std::vector<std::string>>{
+                {"315", "#FFD080", "64", "0.7"}
+            },
+            "lighting processor should parse angle, color, threshold, and strength"
+        );
+        expect(
+            !lighting_processor().parse_arguments("blur 3").has_value(),
+            "lighting processor should decline another processor's command"
         );
 
         const auto swap_arguments =
@@ -819,6 +1053,12 @@ namespace {
             "parser should accept a fisheye command with explicit radius"
         );
         expect(
+            parse_processor_command(
+                "lighting 315 #FFD080 64 0.7"
+            ).has_value(),
+            "parser should accept a lighting command"
+        );
+        expect(
             parse_processor_command("r = (R + G) / 2").has_value(),
             "parser should accept a valid red formula"
         );
@@ -839,6 +1079,18 @@ namespace {
                 "rgb = (max(R, G), min(G, B), clamp(B, 0, 255))"
             ).has_value(),
             "RGB tuple separators should coexist with function arguments"
+        );
+        expect(
+            parse_processor_command(
+                "local-rgb = (red(-1, 0), green(0, 1), blue(1, 0))"
+            ).has_value(),
+            "parser should accept a local RGB sampling formula"
+        );
+        expect(
+            parse_processor_command(
+                "loop-rgb 5 = (G, B, R)"
+            ).has_value(),
+            "parser should accept a counted loop-rgb formula"
         );
         expect(
             parse_processor_command(
@@ -946,6 +1198,43 @@ namespace {
         );
         error_message.clear();
         expect(
+            !parse_processor_command(
+                "lighting 45 orange 64",
+                &error_message
+            ).has_value(),
+            "parser should reject a non-hex lighting color"
+        );
+        expect(
+            error_message == "lighting color must use the form #RRGGBB",
+            "parser should describe an invalid lighting color"
+        );
+        error_message.clear();
+        expect(
+            !parse_processor_command(
+                "lighting 45 #FFD080 256",
+                &error_message
+            ).has_value(),
+            "parser should reject an out-of-range lighting threshold"
+        );
+        expect(
+            error_message ==
+            "lighting threshold must be an integer from 0 to 255",
+            "parser should describe an invalid lighting threshold"
+        );
+        error_message.clear();
+        expect(
+            !parse_processor_command(
+                "lighting 45 #FFD080 64 1.1",
+                &error_message
+            ).has_value(),
+            "parser should reject an out-of-range lighting strength"
+        );
+        expect(
+            error_message == "lighting strength must be from 0 to 1",
+            "parser should describe an invalid lighting strength"
+        );
+        error_message.clear();
+        expect(
             !parse_processor_command("rotate nope", &error_message).has_value(),
             "parser should reject a non-integer rotation"
         );
@@ -982,6 +1271,31 @@ namespace {
         expect(
             error_message.find("expects 2 arguments") != std::string::npos,
             "parser should describe incorrect function arity"
+        );
+        error_message.clear();
+        expect(
+            !parse_processor_command(
+                "rgb = (red(1, 0), G, B)",
+                &error_message
+            ).has_value(),
+            "ordinary RGB formulas should reject local sampling functions"
+        );
+        expect(
+            error_message.find("only available in local-rgb") !=
+            std::string::npos,
+            "parser should direct sampling functions to local-rgb"
+        );
+        error_message.clear();
+        expect(
+            !parse_processor_command(
+                "local-rgb = (red(1), G, B)",
+                &error_message
+            ).has_value(),
+            "local-rgb should require two sampling offsets"
+        );
+        expect(
+            error_message.find("expects 2 arguments") != std::string::npos,
+            "parser should describe incorrect sampler arity"
         );
         error_message.clear();
         expect(
@@ -1099,6 +1413,7 @@ int main() {
     test_rotation();
     test_mirror();
     test_blur();
+    test_lighting();
     test_red_formula_and_clamping();
     test_green_formula();
     test_blue_formula();
@@ -1106,6 +1421,7 @@ int main() {
     test_formula_normalized_and_polar_coordinates();
     test_formula_math_functions();
     test_simultaneous_rgb_formula();
+    test_local_rgb_formula();
     test_warp_formula();
     test_loop_processor();
     test_fisheye();

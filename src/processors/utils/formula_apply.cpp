@@ -10,6 +10,7 @@
 
 namespace {
     struct FormulaContext {
+        const FileData &data;
         const Pixel &pixel;
         double x;
         double y;
@@ -144,6 +145,22 @@ namespace {
                 return std::exp(evaluate(*node.left, context));
             case FormulaNodeKind::logarithm:
                 return std::log(evaluate(*node.left, context));
+            case FormulaNodeKind::sample_red:
+            case FormulaNodeKind::sample_green:
+            case FormulaNodeKind::sample_blue: {
+                const BilinearSample sampled = sample_bilinear_values(
+                    context.data,
+                    context.x + evaluate(*node.left, context),
+                    context.y + evaluate(*node.right, context)
+                );
+                if (node.kind == FormulaNodeKind::sample_red) {
+                    return sampled.red;
+                }
+                if (node.kind == FormulaNodeKind::sample_green) {
+                    return sampled.green;
+                }
+                return sampled.blue;
+            }
         }
         throw std::logic_error("unknown formula node");
     }
@@ -156,6 +173,7 @@ namespace {
         double saturation = 0.0
     ) {
         return FormulaContext{
+            .data = data,
             .pixel = pixel,
             .x = static_cast<double>(x),
             .y = static_cast<double>(y),
@@ -307,6 +325,38 @@ FileData apply_rgb_formula(
         }
     }
     return data;
+}
+
+FileData apply_local_rgb_formula(
+    FileData data,
+    const RgbFormula &formula
+) {
+    if (data.width == 0 || data.height == 0) {
+        return data;
+    }
+
+    FileData result{
+        .width = data.width,
+        .height = data.height,
+        .pixels = std::vector<Pixel>(data.pixels.size()),
+    };
+
+    for (std::size_t y = 0; y < data.height; ++y) {
+        for (std::size_t x = 0; x < data.width; ++x) {
+            const std::size_t index = y * data.width + x;
+            const Pixel &source_pixel = data.pixels[index];
+            const FormulaContext context =
+                    make_context(data, source_pixel, x, y);
+
+            result.pixels[index] = Pixel{
+                .red = channel_value(evaluate(*formula.red, context)),
+                .green = channel_value(evaluate(*formula.green, context)),
+                .blue = channel_value(evaluate(*formula.blue, context)),
+                .alpha = source_pixel.alpha,
+            };
+        }
+    }
+    return result;
 }
 
 FileData apply_warp_formula(

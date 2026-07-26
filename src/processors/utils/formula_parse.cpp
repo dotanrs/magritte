@@ -34,14 +34,20 @@ namespace {
         {"round", FormulaNodeKind::round, 1},
         {"exp", FormulaNodeKind::exponential, 1},
         {"log", FormulaNodeKind::logarithm, 1},
+        {"red", FormulaNodeKind::sample_red, 2},
+        {"green", FormulaNodeKind::sample_green, 2},
+        {"blue", FormulaNodeKind::sample_blue, 2},
     };
 
     class FormulaParser {
     public:
         explicit FormulaParser(
             std::string_view formula,
-            bool saturation_formula = false
-        ) : formula_(formula), saturation_formula_(saturation_formula) {
+            bool saturation_formula = false,
+            bool local_sampling = false
+        ) : formula_(formula),
+            saturation_formula_(saturation_formula),
+            local_sampling_(local_sampling) {
         }
 
         [[nodiscard]] Formula parse() {
@@ -235,6 +241,15 @@ namespace {
             if (definition == nullptr) {
                 fail("unknown function '" + name + "'");
             }
+            if (!local_sampling_ &&
+                (definition->kind == FormulaNodeKind::sample_red ||
+                 definition->kind == FormulaNodeKind::sample_green ||
+                 definition->kind == FormulaNodeKind::sample_blue)) {
+                fail(
+                    "function '" + name +
+                    "' is only available in local-rgb formulas"
+                );
+            }
 
             std::vector<Formula> arguments;
             skip_whitespace();
@@ -387,6 +402,7 @@ namespace {
         std::string_view formula_;
         std::size_t position_ = 0;
         bool saturation_formula_;
+        bool local_sampling_;
     };
 } // namespace
 
@@ -402,6 +418,17 @@ RgbFormula parse_rgb_formula(const std::vector<std::string> &arguments) {
         throw std::invalid_argument("RGB formula processor expects one tuple");
     }
     return FormulaParser(arguments.front()).parse_rgb();
+}
+
+RgbFormula parse_local_rgb_formula(
+    const std::vector<std::string> &arguments
+) {
+    if (arguments.size() != 1) {
+        throw std::invalid_argument(
+            "local RGB formula processor expects one tuple"
+        );
+    }
+    return FormulaParser(arguments.front(), false, true).parse_rgb();
 }
 
 WarpFormula parse_warp_formula(const std::vector<std::string> &arguments) {

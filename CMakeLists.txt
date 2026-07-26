@@ -21,6 +21,8 @@ add_executable(pixlie main.cpp
         include/pixlie/processors/blur.h
         src/processors/fisheye.cpp
         include/pixlie/processors/fisheye.h
+        src/processors/lighting.cpp
+        include/pixlie/processors/lighting.h
         src/processors/channel_formula.cpp
         include/pixlie/processors/assignment_processor.h
         include/pixlie/processors/red_formula.h
@@ -28,6 +30,8 @@ add_executable(pixlie main.cpp
         include/pixlie/processors/blue_formula.h
         src/processors/rgb_formula.cpp
         include/pixlie/processors/rgb_formula.h
+        src/processors/local_rgb.cpp
+        include/pixlie/processors/local_rgb.h
         src/processors/saturation_formula.cpp
         include/pixlie/processors/saturation_formula.h
         src/processors/warp_formula.cpp
@@ -37,6 +41,8 @@ add_executable(pixlie main.cpp
         include/pixlie/processors/loop_assignment_processor.h
         src/processors/loop_warp.cpp
         include/pixlie/processors/loop_warp.h
+        src/processors/loop_rgb.cpp
+        include/pixlie/processors/loop_rgb.h
         src/processors/color_swap.cpp
         include/pixlie/processors/color_swap.h
         src/processors/utils/formula_parse.cpp
@@ -83,12 +89,15 @@ if (BUILD_TESTING)
             src/processors/mirror.cpp
             src/processors/blur.cpp
             src/processors/fisheye.cpp
+            src/processors/lighting.cpp
             src/processors/channel_formula.cpp
             src/processors/rgb_formula.cpp
+            src/processors/local_rgb.cpp
             src/processors/saturation_formula.cpp
             src/processors/warp_formula.cpp
             src/processors/loop_processor.cpp
             src/processors/loop_warp.cpp
+            src/processors/loop_rgb.cpp
             src/processors/color_swap.cpp
             src/processors/utils/formula_parse.cpp
             src/processors/utils/formula_apply.cpp

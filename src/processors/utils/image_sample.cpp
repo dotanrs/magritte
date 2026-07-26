@@ -12,7 +12,7 @@ namespace {
         return std::clamp(value, 0.0, static_cast<double>(extent - 1));
     }
 
-    std::uint8_t interpolate_channel(
+    double interpolate_channel(
         std::uint8_t top_left,
         std::uint8_t top_right,
         std::uint8_t bottom_left,
@@ -24,13 +24,11 @@ namespace {
                 top_left + (top_right - top_left) * horizontal;
         const double bottom =
                 bottom_left + (bottom_right - bottom_left) * horizontal;
-        return static_cast<std::uint8_t>(
-            std::lround(top + (bottom - top) * vertical)
-        );
+        return top + (bottom - top) * vertical;
     }
 } // namespace
 
-Pixel sample_bilinear(
+BilinearSample sample_bilinear_values(
     const FileData &data,
     double source_x,
     double source_y
@@ -50,7 +48,7 @@ Pixel sample_bilinear(
     const Pixel &bottom_left = data.pixels[bottom * data.width + left];
     const Pixel &bottom_right = data.pixels[bottom * data.width + right];
 
-    return Pixel{
+    return BilinearSample{
         .red = interpolate_channel(
             top_left.red,
             top_right.red,
@@ -83,5 +81,20 @@ Pixel sample_bilinear(
             horizontal,
             vertical
         ),
+    };
+}
+
+Pixel sample_bilinear(
+    const FileData &data,
+    double source_x,
+    double source_y
+) {
+    const BilinearSample sampled =
+            sample_bilinear_values(data, source_x, source_y);
+    return Pixel{
+        .red = static_cast<std::uint8_t>(std::lround(sampled.red)),
+        .green = static_cast<std::uint8_t>(std::lround(sampled.green)),
+        .blue = static_cast<std::uint8_t>(std::lround(sampled.blue)),
+        .alpha = static_cast<std::uint8_t>(std::lround(sampled.alpha)),
     };
 }

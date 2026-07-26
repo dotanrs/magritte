@@ -32,9 +32,17 @@ namespace {
                 << "  blur <radius>        Box blur with a nonnegative integer radius\n"
                 << "  fisheye <x> <y> <amount> [radius]\n"
                 << "                       Radial warp using percentage coordinates\n"
+                << "  lighting <angle> <#RRGGBB> <threshold> [strength]\n"
+                << "                       Draw rays through their first threshold pixel\n"
                 << "  r = <formula>        Replace red using R, G, and B variables\n"
                 << "  g = <formula>        Replace green using R, G, and B variables\n"
                 << "  b = <formula>        Replace blue using R, G, and B variables\n"
+                << "  rgb = (<r>, <g>, <b>)\n"
+                << "                       Replace all channels simultaneously\n"
+                << "  loop-rgb <n> = (<r>, <g>, <b>)\n"
+                << "                       Apply an RGB formula repeatedly\n"
+                << "  local-rgb = (<r>, <g>, <b>)\n"
+                << "                       RGB formula with neighbor sampling\n"
                 << "  s = <formula>        Replace HSL saturation using the S variable\n";
     }
 
