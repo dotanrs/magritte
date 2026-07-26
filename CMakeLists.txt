@@ -19,11 +19,10 @@ add_executable(pixlie main.cpp
         include/pixlie/processors/mirror.h
         src/processors/blur.cpp
         include/pixlie/processors/blur.h
-        src/processors/red_formula.cpp
+        src/processors/channel_formula.cpp
+        include/pixlie/processors/assignment_processor.h
         include/pixlie/processors/red_formula.h
-        src/processors/green_formula.cpp
         include/pixlie/processors/green_formula.h
-        src/processors/blue_formula.cpp
         include/pixlie/processors/blue_formula.h
         src/processors/rgb_formula.cpp
         include/pixlie/processors/rgb_formula.h
@@ -72,9 +71,7 @@ if (BUILD_TESTING)
             src/processors/rotate.cpp
             src/processors/mirror.cpp
             src/processors/blur.cpp
-            src/processors/red_formula.cpp
-            src/processors/green_formula.cpp
-            src/processors/blue_formula.cpp
+            src/processors/channel_formula.cpp
             src/processors/rgb_formula.cpp
             src/processors/saturation_formula.cpp
             src/processors/color_swap.cpp
