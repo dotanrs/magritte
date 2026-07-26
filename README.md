@@ -47,9 +47,7 @@ Run multiple processors sequentially:
 ```sh
 ./build/pixlie photo.jpg --output results/edited.jpg \
   -p "rotate 1" \
-  -p "r = r * 2 - g" \
-  -p "g = (r + b) / 2" \
-  -p "b = 255 - b"
+  -p "rgb = (r * 2 - g, (r + b) / 2, 255 - b)"
 ```
 
 Generate a radial interference pattern from the image coordinates:
@@ -78,6 +76,7 @@ errors occurred.
 - `r = <formula>` changes only the red channel.
 - `g = <formula>` changes only the green channel.
 - `b = <formula>` changes only the blue channel.
+- `rgb = (<red>, <green>, <blue>)` changes all three channels simultaneously. Every expression reads the original pixel.
 - `s = <formula>` changes HSL saturation while preserving hue and lightness.
 - `x <-> y` swaps channels `x` and `y`, where each channel is `r`, `g`, or
   `b`.
@@ -105,6 +104,16 @@ the square root of a negative number become `0`.
 
 Saturation formulas support the same coordinates, constants, and functions with `S`, where saturation is represented in
 the range `[0, 255]`.
+
+An RGB tuple is useful when output channels depend on one another. For example, this rotates the channels using the
+original `R`, `G`, and `B` values:
+
+```sh
+-p "rgb = (G, B, R)"
+```
+
+Three separate assignments would behave differently because processors run sequentially and later formulas see changes
+made by earlier processors.
 
 ### Formula examples
 
@@ -169,9 +178,9 @@ Saturation alternating in diagonal waves:
 The three-channel radial interference pattern used for the CLI smoke test:
 
 ```sh
--p "r = 127 + 127 * sin(D / 8 + A * 6)" \
--p "g = 127 + 127 * sin(D / 11 - A * 4)" \
--p "b = 127 + 127 * cos(D / 6)"
+-p "rgb = (127 + 127 * sin(D / 8 + A * 6), \
+           127 + 127 * sin(D / 11 - A * 4), \
+           127 + 127 * cos(D / 6))"
 ```
 
 ## Tests

@@ -9,6 +9,7 @@
 #include "pixlie/processors/green_formula.h"
 #include "pixlie/processors/mirror.h"
 #include "pixlie/processors/red_formula.h"
+#include "pixlie/processors/rgb_formula.h"
 #include "pixlie/processors/rotate.h"
 #include "pixlie/processors/saturation_formula.h"
 
@@ -302,6 +303,57 @@ namespace {
         );
     }
 
+    void test_simultaneous_rgb_formula() {
+        FileData image{
+            .width = 2,
+            .height = 1,
+            .pixels = {
+                Pixel{.red = 10, .green = 20, .blue = 30, .alpha = 40},
+                Pixel{.red = 100, .green = 150, .blue = 200, .alpha = 80},
+            },
+        };
+
+        const FileData processed = rgb_formula_processor().apply(
+            std::move(image),
+            {"(G, B, R)"}
+        );
+
+        expect(
+            processed.pixels[0].red == 20 &&
+            processed.pixels[0].green == 30 &&
+            processed.pixels[0].blue == 10 &&
+            processed.pixels[0].alpha == 40,
+            "RGB formula should evaluate every channel from the original pixel"
+        );
+        expect(
+            processed.pixels[1].red == 150 &&
+            processed.pixels[1].green == 200 &&
+            processed.pixels[1].blue == 100 &&
+            processed.pixels[1].alpha == 80,
+            "RGB formula should update all channels and preserve alpha"
+        );
+
+        const FileData coordinate_processed = rgb_formula_processor().apply(
+            blank_image(2, 2),
+            {
+                "("
+                "127 + 127 * sin(PI * U), "
+                "127 + 127 * cos(PI * V), "
+                "X * 100 + Y * 50"
+                ")"
+            }
+        );
+        expect(
+            coordinate_processed.pixels[0].red == 127 &&
+            coordinate_processed.pixels[0].green == 0 &&
+            coordinate_processed.pixels[0].blue == 0 &&
+            coordinate_processed.pixels[3].red == 127 &&
+            coordinate_processed.pixels[3].green == 0 &&
+            coordinate_processed.pixels[3].blue == 150,
+            "RGB formula should support functions and coordinates in every component"
+        );
+    }
+
     void test_saturation_formula() {
         FileData image{
             .width = 3,
@@ -422,6 +474,18 @@ namespace {
             "parser should accept coordinate-aware mathematical formulas"
         );
         expect(
+            parse_processor_command(
+                "rgb = (G, B, R)"
+            ).has_value(),
+            "parser should accept a simultaneous RGB formula"
+        );
+        expect(
+            parse_processor_command(
+                "rgb = (max(R, G), min(G, B), clamp(B, 0, 255))"
+            ).has_value(),
+            "RGB tuple separators should coexist with function arguments"
+        );
+        expect(
             parse_processor_command("g = B * 2").has_value(),
             "parser should accept a valid green formula"
         );
@@ -502,6 +566,42 @@ namespace {
             error_message.find("expects 2 arguments") != std::string::npos,
             "parser should describe incorrect function arity"
         );
+        error_message.clear();
+        expect(
+            !parse_processor_command(
+                "rgb = R, G, B",
+                &error_message
+            ).has_value(),
+            "parser should require parentheses around an RGB tuple"
+        );
+        expect(
+            error_message.find("parenthesized tuple") != std::string::npos,
+            "parser should describe a missing RGB tuple"
+        );
+        error_message.clear();
+        expect(
+            !parse_processor_command(
+                "rgb = (R, G)",
+                &error_message
+            ).has_value(),
+            "parser should require exactly three RGB expressions"
+        );
+        expect(
+            !error_message.empty(),
+            "parser should describe an incomplete RGB tuple"
+        );
+        error_message.clear();
+        expect(
+            !parse_processor_command(
+                "rgb = (R, G, B, 0)",
+                &error_message
+            ).has_value(),
+            "parser should reject more than three RGB expressions"
+        );
+        expect(
+            error_message.find("expected ')'") != std::string::npos,
+            "parser should describe an oversized RGB tuple"
+        );
     }
 } // namespace
 
@@ -515,6 +615,7 @@ int main() {
     test_formula_coordinates_and_dimensions();
     test_formula_normalized_and_polar_coordinates();
     test_formula_math_functions();
+    test_simultaneous_rgb_formula();
     test_saturation_formula();
     test_color_swap();
     test_command_parser();

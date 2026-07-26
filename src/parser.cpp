@@ -11,6 +11,7 @@
 #include "pixlie/processors/green_formula.h"
 #include "pixlie/processors/mirror.h"
 #include "pixlie/processors/red_formula.h"
+#include "pixlie/processors/rgb_formula.h"
 #include "pixlie/processors/rotate.h"
 #include "pixlie/processors/saturation_formula.h"
 
@@ -85,6 +86,8 @@ std::optional<ProcessorCommand> parse_processor_command(
             processor = &green_formula_processor();
         } else if (channel == "b") {
             processor = &blue_formula_processor();
+        } else if (channel == "rgb") {
+            processor = &rgb_formula_processor();
         } else if (channel == "s") {
             processor = &saturation_formula_processor();
         } else {

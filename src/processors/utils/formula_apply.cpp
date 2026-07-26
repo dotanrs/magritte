@@ -283,6 +283,30 @@ FileData apply_formula(
     return data;
 }
 
+FileData apply_rgb_formula(
+    FileData data,
+    const RgbFormula &formula
+) {
+    for (std::size_t y = 0; y < data.height; ++y) {
+        for (std::size_t x = 0; x < data.width; ++x) {
+            Pixel &pixel = data.pixels[y * data.width + x];
+            const FormulaContext context = make_context(data, pixel, x, y);
+
+            const std::uint8_t red =
+                    channel_value(evaluate(*formula.red, context));
+            const std::uint8_t green =
+                    channel_value(evaluate(*formula.green, context));
+            const std::uint8_t blue =
+                    channel_value(evaluate(*formula.blue, context));
+
+            pixel.red = red;
+            pixel.green = green;
+            pixel.blue = blue;
+        }
+    }
+    return data;
+}
+
 FileData apply_saturation_formula(
     FileData data,
     const FormulaNode &formula

@@ -25,6 +25,8 @@ add_executable(pixlie main.cpp
         include/pixlie/processors/green_formula.h
         src/processors/blue_formula.cpp
         include/pixlie/processors/blue_formula.h
+        src/processors/rgb_formula.cpp
+        include/pixlie/processors/rgb_formula.h
         src/processors/saturation_formula.cpp
         include/pixlie/processors/saturation_formula.h
         src/processors/color_swap.cpp
@@ -72,6 +74,7 @@ if (BUILD_TESTING)
             src/processors/red_formula.cpp
             src/processors/green_formula.cpp
             src/processors/blue_formula.cpp
+            src/processors/rgb_formula.cpp
             src/processors/saturation_formula.cpp
             src/processors/color_swap.cpp
             src/processors/utils/formula_parse.cpp

@@ -57,7 +57,42 @@ namespace {
             return result;
         }
 
+        [[nodiscard]] RgbFormula parse_rgb() {
+            if (formula_.empty()) {
+                throw std::invalid_argument("RGB formula cannot be empty");
+            }
+
+            skip_whitespace();
+            if (!consume('(')) {
+                fail("RGB formula must be a parenthesized tuple");
+            }
+
+            RgbFormula result;
+            result.red = parse_expression();
+            expect_tuple_separator();
+            result.green = parse_expression();
+            expect_tuple_separator();
+            result.blue = parse_expression();
+
+            skip_whitespace();
+            if (!consume(')')) {
+                fail("expected ')' after the blue expression");
+            }
+            skip_whitespace();
+            if (position_ != formula_.size()) {
+                fail("unexpected character after RGB formula");
+            }
+            return result;
+        }
+
     private:
+        void expect_tuple_separator() {
+            skip_whitespace();
+            if (!consume(',')) {
+                fail("expected ',' between RGB expressions");
+            }
+        }
+
         [[nodiscard]] Formula parse_expression() {
             Formula left = parse_term();
 
@@ -332,6 +367,13 @@ Formula parse_formula(const std::vector<std::string> &arguments) {
         throw std::invalid_argument("formula processor expects one formula");
     }
     return FormulaParser(arguments.front()).parse();
+}
+
+RgbFormula parse_rgb_formula(const std::vector<std::string> &arguments) {
+    if (arguments.size() != 1) {
+        throw std::invalid_argument("RGB formula processor expects one tuple");
+    }
+    return FormulaParser(arguments.front()).parse_rgb();
 }
 
 Formula parse_saturation_formula(const std::vector<std::string> &arguments) {

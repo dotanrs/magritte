@@ -52,7 +52,17 @@ struct FormulaNode {
 
 using Formula = std::unique_ptr<FormulaNode>;
 
+struct RgbFormula {
+    Formula red;
+    Formula green;
+    Formula blue;
+};
+
 [[nodiscard]] Formula parse_formula(
+    const std::vector<std::string> &arguments
+);
+
+[[nodiscard]] RgbFormula parse_rgb_formula(
     const std::vector<std::string> &arguments
 );
 

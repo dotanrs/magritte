@@ -16,6 +16,11 @@ enum class ColorChannel {
     ColorChannel channel
 );
 
+[[nodiscard]] FileData apply_rgb_formula(
+    FileData data,
+    const RgbFormula &formula
+);
+
 [[nodiscard]] FileData apply_saturation_formula(
     FileData data,
     const FormulaNode &formula
