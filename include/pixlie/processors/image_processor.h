@@ -2,6 +2,7 @@
 #define PIXLIE_IMAGE_PROCESSOR_H
 
 #include <functional>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -12,6 +13,9 @@ public:
     virtual ~ImageProcessor() = default;
 
     [[nodiscard]] virtual std::string_view name() const noexcept = 0;
+
+    [[nodiscard]] virtual std::optional<std::vector<std::string>>
+    parse_arguments(std::string_view command) const = 0;
 
     virtual void validate(const std::vector<std::string> &arguments) const = 0;
 

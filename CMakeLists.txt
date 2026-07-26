@@ -35,6 +35,7 @@ add_executable(pixlie main.cpp
         include/pixlie/processors/utils/formula_parse.h
         src/processors/utils/formula_apply.cpp
         include/pixlie/processors/utils/formula_apply.h
+        include/pixlie/processors/utils/argument_parse.h
         include/pixlie/processors/image_processor.h)
 
 target_include_directories(pixlie PRIVATE
