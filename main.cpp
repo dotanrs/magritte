@@ -26,7 +26,9 @@ void print_usage(std::ostream& output, std::string_view program) {
     output << "\n"
            << "Processors:\n"
            << "  rotate <int>         Rotate clockwise by 90 degrees <int> times\n"
-           << "  r = <formula>        Replace red using R, G, and B variables\n";
+           << "  r = <formula>        Replace red using R, G, and B variables\n"
+           << "  g = <formula>        Replace green using R, G, and B variables\n"
+           << "  b = <formula>        Replace blue using R, G, and B variables\n";
 }
 
 fs::path default_output_path(const fs::path& input) {

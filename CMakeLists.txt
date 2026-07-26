@@ -14,6 +14,14 @@ add_executable(pixlie main.cpp
         include/pixlie/processors/rotate.h
         src/processors/red_formula.cpp
         include/pixlie/processors/red_formula.h
+        src/processors/green_formula.cpp
+        include/pixlie/processors/green_formula.h
+        src/processors/blue_formula.cpp
+        include/pixlie/processors/blue_formula.h
+        src/processors/utils/formula_parse.cpp
+        include/pixlie/processors/utils/formula_parse.h
+        src/processors/utils/formula_apply.cpp
+        include/pixlie/processors/utils/formula_apply.h
         include/pixlie/processors/image_processor.h)
 
 target_include_directories(pixlie PRIVATE
@@ -49,6 +57,10 @@ if(BUILD_TESTING)
             src/parser.cpp
             src/processors/rotate.cpp
             src/processors/red_formula.cpp
+            src/processors/green_formula.cpp
+            src/processors/blue_formula.cpp
+            src/processors/utils/formula_parse.cpp
+            src/processors/utils/formula_apply.cpp
             src/utils/logging.cpp)
     target_include_directories(pixlie_processor_tests PRIVATE
             "${CMAKE_CURRENT_SOURCE_DIR}/include")

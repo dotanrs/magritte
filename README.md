@@ -32,7 +32,9 @@ Run multiple processors sequentially:
 ```sh
 ./build/pixlie photo.jpg --output results/edited.jpg \
   -p "rotate 1" \
-  -p "r = r * 2 - g"
+  -p "r = r * 2 - g" \
+  -p "g = (r + b) / 2" \
+  -p "b = 255 - b"
 ```
 
 The command writes timestamped progress logs to standard error and exits with
@@ -46,9 +48,13 @@ processor commands from running.
 
 - `rotate <int>` rotates clockwise by 90 degrees `int % 4` times. Negative
   values rotate in the opposite direction.
-- `r = <formula>` changes only the red channel. Formulas support `R`, `G`, and
-  `B`, numeric constants, parentheses, unary signs, and `+`, `-`, `*`, and `/`.
-  Results are rounded and clamped to the range `[0, 255]`.
+- `r = <formula>` changes only the red channel.
+- `g = <formula>` changes only the green channel.
+- `b = <formula>` changes only the blue channel.
+
+Formulas support `R`, `G`, and `B`, numeric constants, parentheses, unary
+signs, and `+`, `-`, `*`, and `/`. Results are rounded and clamped to the range
+`[0, 255]`.
 
 ## Tests
 

@@ -5,6 +5,8 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include "pixlie/processors/blue_formula.h"
+#include "pixlie/processors/green_formula.h"
 #include "pixlie/processors/red_formula.h"
 #include "pixlie/processors/rotate.h"
 #include "pixlie/utils/logging.h"
@@ -60,12 +62,21 @@ std::optional<ProcessorCommand> parse_processor_command(std::string_view command
         arguments.assign(words.begin() + 1, words.end());
     } else {
         const std::size_t equals = value.find('=');
-        if (equals == std::string_view::npos ||
-            trim(value.substr(0, equals)) != "r") {
+        if (equals == std::string_view::npos) {
             return invalid(command, "unknown processor");
         }
 
-        processor = &red_formula_processor();
+        const std::string_view channel = trim(value.substr(0, equals));
+        if (channel == "r") {
+            processor = &red_formula_processor();
+        } else if (channel == "g") {
+            processor = &green_formula_processor();
+        } else if (channel == "b") {
+            processor = &blue_formula_processor();
+        } else {
+            return invalid(command, "unknown processor");
+        }
+
         const std::string_view formula = trim(value.substr(equals + 1));
         arguments.emplace_back(formula);
     }

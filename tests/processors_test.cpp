@@ -3,6 +3,8 @@
 #include <string>
 #include <vector>
 #include "pixlie/parser.h"
+#include "pixlie/processors/blue_formula.h"
+#include "pixlie/processors/green_formula.h"
 #include "pixlie/processors/red_formula.h"
 #include "pixlie/processors/rotate.h"
 
@@ -76,6 +78,48 @@ void test_red_formula_and_clamping() {
     );
 }
 
+void test_green_formula() {
+    FileData image{
+        .width = 1,
+        .height = 1,
+        .pixels = {
+            Pixel{.red = 10, .green = 20, .blue = 30, .alpha = 255},
+        },
+    };
+
+    const FileData processed = green_formula_processor().apply(
+        std::move(image),
+        {"b * 2"}
+    );
+
+    expect(processed.pixels[0].green == 60, "green formula should update green");
+    expect(
+        processed.pixels[0].red == 10 && processed.pixels[0].blue == 30,
+        "green formula should not modify red or blue"
+    );
+}
+
+void test_blue_formula() {
+    FileData image{
+        .width = 1,
+        .height = 1,
+        .pixels = {
+            Pixel{.red = 100, .green = 40, .blue = 30, .alpha = 255},
+        },
+    };
+
+    const FileData processed = blue_formula_processor().apply(
+        std::move(image),
+        {"r - g"}
+    );
+
+    expect(processed.pixels[0].blue == 60, "blue formula should update blue");
+    expect(
+        processed.pixels[0].red == 100 && processed.pixels[0].green == 40,
+        "blue formula should not modify red or green"
+    );
+}
+
 void test_command_parser() {
     expect(
         parse_processor_command("rotate -1").has_value(),
@@ -84,6 +128,14 @@ void test_command_parser() {
     expect(
         parse_processor_command("r = (R + G) / 2").has_value(),
         "parser should accept a valid red formula"
+    );
+    expect(
+        parse_processor_command("g = B * 2").has_value(),
+        "parser should accept a valid green formula"
+    );
+    expect(
+        parse_processor_command("b = R - G").has_value(),
+        "parser should accept a valid blue formula"
     );
     expect(
         !parse_processor_command("rotate nope").has_value(),
@@ -100,6 +152,8 @@ void test_command_parser() {
 int main() {
     test_rotation();
     test_red_formula_and_clamping();
+    test_green_formula();
+    test_blue_formula();
     test_command_parser();
 
     if (failures == 0) {
