@@ -13,6 +13,7 @@
 #include "pixlie/processors/rgb_formula.h"
 #include "pixlie/processors/rotate.h"
 #include "pixlie/processors/saturation_formula.h"
+#include "pixlie/processors/warp_formula.h"
 
 namespace {
     int failures = 0;
@@ -355,6 +356,62 @@ namespace {
         );
     }
 
+    void test_warp_formula() {
+        const auto image = [] {
+            return FileData{
+                .width = 2,
+                .height = 2,
+                .pixels = {
+                    Pixel{.red = 0, .green = 10, .blue = 20, .alpha = 0},
+                    Pixel{.red = 100, .green = 30, .blue = 40, .alpha = 40},
+                    Pixel{.red = 200, .green = 50, .blue = 60, .alpha = 80},
+                    Pixel{.red = 240, .green = 70, .blue = 80, .alpha = 120},
+                },
+            };
+        };
+
+        const FileData identity = warp_formula_processor().apply(
+            image(),
+            {"(X, Y)"}
+        );
+        expect(
+            identity.width == 2 &&
+            identity.height == 2 &&
+            identity.pixels[0].red == 0 &&
+            identity.pixels[0].alpha == 0 &&
+            identity.pixels[3].red == 240 &&
+            identity.pixels[3].alpha == 120,
+            "identity warp should preserve dimensions and pixels"
+        );
+
+        const FileData interpolated = warp_formula_processor().apply(
+            image(),
+            {"(0.5, 0.5)"}
+        );
+        expect(
+            interpolated.pixels[0].red == 135 &&
+            interpolated.pixels[0].green == 40 &&
+            interpolated.pixels[0].blue == 50 &&
+            interpolated.pixels[0].alpha == 60 &&
+            interpolated.pixels[3].red == 135 &&
+            interpolated.pixels[3].alpha == 60,
+            "warp should bilinearly interpolate RGB and alpha"
+        );
+
+        const FileData clamped = warp_formula_processor().apply(
+            image(),
+            {"(-100, 100)"}
+        );
+        expect(
+            clamped.pixels[0].red == 200 &&
+            clamped.pixels[0].green == 50 &&
+            clamped.pixels[0].blue == 60 &&
+            clamped.pixels[0].alpha == 80 &&
+            clamped.pixels[3].red == 200,
+            "warp should clamp source coordinates to the image edges"
+        );
+    }
+
     void test_saturation_formula() {
         FileData image{
             .width = 3,
@@ -474,6 +531,24 @@ namespace {
             "RGB processor should require its own assignment keyword"
         );
 
+        const auto warp_arguments =
+            warp_formula_processor().parse_arguments(
+                "warp = (X + sin(Y), Y)"
+            );
+        expect(
+            warp_arguments ==
+            std::optional<std::vector<std::string>>{
+                {"(X + sin(Y), Y)"}
+            },
+            "warp processor should parse its coordinate assignment"
+        );
+        expect(
+            !warp_formula_processor().parse_arguments(
+                "rgb = (R, G, B)"
+            ).has_value(),
+            "warp processor should require its own assignment keyword"
+        );
+
         const auto swap_arguments =
             color_swap_processor().parse_arguments("r <-> b");
         expect(
@@ -519,6 +594,12 @@ namespace {
                 "rgb = (max(R, G), min(G, B), clamp(B, 0, 255))"
             ).has_value(),
             "RGB tuple separators should coexist with function arguments"
+        );
+        expect(
+            parse_processor_command(
+                "warp = (X + sin(Y), clamp(Y, 0, H - 1))"
+            ).has_value(),
+            "parser should accept a mathematical warp formula"
         );
         expect(
             parse_processor_command("g = B * 2").has_value(),
@@ -637,6 +718,43 @@ namespace {
             error_message.find("expected ')'") != std::string::npos,
             "parser should describe an oversized RGB tuple"
         );
+        error_message.clear();
+        expect(
+            !parse_processor_command(
+                "warp = X, Y",
+                &error_message
+            ).has_value(),
+            "parser should require parentheses around warp coordinates"
+        );
+        expect(
+            error_message.find("parenthesized coordinate pair") !=
+            std::string::npos,
+            "parser should describe a missing warp coordinate pair"
+        );
+        error_message.clear();
+        expect(
+            !parse_processor_command(
+                "warp = (X)",
+                &error_message
+            ).has_value(),
+            "parser should require two warp expressions"
+        );
+        expect(
+            !error_message.empty(),
+            "parser should describe an incomplete warp formula"
+        );
+        error_message.clear();
+        expect(
+            !parse_processor_command(
+                "warp = (X, Y, 0)",
+                &error_message
+            ).has_value(),
+            "parser should reject more than two warp expressions"
+        );
+        expect(
+            error_message.find("expected ')'") != std::string::npos,
+            "parser should describe an oversized warp coordinate pair"
+        );
     }
 } // namespace
 
@@ -651,6 +769,7 @@ int main() {
     test_formula_normalized_and_polar_coordinates();
     test_formula_math_functions();
     test_simultaneous_rgb_formula();
+    test_warp_formula();
     test_saturation_formula();
     test_color_swap();
     test_processor_argument_parsing();

@@ -14,6 +14,7 @@
 #include "pixlie/processors/rgb_formula.h"
 #include "pixlie/processors/rotate.h"
 #include "pixlie/processors/saturation_formula.h"
+#include "pixlie/processors/warp_formula.h"
 
 namespace {
     std::string_view trim(std::string_view value) {
@@ -38,7 +39,7 @@ namespace {
         return std::nullopt;
     }
 
-    const std::array<std::reference_wrapper<const ImageProcessor>, 9>
+    const std::array<std::reference_wrapper<const ImageProcessor>, 10>
     processors{
         rotate_processor(),
         mirror_processor(),
@@ -49,6 +50,7 @@ namespace {
         blue_formula_processor(),
         rgb_formula_processor(),
         saturation_formula_processor(),
+        warp_formula_processor(),
     };
 } // namespace
 

@@ -78,6 +78,7 @@ errors occurred.
 - `b = <formula>` changes only the blue channel.
 - `rgb = (<red>, <green>, <blue>)` changes all three channels simultaneously. Every expression reads the original pixel.
 - `s = <formula>` changes HSL saturation while preserving hue and lightness.
+- `warp = (<source-x>, <source-y>)` remaps pixels with mathematical source coordinates.
 - `x <-> y` swaps channels `x` and `y`, where each channel is `r`, `g`, or
   `b`.
 
@@ -99,8 +100,8 @@ Available functions are:
 - Two arguments: `atan2`, `pow`, `mod`, `min`, and `max`.
 - Three arguments: `clamp(value, lower, upper)`. Reversed bounds are accepted.
 
-Trigonometric functions use radians. Formula results are rounded and clamped to `[0, 255]`; undefined results such as
-the square root of a negative number become `0`.
+Trigonometric functions use radians. Color and saturation formula results are rounded and clamped to `[0, 255]`;
+undefined results such as the square root of a negative number become `0`.
 
 Saturation formulas support the same coordinates, constants, and functions with `S`, where saturation is represented in
 the range `[0, 255]`.
@@ -114,6 +115,32 @@ original `R`, `G`, and `B` values:
 
 Three separate assignments would behave differently because processors run sequentially and later formulas see changes
 made by earlier processors.
+
+### Warp formulas
+
+A warp formula is evaluated once for every output pixel. Its two expressions select the source coordinate to sample from
+the unmodified input image. Sampling is bilinear, coordinates outside the image clamp to its edges, and the output keeps
+the original dimensions. `R`, `G`, and `B` refer to the input pixel at the current `X`, `Y` position.
+
+Horizontal waves:
+
+```sh
+-p "warp = (X + 20 * sin(Y / 15), Y)"
+```
+
+Radial ripples:
+
+```sh
+-p "warp = (X + 12 * cos(A) * sin(D / 6), \
+            Y + 12 * sin(A) * sin(D / 6))"
+```
+
+A distance-dependent swirl:
+
+```sh
+-p "warp = ((W - 1) / 2 + D * cos(A + D / 200), \
+  (H - 1) / 2 + D * sin(A + D / 200))"
+```
 
 ### Formula examples
 

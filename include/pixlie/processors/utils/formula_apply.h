@@ -21,6 +21,11 @@ enum class ColorChannel {
     const RgbFormula &formula
 );
 
+[[nodiscard]] FileData apply_warp_formula(
+    FileData data,
+    const WarpFormula &formula
+);
+
 [[nodiscard]] FileData apply_saturation_formula(
     FileData data,
     const FormulaNode &formula

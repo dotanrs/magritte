@@ -85,11 +85,39 @@ namespace {
             return result;
         }
 
+        [[nodiscard]] WarpFormula parse_warp() {
+            if (formula_.empty()) {
+                throw std::invalid_argument("warp formula cannot be empty");
+            }
+
+            skip_whitespace();
+            if (!consume('(')) {
+                fail("warp formula must be a parenthesized coordinate pair");
+            }
+
+            WarpFormula result;
+            result.source_x = parse_expression();
+            expect_tuple_separator("warp coordinates");
+            result.source_y = parse_expression();
+
+            skip_whitespace();
+            if (!consume(')')) {
+                fail("expected ')' after the source y expression");
+            }
+            skip_whitespace();
+            if (position_ != formula_.size()) {
+                fail("unexpected character after warp formula");
+            }
+            return result;
+        }
+
     private:
-        void expect_tuple_separator() {
+        void expect_tuple_separator(
+            std::string_view tuple_name = "RGB expressions"
+        ) {
             skip_whitespace();
             if (!consume(',')) {
-                fail("expected ',' between RGB expressions");
+                fail("expected ',' between " + std::string(tuple_name));
             }
         }
 
@@ -374,6 +402,15 @@ RgbFormula parse_rgb_formula(const std::vector<std::string> &arguments) {
         throw std::invalid_argument("RGB formula processor expects one tuple");
     }
     return FormulaParser(arguments.front()).parse_rgb();
+}
+
+WarpFormula parse_warp_formula(const std::vector<std::string> &arguments) {
+    if (arguments.size() != 1) {
+        throw std::invalid_argument(
+            "warp formula processor expects one coordinate pair"
+        );
+    }
+    return FormulaParser(arguments.front()).parse_warp();
 }
 
 Formula parse_saturation_formula(const std::vector<std::string> &arguments) {

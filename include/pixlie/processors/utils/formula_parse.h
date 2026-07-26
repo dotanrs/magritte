@@ -58,11 +58,20 @@ struct RgbFormula {
     Formula blue;
 };
 
+struct WarpFormula {
+    Formula source_x;
+    Formula source_y;
+};
+
 [[nodiscard]] Formula parse_formula(
     const std::vector<std::string> &arguments
 );
 
 [[nodiscard]] RgbFormula parse_rgb_formula(
+    const std::vector<std::string> &arguments
+);
+
+[[nodiscard]] WarpFormula parse_warp_formula(
     const std::vector<std::string> &arguments
 );
 
