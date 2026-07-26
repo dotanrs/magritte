@@ -5,7 +5,8 @@
 #ifndef PIXLIE_INPUTVALIDATION_H
 #define PIXLIE_INPUTVALIDATION_H
 
-#include "processor.h"
+#include <tuple>
+#include "pixlie/processor.h"
 
 std::tuple<fs::path, fs::path> validate_input(const Options& options);
 

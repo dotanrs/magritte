@@ -47,7 +47,7 @@ std::tuple<fs::path, fs::path> validate_input(const Options& options) {
         throw std::runtime_error("input and output paths must be different");
     }
 
-    log(LogLevel::info, "Reading JPEG: " + input.string());
+    log(LogLevel::info, "Validating JPEG: " + input.string());
     std::error_code error;
     if (!fs::exists(input, error) || error) {
         throw std::runtime_error("input image does not exist: " + input.string());
@@ -57,14 +57,6 @@ std::tuple<fs::path, fs::path> validate_input(const Options& options) {
     }
     if (!has_jpeg_markers(input)) {
         throw std::runtime_error("input is not a valid JPEG file: " + input.string());
-    }
-
-    if (!output.parent_path().empty()) {
-        std::error_code outputError;
-        fs::create_directories(output.parent_path(), outputError);
-        if (outputError) {
-            throw std::runtime_error("could not create output directory: " + outputError.message());
-        }
     }
 
     return {input, output};
