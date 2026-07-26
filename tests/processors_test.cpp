@@ -1,5 +1,6 @@
 #include <cstdint>
 #include <iostream>
+#include <optional>
 #include <string>
 #include <vector>
 #include "pixlie/parser.h"
@@ -448,6 +449,40 @@ namespace {
         );
     }
 
+    void test_processor_argument_parsing() {
+        const auto rotate_arguments =
+            rotate_processor().parse_arguments("rotate -1");
+        expect(
+            rotate_arguments ==
+            std::optional<std::vector<std::string>>{{"-1"}},
+            "rotate processor should parse its own arguments"
+        );
+        expect(
+            !rotate_processor().parse_arguments("mirror x").has_value(),
+            "rotate processor should decline another processor's command"
+        );
+
+        const auto rgb_arguments =
+            rgb_formula_processor().parse_arguments("rgb = (G, B, R)");
+        expect(
+            rgb_arguments ==
+            std::optional<std::vector<std::string>>{{"(G, B, R)"}},
+            "RGB processor should parse its assignment"
+        );
+        expect(
+            !rgb_formula_processor().parse_arguments("r = G").has_value(),
+            "RGB processor should require its own assignment keyword"
+        );
+
+        const auto swap_arguments =
+            color_swap_processor().parse_arguments("r <-> b");
+        expect(
+            swap_arguments ==
+            std::optional<std::vector<std::string>>{{"r", "b"}},
+            "color swap processor should parse arguments around its operator"
+        );
+    }
+
     void test_command_parser() {
         std::string error_message;
 
@@ -618,6 +653,7 @@ int main() {
     test_simultaneous_rgb_formula();
     test_saturation_formula();
     test_color_swap();
+    test_processor_argument_parsing();
     test_command_parser();
 
     if (failures == 0) {
