@@ -4,8 +4,9 @@
 
 #ifndef PIXLIE_INPUTVALIDATION_H
 #define PIXLIE_INPUTVALIDATION_H
-#include <filesystem>
 
-void validate_input(const std::filesystem::path& input);
+#include "processor.h"
+
+std::tuple<fs::path, fs::path> validate_input(const Options& options);
 
 #endif //PIXLIE_INPUTVALIDATION_H

@@ -9,6 +9,8 @@
 #include <iostream>
 #include <stdexcept>
 
+#include "pixlie/utils/logging.h"
+
 namespace fs = std::filesystem;
 
 namespace {
@@ -37,7 +39,15 @@ namespace {
     }
 }
 
-void validate_input(const fs::path& input) {
+std::tuple<fs::path, fs::path> validate_input(const Options& options) {
+    const fs::path input = fs::absolute(options.input).lexically_normal();
+    const fs::path output = fs::absolute(options.output).lexically_normal();
+
+    if (input == output) {
+        throw std::runtime_error("input and output paths must be different");
+    }
+
+    log(LogLevel::info, "Reading JPEG: " + input.string());
     std::error_code error;
     if (!fs::exists(input, error) || error) {
         throw std::runtime_error("input image does not exist: " + input.string());
@@ -48,4 +58,14 @@ void validate_input(const fs::path& input) {
     if (!has_jpeg_markers(input)) {
         throw std::runtime_error("input is not a valid JPEG file: " + input.string());
     }
+
+    if (!output.parent_path().empty()) {
+        std::error_code outputError;
+        fs::create_directories(output.parent_path(), outputError);
+        if (outputError) {
+            throw std::runtime_error("could not create output directory: " + outputError.message());
+        }
+    }
+
+    return {input, output};
 }

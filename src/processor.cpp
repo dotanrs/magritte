@@ -13,24 +13,9 @@
 
 namespace fs = std::filesystem;
 
+
 void process_image(const Options& options) {
-    const fs::path input = fs::absolute(options.input).lexically_normal();
-    const fs::path output = fs::absolute(options.output).lexically_normal();
-
-    if (input == output) {
-        throw std::runtime_error("input and output paths must be different");
-    }
-
-    log(LogLevel::info, "Reading JPEG: " + input.string());
-    validate_input(input);
-
-    if (!output.parent_path().empty()) {
-        std::error_code error;
-        fs::create_directories(output.parent_path(), error);
-        if (error) {
-            throw std::runtime_error("could not create output directory: " + error.message());
-        }
-    }
+    auto [input, output] = validate_input(options);
 
     log(LogLevel::info, "Writing copy: " + output.string());
     std::error_code error;
