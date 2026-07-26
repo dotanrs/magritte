@@ -9,8 +9,6 @@
 #include <ImageIO/ImageIO.h>
 
 #include <algorithm>
-#include <cstddef>
-#include <cstdint>
 #include <filesystem>
 #include <fstream>
 #include <limits>
