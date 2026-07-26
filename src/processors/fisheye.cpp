@@ -142,6 +142,10 @@ namespace {
             0.75,
             static_cast<double>(std::min(data.width, data.height)) / 500.0
         );
+        const long stroke_radius = std::max(
+            1L,
+            std::lround(line_half_width)
+        );
 
         for (std::size_t y = 0; y < data.height; ++y) {
             for (std::size_t x = 0; x < data.width; ++x) {
@@ -167,19 +171,36 @@ namespace {
             static_cast<double>(data.width - 1)
         ));
         for (long x = center_x; x <= radius_end_x; ++x) {
-            mark_pixel(data, x, center_y, radius_hint);
+            for (long offset = -stroke_radius;
+                 offset <= stroke_radius;
+                 ++offset) {
+                mark_pixel(data, x, center_y + offset, radius_hint);
+            }
         }
 
-        const long cross_arm = std::clamp(
-            std::lround(
-                static_cast<double>(std::min(data.width, data.height)) / 100.0
-            ),
+        const long cross_arm = std::max(
             2L,
-            8L
+            std::lround(
+                static_cast<double>(std::min(data.width, data.height)) / 50.0
+            )
         );
         for (long offset = -cross_arm; offset <= cross_arm; ++offset) {
-            mark_pixel(data, center_x + offset, center_y, center_hint);
-            mark_pixel(data, center_x, center_y + offset, center_hint);
+            for (long width_offset = -stroke_radius;
+                 width_offset <= stroke_radius;
+                 ++width_offset) {
+                mark_pixel(
+                    data,
+                    center_x + offset,
+                    center_y + width_offset,
+                    center_hint
+                );
+                mark_pixel(
+                    data,
+                    center_x + width_offset,
+                    center_y + offset,
+                    center_hint
+                );
+            }
         }
 
         return data;
