@@ -417,57 +417,84 @@ namespace {
         const auto image = [] {
             FileData result{
                 .width = 5,
-                .height = 1,
+                .height = 5,
                 .pixels = std::vector<Pixel>(
-                    5,
+                    25,
                     Pixel{.red = 0, .green = 0, .blue = 0, .alpha = 255}
                 ),
             };
-            for (std::size_t x = 0; x < result.width; ++x) {
-                result.pixels[x].red =
-                        static_cast<std::uint8_t>(x * 60);
+            for (std::size_t y = 0; y < result.height; ++y) {
+                for (std::size_t x = 0; x < result.width; ++x) {
+                    Pixel &pixel = result.pixels[y * result.width + x];
+                    pixel.red = static_cast<std::uint8_t>(x * 60);
+                    pixel.green = static_cast<std::uint8_t>(y * 60);
+                }
             }
             return result;
+        };
+        const auto middle_red = [](const FileData &data) {
+            std::vector<std::uint8_t> values;
+            for (std::size_t x = 0; x < data.width; ++x) {
+                values.push_back(data.pixels[2 * data.width + x].red);
+            }
+            return values;
         };
 
         const FileData enlarged = fisheye_processor().apply(
             image(),
-            {"2", "0", "1"}
+            {"50", "50", "1", "40"}
         );
         expect(
-            red_values(enlarged) ==
+            middle_red(enlarged) ==
             std::vector<std::uint8_t>{0, 80, 120, 160, 240},
             "positive fisheye amount should enlarge around its center"
+        );
+        expect(
+            enlarged.pixels[4].red == 240 &&
+            enlarged.pixels[4].green == 0,
+            "fisheye should preserve pixels outside its radius"
         );
 
         const FileData shrunk = fisheye_processor().apply(
             image(),
-            {"2", "0", "-0.5"}
+            {"50", "50", "-0.5", "40"}
         );
         expect(
-            red_values(shrunk) ==
+            middle_red(shrunk) ==
             std::vector<std::uint8_t>{0, 40, 120, 200, 240},
             "negative fisheye amount should shrink around its center"
         );
 
         const FileData offset = fisheye_processor().apply(
             image(),
-            {"1", "0", "1"}
+            {"25", "50", "1", "60"}
         );
         expect(
-            red_values(offset) ==
+            middle_red(offset) ==
             std::vector<std::uint8_t>{24, 60, 96, 150, 240},
             "fisheye should use the supplied x and y as its center"
         );
 
         const FileData identity = fisheye_processor().apply(
             image(),
-            {"2", "0", "0"}
+            {"50", "50", "0"}
         );
         expect(
-            red_values(identity) ==
-            std::vector<std::uint8_t>{0, 60, 120, 180, 240},
+            red_values(identity) == red_values(image()),
             "zero fisheye amount should preserve the image"
+        );
+
+        const FileData default_radius = fisheye_processor().apply(
+            image(),
+            {"50", "50", "1"}
+        );
+        const FileData explicit_default_radius = fisheye_processor().apply(
+            image(),
+            {"50", "50", "1", "100"}
+        );
+        expect(
+            red_values(default_radius) == red_values(explicit_default_radius),
+            "omitted fisheye radius should default to 100 percent"
         );
     }
 
@@ -609,13 +636,13 @@ namespace {
         );
 
         const auto fisheye_arguments =
-            fisheye_processor().parse_arguments("fisheye 10.5 20 1");
+            fisheye_processor().parse_arguments("fisheye 50 50 1 25");
         expect(
             fisheye_arguments ==
             std::optional<std::vector<std::string>>{
-                {"10.5", "20", "1"}
+                {"50", "50", "1", "25"}
             },
-            "fisheye processor should parse its center and amount"
+            "fisheye processor should parse its center, amount, and radius"
         );
         expect(
             !fisheye_processor().parse_arguments("blur 3").has_value(),
@@ -647,8 +674,12 @@ namespace {
             "parser should accept a valid blur command"
         );
         expect(
-            parse_processor_command("fisheye 100 75 -0.5").has_value(),
-            "parser should accept a valid fisheye command"
+            parse_processor_command("fisheye 50 50 -0.5").has_value(),
+            "parser should accept a fisheye command with default radius"
+        );
+        expect(
+            parse_processor_command("fisheye 50 50 -0.5 25").has_value(),
+            "parser should accept a fisheye command with explicit radius"
         );
         expect(
             parse_processor_command("r = (R + G) / 2").has_value(),
@@ -735,6 +766,19 @@ namespace {
         error_message.clear();
         expect(
             !parse_processor_command(
+                "fisheye 101 50 1",
+                &error_message
+            ).has_value(),
+            "parser should reject an out-of-range fisheye percentage"
+        );
+        expect(
+            error_message ==
+            "fisheye x and y must be percentages from 0 to 100",
+            "parser should describe invalid fisheye percentages"
+        );
+        error_message.clear();
+        expect(
+            !parse_processor_command(
                 "fisheye 100 75",
                 &error_message
             ).has_value(),
@@ -742,8 +786,20 @@ namespace {
         );
         expect(
             error_message ==
-            "fisheye expects exactly three numbers: x y amount",
+            "fisheye expects three or four numbers: x y amount [radius]",
             "parser should describe missing fisheye arguments"
+        );
+        error_message.clear();
+        expect(
+            !parse_processor_command(
+                "fisheye 50 50 1 0",
+                &error_message
+            ).has_value(),
+            "parser should reject a nonpositive fisheye radius"
+        );
+        expect(
+            error_message == "fisheye radius must be greater than 0",
+            "parser should describe an invalid fisheye radius"
         );
         error_message.clear();
         expect(

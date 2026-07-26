@@ -73,8 +73,9 @@ errors occurred.
 - `mirror y` mirrors the image vertically.
 - `blur <radius>` applies a box blur to RGB using a nonnegative integer pixel radius. Pixels near an edge average only
   the available neighborhood; alpha is preserved.
-- `fisheye <x> <y> <amount>` applies a radial lens centered on the given pixel coordinates. Positive amounts magnify;
-  amounts between `-1` and `0` shrink.
+- `fisheye <x> <y> <amount> [radius]` applies a radial lens centered on the given percentage coordinates. Positive
+  amounts magnify; amounts between `-1` and `0` shrink. Radius is an optional percentage of the image's shorter
+  dimension and defaults to `100`.
 - `r = <formula>` changes only the red channel.
 - `g = <formula>` changes only the green channel.
 - `b = <formula>` changes only the blue channel.
@@ -149,13 +150,18 @@ A distance-dependent swirl:
 `fisheye` is a convenient radial warp around an arbitrary point:
 
 ```sh
--p "fisheye 640 360 1"
+-p "fisheye 50 50 1"
 ```
 
-`x` and `y` are zero-based pixel coordinates and may be fractional. An amount of `0` leaves the image unchanged.
+`x` and `y` are percentages from `0` to `100`, so `50 50` selects the image center. They may be fractional. An amount
+of `0` leaves the image unchanged.
 Positive amounts enlarge the area around the point; the local magnification is approximately `1 + amount`, so `1`
 starts at about `2x`. Negative amounts shrink it, with `-0.5` starting at about `0.5x`. The amount must be greater than
-`-1`, and the effect tapers with distance from the selected point.
+`-1`.
+
+The optional radius is a percentage of the image's shorter dimension and defaults to `100`. For example,
+`fisheye 50 50 1 25` limits the effect to a circle whose radius is 25% of that dimension. The distortion tapers
+smoothly to zero at the circle's boundary, and pixels outside it remain unchanged.
 
 ### Formula examples
 
