@@ -2,7 +2,7 @@
 // Created by Dotan Reis on 26/07/2026.
 //
 
-#include "../include/pixlie/inputValidation.h"
+#include "../include/pixlie/input_validation.h"
 #include <array>
 #include <filesystem>
 #include <fstream>

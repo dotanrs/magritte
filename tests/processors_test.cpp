@@ -7,6 +7,7 @@
 #include "pixlie/processors/blue_formula.h"
 #include "pixlie/processors/blur.h"
 #include "pixlie/processors/color_swap.h"
+#include "pixlie/processors/fisheye.h"
 #include "pixlie/processors/green_formula.h"
 #include "pixlie/processors/mirror.h"
 #include "pixlie/processors/red_formula.h"
@@ -412,6 +413,64 @@ namespace {
         );
     }
 
+    void test_fisheye() {
+        const auto image = [] {
+            FileData result{
+                .width = 5,
+                .height = 1,
+                .pixels = std::vector<Pixel>(
+                    5,
+                    Pixel{.red = 0, .green = 0, .blue = 0, .alpha = 255}
+                ),
+            };
+            for (std::size_t x = 0; x < result.width; ++x) {
+                result.pixels[x].red =
+                        static_cast<std::uint8_t>(x * 60);
+            }
+            return result;
+        };
+
+        const FileData enlarged = fisheye_processor().apply(
+            image(),
+            {"2", "0", "1"}
+        );
+        expect(
+            red_values(enlarged) ==
+            std::vector<std::uint8_t>{0, 80, 120, 160, 240},
+            "positive fisheye amount should enlarge around its center"
+        );
+
+        const FileData shrunk = fisheye_processor().apply(
+            image(),
+            {"2", "0", "-0.5"}
+        );
+        expect(
+            red_values(shrunk) ==
+            std::vector<std::uint8_t>{0, 40, 120, 200, 240},
+            "negative fisheye amount should shrink around its center"
+        );
+
+        const FileData offset = fisheye_processor().apply(
+            image(),
+            {"1", "0", "1"}
+        );
+        expect(
+            red_values(offset) ==
+            std::vector<std::uint8_t>{24, 60, 96, 150, 240},
+            "fisheye should use the supplied x and y as its center"
+        );
+
+        const FileData identity = fisheye_processor().apply(
+            image(),
+            {"2", "0", "0"}
+        );
+        expect(
+            red_values(identity) ==
+            std::vector<std::uint8_t>{0, 60, 120, 180, 240},
+            "zero fisheye amount should preserve the image"
+        );
+    }
+
     void test_saturation_formula() {
         FileData image{
             .width = 3,
@@ -549,6 +608,20 @@ namespace {
             "warp processor should require its own assignment keyword"
         );
 
+        const auto fisheye_arguments =
+            fisheye_processor().parse_arguments("fisheye 10.5 20 1");
+        expect(
+            fisheye_arguments ==
+            std::optional<std::vector<std::string>>{
+                {"10.5", "20", "1"}
+            },
+            "fisheye processor should parse its center and amount"
+        );
+        expect(
+            !fisheye_processor().parse_arguments("blur 3").has_value(),
+            "fisheye processor should decline another processor's command"
+        );
+
         const auto swap_arguments =
             color_swap_processor().parse_arguments("r <-> b");
         expect(
@@ -572,6 +645,10 @@ namespace {
         expect(
             parse_processor_command("blur 3").has_value(),
             "parser should accept a valid blur command"
+        );
+        expect(
+            parse_processor_command("fisheye 100 75 -0.5").has_value(),
+            "parser should accept a valid fisheye command"
         );
         expect(
             parse_processor_command("r = (R + G) / 2").has_value(),
@@ -642,6 +719,31 @@ namespace {
         expect(
             error_message == "blur radius must be a nonnegative integer",
             "parser should describe an invalid blur radius"
+        );
+        error_message.clear();
+        expect(
+            !parse_processor_command(
+                "fisheye 100 75 -1",
+                &error_message
+            ).has_value(),
+            "parser should reject a singular fisheye amount"
+        );
+        expect(
+            error_message == "fisheye amount must be greater than -1",
+            "parser should describe an invalid fisheye amount"
+        );
+        error_message.clear();
+        expect(
+            !parse_processor_command(
+                "fisheye 100 75",
+                &error_message
+            ).has_value(),
+            "parser should require all three fisheye arguments"
+        );
+        expect(
+            error_message ==
+            "fisheye expects exactly three numbers: x y amount",
+            "parser should describe missing fisheye arguments"
         );
         error_message.clear();
         expect(
@@ -770,6 +872,7 @@ int main() {
     test_formula_math_functions();
     test_simultaneous_rgb_formula();
     test_warp_formula();
+    test_fisheye();
     test_saturation_formula();
     test_color_swap();
     test_processor_argument_parsing();

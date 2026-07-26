@@ -4,8 +4,8 @@ project(pixlie VERSION 0.1.0 LANGUAGES CXX)
 add_executable(pixlie main.cpp
         src/utils/logging.cpp
         include/pixlie/utils/logging.h
-        src/inputValidation.cpp
-        include/pixlie/inputValidation.h
+        src/input_validation.cpp
+        include/pixlie/input_validation.h
         src/processor.cpp
         include/pixlie/processor.h
         src/file_utils/file_utils.cpp
@@ -19,6 +19,8 @@ add_executable(pixlie main.cpp
         include/pixlie/processors/mirror.h
         src/processors/blur.cpp
         include/pixlie/processors/blur.h
+        src/processors/fisheye.cpp
+        include/pixlie/processors/fisheye.h
         src/processors/channel_formula.cpp
         include/pixlie/processors/assignment_processor.h
         include/pixlie/processors/red_formula.h
@@ -36,6 +38,8 @@ add_executable(pixlie main.cpp
         include/pixlie/processors/utils/formula_parse.h
         src/processors/utils/formula_apply.cpp
         include/pixlie/processors/utils/formula_apply.h
+        src/processors/utils/image_sample.cpp
+        include/pixlie/processors/utils/image_sample.h
         include/pixlie/processors/utils/argument_parse.h
         include/pixlie/processors/image_processor.h)
 
@@ -73,6 +77,7 @@ if (BUILD_TESTING)
             src/processors/rotate.cpp
             src/processors/mirror.cpp
             src/processors/blur.cpp
+            src/processors/fisheye.cpp
             src/processors/channel_formula.cpp
             src/processors/rgb_formula.cpp
             src/processors/saturation_formula.cpp
@@ -80,6 +85,7 @@ if (BUILD_TESTING)
             src/processors/color_swap.cpp
             src/processors/utils/formula_parse.cpp
             src/processors/utils/formula_apply.cpp
+            src/processors/utils/image_sample.cpp
             src/utils/logging.cpp)
     target_include_directories(pixlie_processor_tests PRIVATE
             "${CMAKE_CURRENT_SOURCE_DIR}/include")

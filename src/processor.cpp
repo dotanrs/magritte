@@ -14,7 +14,7 @@
 #include <vector>
 
 #include "pixlie/file_utils/file_utils.h"
-#include "pixlie/inputValidation.h"
+#include "pixlie/input_validation.h"
 #include "pixlie/parser.h"
 #include "pixlie/processors/image_processor.h"
 #include "pixlie/utils/logging.h"
