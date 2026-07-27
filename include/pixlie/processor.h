@@ -13,10 +13,15 @@
 
 namespace fs = std::filesystem;
 
+struct ProcessorSpec {
+    std::string name;
+    std::string command;
+};
+
 struct Options {
     fs::path input;
     fs::path output;
-    std::vector<std::string> processor_commands;
+    std::vector<ProcessorSpec> processors;
     bool overwrite = false;
     bool debug = false;
 };
@@ -38,5 +43,17 @@ FileData process_file(
 /// Invalid processor command strings are reported and skipped. If the output
 /// exists and overwrite is disabled, this function prompts before replacing it.
 void process_image(const Options &options);
+
+/// Processes a newly created in-memory canvas and writes it as a JPEG.
+///
+/// Processor names are descriptive labels; each command is parsed exactly as
+/// the value passed to the CLI's `-p` option.
+void process_created_image(
+    const fs::path &output,
+    FileData data,
+    const std::vector<ProcessorSpec> &processors,
+    bool overwrite = false,
+    bool debug = false
+);
 
 #endif //PIXLIE_PROCESSOR_H

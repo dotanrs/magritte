@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.20)
 project(pixlie VERSION 0.1.0 LANGUAGES CXX)
 
 add_executable(pixlie main.cpp
+        src/drawing.cpp
+        src/drawing_config.cpp
+        include/pixlie/drawing_config.h
         src/utils/logging.cpp
         include/pixlie/utils/logging.h
         src/input_validation.cpp
@@ -91,11 +94,13 @@ if (BUILD_TESTING)
             tests/processors/loop_warp_test.cpp
             tests/processors/mirror_test.cpp
             tests/processors/parser_test.cpp
+            tests/drawing_config_test.cpp
             tests/processors/rgb_formula_test.cpp
             tests/processors/rotate_test.cpp
             tests/processors/saturation_formula_test.cpp
             tests/processors/warp_formula_test.cpp
             src/parser.cpp
+            src/drawing_config.cpp
             src/processors/layout/rotate.cpp
             src/processors/layout/mirror.cpp
             src/processors/filters/blur.cpp

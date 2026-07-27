@@ -1,11 +1,15 @@
+#include <algorithm>
+#include <cctype>
 #include <filesystem>
-#include <fstream>
 #include <iostream>
 #include <stdexcept>
 #include <string>
 #include <string_view>
-#include "pixlie/utils/logging.h"
+#include <utility>
+
+#include "pixlie/drawing_config.h"
 #include "pixlie/processor.h"
+#include "pixlie/utils/logging.h"
 
 namespace fs = std::filesystem;
 
@@ -14,8 +18,10 @@ namespace {
         output << "Usage: " << program
                 << " <input.jpg> [-o <output.jpg>] [--overwrite]"
                    " [--debug] [-p <processor>]...\n"
+                << "       " << program
+                << " <drawing.yml> [--overwrite] [--debug]\n"
                 << "\n"
-                << "Processes a JPEG image using commands in the order provided.\n"
+                << "Processes a JPEG, or creates a drawing from a YAML file.\n"
                 << "If no output is supplied, <input>_copy.jpg is used.\n"
                 << "\n"
                 << "Options:\n"
@@ -25,6 +31,11 @@ namespace {
                 << "  -p, --processor <command>\n"
                 << "                       Processor command; may be repeated\n"
                 << "  -h, --help           Show this help message\n";
+        output << "\n"
+                << "Drawing YAML:\n"
+                << "  canvas:              Creates file_name at width and height\n"
+                << "  source_image:        Reads an existing JPEG instead of canvas\n"
+                << "  processors:          Named commands; comment is the -p value\n";
         output << "\n"
                 << "Processors:\n"
                 << "  rotate <int>         Rotate clockwise by 90 degrees <int> times\n"
@@ -70,7 +81,10 @@ namespace {
                 if (++index >= argc) {
                     throw std::invalid_argument("missing command after " + std::string(argument));
                 }
-                options.processor_commands.emplace_back(argv[index]);
+                options.processors.push_back({
+                    .name = {},
+                    .command = argv[index],
+                });
             } else if (argument == "--overwrite") {
                 options.overwrite = true;
             } else if (argument == "-d" || argument == "--debug") {
@@ -86,6 +100,37 @@ namespace {
 
         return options;
     }
+
+    bool is_drawing_path(const fs::path &path) {
+        std::string extension = path.extension().string();
+        std::transform(
+            extension.begin(),
+            extension.end(),
+            extension.begin(),
+            [](unsigned char character) {
+                return static_cast<char>(std::tolower(character));
+            }
+        );
+        return extension == ".yml" || extension == ".yaml";
+    }
+
+    std::pair<bool, bool> parse_drawing_arguments(int argc, char *argv[]) {
+        bool overwrite = false;
+        bool debug = false;
+        for (int index = 2; index < argc; ++index) {
+            const std::string_view argument = argv[index];
+            if (argument == "--overwrite") {
+                overwrite = true;
+            } else if (argument == "-d" || argument == "--debug") {
+                debug = true;
+            } else {
+                throw std::invalid_argument(
+                    "unknown drawing argument: " + std::string(argument)
+                );
+            }
+        }
+        return {overwrite, debug};
+    }
 } // namespace
 
 int main(int argc, char *argv[]) {
@@ -98,6 +143,13 @@ int main(int argc, char *argv[]) {
     }
 
     try {
+        if (argc >= 2 && is_drawing_path(argv[1])) {
+            const auto [overwrite, debug] =
+                parse_drawing_arguments(argc, argv);
+            log(LogLevel::info, "pixlie drawing started");
+            process_drawing(argv[1], overwrite, debug);
+            return 0;
+        }
         const Options options = parse_arguments(argc, argv);
         log(LogLevel::info, "pixlie started");
         process_image(options);

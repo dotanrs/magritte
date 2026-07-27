@@ -82,6 +82,39 @@ namespace {
         std::vector<ProcessorError> errors;
     };
 
+    std::string processor_description(const ProcessorSpec &processor) {
+        if (processor.name.empty()) {
+            return processor.command;
+        }
+        return processor.name + " (" + processor.command + ")";
+    }
+
+    std::pair<std::vector<ProcessorCommand>, ProcessorResults> parse_processors(
+        const std::vector<ProcessorSpec> &processors
+    ) {
+        ProcessorResults results;
+        std::vector<ProcessorCommand> commands;
+        commands.reserve(processors.size());
+        for (const ProcessorSpec &processor: processors) {
+            std::string error_message;
+            if (auto command = parse_processor_command(
+                    processor.command,
+                    &error_message
+                )) {
+                results.successful.push_back(
+                    processor_description(processor)
+                );
+                commands.push_back(std::move(*command));
+            } else {
+                results.errors.push_back({
+                    .command = processor_description(processor),
+                    .message = std::move(error_message),
+                });
+            }
+        }
+        return {std::move(commands), std::move(results)};
+    }
+
     void print_processor_results(const ProcessorResults &results) {
         if (results.successful.empty() && results.errors.empty()) {
             return;
@@ -143,30 +176,39 @@ void process_image(const Options &options) {
         return;
     }
 
-    ProcessorResults results;
-    std::vector<ProcessorCommand> commands;
-    commands.reserve(options.processor_commands.size());
-    for (const std::string &command_text: options.processor_commands) {
-        std::string error_message;
-        if (auto command = parse_processor_command(command_text, &error_message)) {
-            commands.push_back(std::move(*command));
-        } else {
-            results.errors.push_back({
-                .command = command_text,
-                .message = std::move(error_message),
-            });
-        }
-    }
+    auto [commands, results] = parse_processors(options.processors);
 
     const FileData data = process_file(read_file(input), commands, options.debug);
-    for (const ProcessorCommand &command: commands) {
-        results.successful.push_back(command.source);
-    }
 
     save_file(output, data);
     log(
         LogLevel::info,
         "Processing complete (" + std::to_string(commands.size()) +
+        " processors applied)"
+    );
+    print_processor_results(results);
+}
+
+void process_created_image(
+    const fs::path &output,
+    FileData data,
+    const std::vector<ProcessorSpec> &processors,
+    bool overwrite,
+    bool debug
+) {
+    const fs::path normalized_output =
+        fs::absolute(output).lexically_normal();
+    if (!should_write_output(normalized_output, overwrite)) {
+        log(LogLevel::info, "Output file was not overwritten");
+        return;
+    }
+
+    auto [commands, results] = parse_processors(processors);
+    data = process_file(std::move(data), commands, debug);
+    save_file(normalized_output, data);
+    log(
+        LogLevel::info,
+        "Drawing complete (" + std::to_string(commands.size()) +
         " processors applied)"
     );
     print_processor_results(results);

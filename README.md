@@ -77,6 +77,65 @@ Invalid processor commands are logged and skipped without preventing other proce
 `pixlie` prints successful processor commands in green followed by invalid commands and their errors in yellow when any
 errors occurred.
 
+## Drawing files
+
+A `.yml` or `.yaml` input creates a new black canvas instead of reading an
+existing image when it contains `canvas`. The canvas filename is resolved
+relative to the YAML file, and each processor `comment` is the same command
+that would be passed to `-p`:
+
+```yaml
+canvas:
+  file_name: output/blue-field.jpg
+  width: 900
+  height: 1200
+processors:
+  - name: flowing cobalt lines
+    comment: "rgb = (28 + 220 * clamp(abs(sin(Y / 11 + 1.8 * sin(X / 65) + 0.7 * cos(D / 31))) * 10, 0, 1), 70 + 170 * clamp(abs(sin(Y / 11 + 1.8 * sin(X / 65) + 0.7 * cos(D / 31))) * 10, 0, 1), 150 + 90 * clamp(abs(sin(Y / 11 + 1.8 * sin(X / 65) + 0.7 * cos(D / 31))) * 10, 0, 1))"
+```
+
+Run it with:
+
+```sh
+./build/pixlie examples/drawings/blue-field.yml
+```
+
+To process an existing JPEG, replace `canvas` with `source_image`:
+
+```yaml
+source_image: "photos/input.jpg"
+processors:
+  - name: soft mirror
+    comment: "mirror y"
+  - name: diffuse
+    comment: "blur 2"
+```
+
+The equivalent mapped form is also accepted:
+
+```yaml
+source_image:
+  file_name: "photos/input.jpg"
+processors:
+  - name: diffuse
+    comment: "blur 2"
+```
+
+The source path is resolved relative to the YAML file and the result uses the
+normal `<source>_copy.jpg` destination. A drawing file must set exactly one of
+`canvas` and `source_image`; setting both is an error.
+
+If the destination already exists, the drawing path uses the same overwrite
+confirmation as image processing. Pass `--overwrite` to replace it
+non-interactively. The supported schema is intentionally small: `canvas`
+requires `file_name`, positive integer `width`, and positive integer `height`;
+`source_image` requires a filename; and `processors` is a list whose items
+require `name` and `comment`. Plain, single-quoted, and double-quoted scalar
+values are accepted.
+
+Original plotter-inspired recipes and their rendered JPEGs live in
+[`examples/drawings`](examples/drawings).
+
 ## Processors
 
 - `rotate <int>` rotates clockwise by 90 degrees `int % 4` times. Negative values rotate in the opposite direction.
