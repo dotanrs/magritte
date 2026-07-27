@@ -4,22 +4,9 @@
 #include "pixlie/processor.h"
 #include "pixlie/processors/utils/formula_parse.h"
 
-enum class ColorChannel {
-    red,
-    green,
-    blue,
-};
-
-/// Evaluates a formula for every pixel and replaces only `channel`.
-/// Results are rounded and clamped to the byte range; NaN becomes zero.
-[[nodiscard]] FileData apply_formula(
-    FileData data,
-    const FormulaNode &formula,
-    ColorChannel channel
-);
-
-/// Replaces all RGB channels, evaluating every expression against the same
-/// original value of each pixel. Alpha is preserved.
+/// Replaces the selected RGB channels, evaluating every expression against the
+/// same original value of each pixel. Untargeted channels and alpha are
+/// preserved.
 [[nodiscard]] FileData apply_rgb_formula(
     FileData data,
     const RgbFormula &formula

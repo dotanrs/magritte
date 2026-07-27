@@ -92,10 +92,12 @@ errors occurred.
 - `lighting <angle> <#RRGGBB> <threshold|auto> [strength [softness [atmosphere]]]` creates a custom directional gel
   light. It uses image luminance as scene structure, rolls the light off across the frame, softens occlusion, and adds
   restrained shadow contrast instead of painting solid ray-shaped color blocks.
-- `r = <formula>` changes only the red channel.
-- `g = <formula>` changes only the green channel.
-- `b = <formula>` changes only the blue channel.
-- `rgb = (<red>, <green>, <blue>)` changes all three channels simultaneously. Every expression reads the original pixel.
+- `<channels> = <formula-or-tuple>` changes any nonempty subset of `r`, `g`,
+  and `b`. A one-channel target uses one formula, such as `r = G`. A
+  multi-channel target uses the same number of tuple values, such as
+  `rg = (G, R)` or `bgr = (R, G, B)`. Target order determines which expression
+  writes each channel, every expression reads the original pixel, and channels
+  cannot be repeated.
 - `loop-rgb <iterations> = (<red>, <green>, <blue>)` repeatedly applies an RGB formula, feeding each completed result
   into the next iteration.
 - `local-rgb = (<red>, <green>, <blue>)` changes all three channels using formulas that can sample neighboring pixels
@@ -103,8 +105,6 @@ errors occurred.
 - `s = <formula>` changes HSL saturation while preserving hue and lightness.
 - `warp = (<source-x>, <source-y>)` remaps pixels with mathematical source coordinates.
 - `loop-warp <iterations> = (<source-x>, <source-y>)` repeatedly applies a warp, feeding each result into the next.
-- `x <-> y` swaps channels `x` and `y`, where each channel is `r`, `g`, or
-  `b`.
 
 Formulas support numeric constants, parentheses, unary signs, and `+`, `-`, `*`, and `/`. Identifiers and function
 names are case-insensitive.
@@ -130,15 +130,21 @@ undefined results such as the square root of a negative number become `0`.
 Saturation formulas support the same coordinates, constants, and functions with `S`, where saturation is represented in
 the range `[0, 255]`.
 
-An RGB tuple is useful when output channels depend on one another. For example, this rotates the channels using the
-original `R`, `G`, and `B` values:
+An RGB tuple is useful when output channels depend on one another. For example,
+this rotates the channels using the original `R`, `G`, and `B` values:
 
 ```sh
 -p "rgb = (G, B, R)"
 ```
 
-Three separate assignments would behave differently because processors run sequentially and later formulas see changes
-made by earlier processors.
+The target can also encode a swap while leaving other channels untouched:
+
+```sh
+-p "br = (R, B)"
+```
+
+Three separate assignments would behave differently because processors run
+sequentially and later formulas see changes made by earlier processors.
 
 ### Iterated RGB formulas
 

@@ -1,6 +1,7 @@
 #include "pixlie/processors/utils/formula_apply.h"
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <cstdint>
 #include <limits>
@@ -285,24 +286,6 @@ namespace {
     }
 } // namespace
 
-FileData apply_formula(
-    FileData data,
-    const FormulaNode &formula,
-    ColorChannel channel
-) {
-    for (std::size_t y = 0; y < data.height; ++y) {
-        for (std::size_t x = 0; x < data.width; ++x) {
-            Pixel &pixel = data.pixels[y * data.width + x];
-            set_channel(
-                pixel,
-                channel,
-                channel_value(evaluate(formula, make_context(data, pixel, x, y)))
-            );
-        }
-    }
-    return data;
-}
-
 FileData apply_rgb_formula(
     FileData data,
     const RgbFormula &formula
@@ -312,16 +295,19 @@ FileData apply_rgb_formula(
             Pixel &pixel = data.pixels[y * data.width + x];
             const FormulaContext context = make_context(data, pixel, x, y);
 
-            const std::uint8_t red =
-                    channel_value(evaluate(*formula.red, context));
-            const std::uint8_t green =
-                    channel_value(evaluate(*formula.green, context));
-            const std::uint8_t blue =
-                    channel_value(evaluate(*formula.blue, context));
-
-            pixel.red = red;
-            pixel.green = green;
-            pixel.blue = blue;
+            std::array<std::uint8_t, 3> values{};
+            for (std::size_t index = 0;
+                 index < formula.expressions.size();
+                 ++index) {
+                values[index] = channel_value(
+                    evaluate(*formula.expressions[index], context)
+                );
+            }
+            for (std::size_t index = 0;
+                 index < formula.channels.size();
+                 ++index) {
+                set_channel(pixel, formula.channels[index], values[index]);
+            }
         }
     }
     return data;
@@ -348,12 +334,22 @@ FileData apply_local_rgb_formula(
             const FormulaContext context =
                     make_context(data, source_pixel, x, y);
 
-            result.pixels[index] = Pixel{
-                .red = channel_value(evaluate(*formula.red, context)),
-                .green = channel_value(evaluate(*formula.green, context)),
-                .blue = channel_value(evaluate(*formula.blue, context)),
-                .alpha = source_pixel.alpha,
-            };
+            Pixel output_pixel = source_pixel;
+            for (std::size_t expression_index = 0;
+                 expression_index < formula.channels.size();
+                 ++expression_index) {
+                set_channel(
+                    output_pixel,
+                    formula.channels[expression_index],
+                    channel_value(
+                        evaluate(
+                            *formula.expressions[expression_index],
+                            context
+                        )
+                    )
+                );
+            }
+            result.pixels[index] = output_pixel;
         }
     }
     return result;

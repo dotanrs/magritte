@@ -1,22 +1,67 @@
 #include "pixlie/processors/rgb_formula.h"
 
+#include <algorithm>
+#include <cctype>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <utility>
 #include <vector>
-#include "pixlie/processors/assignment_processor.h"
 #include "pixlie/processors/utils/formula_apply.h"
 #include "pixlie/processors/utils/formula_parse.h"
 
 namespace {
-    class RgbFormulaProcessor final : public AssignmentProcessor {
-    public:
-        RgbFormulaProcessor()
-            : AssignmentProcessor("rgb") {
+    std::string_view trim(std::string_view value) {
+        while (!value.empty() &&
+               std::isspace(static_cast<unsigned char>(value.front())) != 0) {
+            value.remove_prefix(1);
         }
+        while (!value.empty() &&
+               std::isspace(static_cast<unsigned char>(value.back())) != 0) {
+            value.remove_suffix(1);
+        }
+        return value;
+    }
 
+    bool is_rgb_target(std::string_view value) {
+        return !value.empty() &&
+               std::all_of(
+                   value.begin(),
+                   value.end(),
+                   [](char channel) {
+                       return channel == 'r' ||
+                              channel == 'g' ||
+                              channel == 'b';
+                   }
+               );
+    }
+
+    class RgbFormulaProcessor final : public ImageProcessor {
+    public:
         [[nodiscard]] std::string_view name() const noexcept override {
             return "RGB formula";
+        }
+
+        [[nodiscard]] std::optional<std::vector<std::string>> parse_arguments(
+            std::string_view command
+        ) const override {
+            const std::string_view value = trim(command);
+            const std::size_t equals = value.find('=');
+            if (equals == std::string_view::npos) {
+                return std::nullopt;
+            }
+
+            const std::string_view target = trim(value.substr(0, equals));
+            if (!is_rgb_target(target)) {
+                return std::nullopt;
+            }
+
+            std::vector<std::string> arguments{
+                std::string(target),
+                std::string(trim(value.substr(equals + 1))),
+            };
+            validate(arguments);
+            return arguments;
         }
 
         void validate(const std::vector<std::string> &arguments) const override {

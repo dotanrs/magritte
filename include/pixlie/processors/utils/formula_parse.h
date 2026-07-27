@@ -55,10 +55,15 @@ struct FormulaNode {
 
 using Formula = std::unique_ptr<FormulaNode>;
 
+enum class ColorChannel {
+    red,
+    green,
+    blue,
+};
+
 struct RgbFormula {
-    Formula red;
-    Formula green;
-    Formula blue;
+    std::vector<ColorChannel> channels;
+    std::vector<Formula> expressions;
 };
 
 struct WarpFormula {
@@ -66,14 +71,10 @@ struct WarpFormula {
     Formula source_y;
 };
 
-/// Parses one color-channel expression from a single processor argument.
-/// @throws std::invalid_argument for a missing argument or invalid expression.
-[[nodiscard]] Formula parse_formula(
-    const std::vector<std::string> &arguments
-);
-
-/// Parses a parenthesized `(red, green, blue)` expression tuple.
-/// @throws std::invalid_argument for a missing argument or invalid tuple.
+/// Parses either a fixed RGB tuple from one argument or a channel target and
+/// its matching expression(s) from two arguments. Multi-channel formulas use
+/// a parenthesized tuple; a single-channel formula is one expression.
+/// @throws std::invalid_argument for an invalid target or formula.
 [[nodiscard]] RgbFormula parse_rgb_formula(
     const std::vector<std::string> &arguments
 );

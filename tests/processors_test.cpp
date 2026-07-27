@@ -4,17 +4,13 @@
 #include <string>
 #include <vector>
 #include "pixlie/parser.h"
-#include "pixlie/processors/blue_formula.h"
 #include "pixlie/processors/blur.h"
-#include "pixlie/processors/color_swap.h"
 #include "pixlie/processors/fisheye.h"
-#include "pixlie/processors/green_formula.h"
 #include "pixlie/processors/lighting.h"
 #include "pixlie/processors/local_rgb.h"
 #include "pixlie/processors/loop_rgb.h"
 #include "pixlie/processors/loop_warp.h"
 #include "pixlie/processors/mirror.h"
-#include "pixlie/processors/red_formula.h"
 #include "pixlie/processors/rgb_formula.h"
 #include "pixlie/processors/rotate.h"
 #include "pixlie/processors/saturation_formula.h"
@@ -221,9 +217,9 @@ namespace {
             },
         };
 
-        const FileData processed = red_formula_processor().apply(
+        const FileData processed = rgb_formula_processor().apply(
             std::move(image),
-            {"r * 2 - g"}
+            {"r", "r * 2 - g"}
         );
 
         expect(
@@ -245,9 +241,9 @@ namespace {
             },
         };
 
-        const FileData processed = green_formula_processor().apply(
+        const FileData processed = rgb_formula_processor().apply(
             std::move(image),
-            {"b * 2"}
+            {"g", "b * 2"}
         );
 
         expect(processed.pixels[0].green == 60, "green formula should update green");
@@ -266,9 +262,9 @@ namespace {
             },
         };
 
-        const FileData processed = blue_formula_processor().apply(
+        const FileData processed = rgb_formula_processor().apply(
             std::move(image),
-            {"r - g"}
+            {"b", "r - g"}
         );
 
         expect(processed.pixels[0].blue == 60, "blue formula should update blue");
@@ -290,9 +286,9 @@ namespace {
     }
 
     void test_formula_coordinates_and_dimensions() {
-        const FileData processed = red_formula_processor().apply(
+        const FileData processed = rgb_formula_processor().apply(
             blank_image(3, 2),
-            {"X + Y * 10 + W + H"}
+            {"r", "X + Y * 10 + W + H"}
         );
 
         expect(
@@ -303,36 +299,36 @@ namespace {
     }
 
     void test_formula_normalized_and_polar_coordinates() {
-        const FileData horizontal = red_formula_processor().apply(
+        const FileData horizontal = rgb_formula_processor().apply(
             blank_image(3, 1),
-            {"(U + 1) * 100"}
+            {"r", "(U + 1) * 100"}
         );
         expect(
             red_values(horizontal) == std::vector<std::uint8_t>{0, 100, 200},
             "U should range from -1 to 1"
         );
 
-        const FileData vertical = red_formula_processor().apply(
+        const FileData vertical = rgb_formula_processor().apply(
             blank_image(1, 3),
-            {"(V + 1) * 100"}
+            {"r", "(V + 1) * 100"}
         );
         expect(
             red_values(vertical) == std::vector<std::uint8_t>{0, 100, 200},
             "V should range from -1 to 1"
         );
 
-        const FileData single_pixel = red_formula_processor().apply(
+        const FileData single_pixel = rgb_formula_processor().apply(
             blank_image(1, 1),
-            {"100 + U + V"}
+            {"r", "100 + U + V"}
         );
         expect(
             single_pixel.pixels[0].red == 100,
             "normalized coordinates should be zero for one-pixel dimensions"
         );
 
-        const FileData distance = red_formula_processor().apply(
+        const FileData distance = rgb_formula_processor().apply(
             blank_image(3, 3),
-            {"D * 100"}
+            {"r", "D * 100"}
         );
         expect(
             red_values(distance) ==
@@ -344,9 +340,9 @@ namespace {
             "D should be pixel distance from the image center"
         );
 
-        const FileData angle = red_formula_processor().apply(
+        const FileData angle = rgb_formula_processor().apply(
             blank_image(3, 3),
-            {"round((A + PI) * 10)"}
+            {"r", "round((A + PI) * 10)"}
         );
         expect(
             angle.pixels[5].red == 31 &&
@@ -358,18 +354,19 @@ namespace {
     }
 
     void test_formula_math_functions() {
-        const FileData trigonometry = red_formula_processor().apply(
+        const FileData trigonometry = rgb_formula_processor().apply(
             blank_image(1, 1),
-            {"10 * (sin(PI / 2) + cos(0) + tan(PI / 4))"}
+            {"r", "10 * (sin(PI / 2) + cos(0) + tan(PI / 4))"}
         );
         expect(
             trigonometry.pixels[0].red == 30,
             "formula should evaluate trigonometric functions and PI"
         );
 
-        const FileData arithmetic = red_formula_processor().apply(
+        const FileData arithmetic = rgb_formula_processor().apply(
             blank_image(1, 1),
             {
+                "r",
                 "abs(-2) + sqrt(9) + pow(2, 3) + mod(7, 4) + "
                 "min(9, 5) + max(2, 6) + floor(2.9) + ceil(2.1) + "
                 "round(2.5) + exp(0) + log(E) + atan2(0, -1)"
@@ -380,9 +377,9 @@ namespace {
             "formula should evaluate arithmetic functions and E"
         );
 
-        const FileData clamped = red_formula_processor().apply(
+        const FileData clamped = rgb_formula_processor().apply(
             blank_image(1, 1),
-            {"clamp(300, 200, 10)"}
+            {"r", "clamp(300, 200, 10)"}
         );
         expect(
             clamped.pixels[0].red == 200,
@@ -825,7 +822,7 @@ namespace {
         );
     }
 
-    void test_color_swap() {
+    void test_rgb_formula_target_order() {
         FileData image{
             .width = 2,
             .height = 1,
@@ -835,9 +832,9 @@ namespace {
             },
         };
 
-        const FileData processed = color_swap_processor().apply(
+        const FileData processed = rgb_formula_processor().apply(
             std::move(image),
-            {"r", "b"}
+            {"br", "(R, B)"}
         );
 
         expect(
@@ -845,14 +842,32 @@ namespace {
             processed.pixels[0].green == 20 &&
             processed.pixels[0].blue == 10 &&
             processed.pixels[0].alpha == 40,
-            "color swap should exchange the selected channels"
+            "a reordered RGB target should exchange selected channels"
         );
         expect(
             processed.pixels[1].red == 70 &&
             processed.pixels[1].green == 60 &&
             processed.pixels[1].blue == 50 &&
             processed.pixels[1].alpha == 80,
-            "color swap should process every pixel without changing alpha"
+            "a reordered RGB target should preserve untargeted channels and alpha"
+        );
+
+        const FileData subset = rgb_formula_processor().apply(
+            FileData{
+                .width = 1,
+                .height = 1,
+                .pixels = {
+                    Pixel{.red = 10, .green = 20, .blue = 30, .alpha = 40},
+                },
+            },
+            {"rg", "(G + B, R + B)"}
+        );
+        expect(
+            subset.pixels[0].red == 50 &&
+            subset.pixels[0].green == 40 &&
+            subset.pixels[0].blue == 30 &&
+            subset.pixels[0].alpha == 40,
+            "a subset formula should read the original pixel simultaneously"
         );
     }
 
@@ -873,12 +888,24 @@ namespace {
             rgb_formula_processor().parse_arguments("rgb = (G, B, R)");
         expect(
             rgb_arguments ==
-            std::optional<std::vector<std::string>>{{"(G, B, R)"}},
+            std::optional<std::vector<std::string>>{
+                {"rgb", "(G, B, R)"}
+            },
             "RGB processor should parse its assignment"
         );
+        const auto subset_rgb_arguments =
+            rgb_formula_processor().parse_arguments("bgr = (R, G, B)");
         expect(
-            !rgb_formula_processor().parse_arguments("r = G").has_value(),
-            "RGB processor should require its own assignment keyword"
+            subset_rgb_arguments ==
+            std::optional<std::vector<std::string>>{
+                {"bgr", "(R, G, B)"}
+            },
+            "RGB processor should preserve a reordered target"
+        );
+        expect(
+            rgb_formula_processor().parse_arguments("r = G") ==
+            std::optional<std::vector<std::string>>{{"r", "G"}},
+            "RGB processor should parse a single-channel assignment"
         );
 
         const auto local_rgb_arguments =
@@ -990,13 +1017,6 @@ namespace {
             "lighting processor should decline another processor's command"
         );
 
-        const auto swap_arguments =
-            color_swap_processor().parse_arguments("r <-> b");
-        expect(
-            swap_arguments ==
-            std::optional<std::vector<std::string>>{{"r", "b"}},
-            "color swap processor should parse arguments around its operator"
-        );
     }
 
     void test_command_parser() {
@@ -1062,6 +1082,18 @@ namespace {
         );
         expect(
             parse_processor_command(
+                "bgr = (R, G, B)"
+            ).has_value(),
+            "parser should accept RGB target channels in any order"
+        );
+        expect(
+            parse_processor_command(
+                "rg = (G, R)"
+            ).has_value(),
+            "parser should accept a subset of RGB target channels"
+        );
+        expect(
+            parse_processor_command(
                 "local-rgb = (red(-1, 0), green(0, 1), blue(1, 0))"
             ).has_value(),
             "parser should accept a local RGB sampling formula"
@@ -1097,16 +1129,12 @@ namespace {
             "parser should accept a valid saturation formula"
         );
         expect(
-            parse_processor_command("r <-> b").has_value(),
-            "parser should accept a valid color swap"
+            !parse_processor_command("rr = (R, R)", &error_message).has_value(),
+            "parser should reject a repeated RGB target channel"
         );
         expect(
-            !parse_processor_command("r <-> y", &error_message).has_value(),
-            "parser should reject an invalid color swap channel"
-        );
-        expect(
-            error_message == "color swap channels must be r, g, or b",
-            "parser should describe an invalid color swap channel"
+            error_message == "RGB formula target cannot repeat a channel",
+            "parser should describe a repeated RGB target channel"
         );
         error_message.clear();
         expect(
@@ -1323,8 +1351,32 @@ namespace {
             "parser should require exactly three RGB expressions"
         );
         expect(
-            !error_message.empty(),
+            error_message.find("value count") != std::string::npos,
             "parser should describe an incomplete RGB tuple"
+        );
+        error_message.clear();
+        expect(
+            !parse_processor_command(
+                "rg = (R, G, B)",
+                &error_message
+            ).has_value(),
+            "parser should reject more values than target channels"
+        );
+        expect(
+            error_message.find("value count") != std::string::npos,
+            "parser should describe a target and value count mismatch"
+        );
+        error_message.clear();
+        expect(
+            !parse_processor_command(
+                "rg = (R)",
+                &error_message
+            ).has_value(),
+            "parser should reject fewer values than target channels"
+        );
+        expect(
+            error_message.find("value count") != std::string::npos,
+            "parser should describe a target and value count mismatch"
         );
         error_message.clear();
         expect(
@@ -1335,7 +1387,7 @@ namespace {
             "parser should reject more than three RGB expressions"
         );
         expect(
-            error_message.find("expected ')'") != std::string::npos,
+            error_message.find("value count") != std::string::npos,
             "parser should describe an oversized RGB tuple"
         );
         error_message.clear();
@@ -1432,7 +1484,7 @@ int main() {
     test_fisheye();
     test_fisheye_debug_hints();
     test_saturation_formula();
-    test_color_swap();
+    test_rgb_formula_target_order();
     test_processor_argument_parsing();
     test_command_parser();
 

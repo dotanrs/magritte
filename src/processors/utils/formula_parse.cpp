@@ -63,9 +63,26 @@ namespace {
             return result;
         }
 
-        [[nodiscard]] RgbFormula parse_rgb() {
+        [[nodiscard]] RgbFormula parse_rgb(
+            std::vector<ColorChannel> channels
+        ) {
             if (formula_.empty()) {
                 throw std::invalid_argument("RGB formula cannot be empty");
+            }
+
+            RgbFormula result{
+                .channels = std::move(channels),
+                .expressions = {},
+            };
+            result.expressions.reserve(result.channels.size());
+
+            if (result.channels.size() == 1) {
+                result.expressions.push_back(parse_expression());
+                skip_whitespace();
+                if (position_ != formula_.size()) {
+                    fail("unexpected character after RGB formula");
+                }
+                return result;
             }
 
             skip_whitespace();
@@ -73,16 +90,36 @@ namespace {
                 fail("RGB formula must be a parenthesized tuple");
             }
 
-            RgbFormula result;
-            result.red = parse_expression();
-            expect_tuple_separator();
-            result.green = parse_expression();
-            expect_tuple_separator();
-            result.blue = parse_expression();
+            for (std::size_t index = 0;
+                 index < result.channels.size();
+                 ++index) {
+                skip_whitespace();
+                if (position_ < formula_.size() &&
+                    formula_[position_] == ')') {
+                    fail(
+                        "RGB formula value count must match the target "
+                        "channel count"
+                    );
+                }
+                result.expressions.push_back(parse_expression());
+                if (index + 1 < result.channels.size()) {
+                    skip_whitespace();
+                    if (position_ < formula_.size() &&
+                        formula_[position_] == ')') {
+                        fail(
+                            "RGB formula value count must match the target "
+                            "channel count"
+                        );
+                    }
+                    expect_tuple_separator();
+                }
+            }
 
             skip_whitespace();
             if (!consume(')')) {
-                fail("expected ')' after the blue expression");
+                fail(
+                    "RGB formula value count must match the target channel count"
+                );
             }
             skip_whitespace();
             if (position_ != formula_.size()) {
@@ -404,20 +441,66 @@ namespace {
         bool saturation_formula_;
         bool local_sampling_;
     };
+
+    std::vector<ColorChannel> parse_rgb_target(std::string_view target) {
+        if (target.empty()) {
+            throw std::invalid_argument("RGB formula target cannot be empty");
+        }
+
+        std::vector<ColorChannel> channels;
+        channels.reserve(target.size());
+        bool has_red = false;
+        bool has_green = false;
+        bool has_blue = false;
+
+        for (const char value: target) {
+            ColorChannel channel;
+            bool *already_present;
+            switch (value) {
+                case 'r':
+                    channel = ColorChannel::red;
+                    already_present = &has_red;
+                    break;
+                case 'g':
+                    channel = ColorChannel::green;
+                    already_present = &has_green;
+                    break;
+                case 'b':
+                    channel = ColorChannel::blue;
+                    already_present = &has_blue;
+                    break;
+                default:
+                    throw std::invalid_argument(
+                        "RGB formula target may only contain r, g, and b"
+                    );
+            }
+
+            if (*already_present) {
+                throw std::invalid_argument(
+                    "RGB formula target cannot repeat a channel"
+                );
+            }
+            *already_present = true;
+            channels.push_back(channel);
+        }
+        return channels;
+    }
 } // namespace
 
-Formula parse_formula(const std::vector<std::string> &arguments) {
-    if (arguments.size() != 1) {
-        throw std::invalid_argument("formula processor expects one formula");
-    }
-    return FormulaParser(arguments.front()).parse();
-}
-
 RgbFormula parse_rgb_formula(const std::vector<std::string> &arguments) {
-    if (arguments.size() != 1) {
-        throw std::invalid_argument("RGB formula processor expects one tuple");
+    if (arguments.size() == 1) {
+        return FormulaParser(arguments.front()).parse_rgb(
+            parse_rgb_target("rgb")
+        );
     }
-    return FormulaParser(arguments.front()).parse_rgb();
+    if (arguments.size() == 2) {
+        return FormulaParser(arguments[1]).parse_rgb(
+            parse_rgb_target(arguments[0])
+        );
+    }
+    throw std::invalid_argument(
+        "RGB formula processor expects a target and formula"
+    );
 }
 
 RgbFormula parse_local_rgb_formula(
@@ -428,7 +511,9 @@ RgbFormula parse_local_rgb_formula(
             "local RGB formula processor expects one tuple"
         );
     }
-    return FormulaParser(arguments.front(), false, true).parse_rgb();
+    return FormulaParser(arguments.front(), false, true).parse_rgb(
+        parse_rgb_target("rgb")
+    );
 }
 
 WarpFormula parse_warp_formula(const std::vector<std::string> &arguments) {
