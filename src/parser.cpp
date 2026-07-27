@@ -5,6 +5,7 @@
 #include <functional>
 #include <stdexcept>
 #include <string>
+#include "pixlie/utils/string.h"
 #include "pixlie/processors/blur.h"
 #include "pixlie/processors/fisheye.h"
 #include "pixlie/processors/lighting.h"
@@ -18,18 +19,6 @@
 #include "pixlie/processors/warp_formula.h"
 
 namespace {
-    std::string_view trim(std::string_view value) {
-        while (!value.empty() &&
-               std::isspace(static_cast<unsigned char>(value.front())) != 0) {
-            value.remove_prefix(1);
-        }
-        while (!value.empty() &&
-               std::isspace(static_cast<unsigned char>(value.back())) != 0) {
-            value.remove_suffix(1);
-        }
-        return value;
-    }
-
     std::optional<ProcessorCommand> invalid(
         std::string_view reason,
         std::string *error_message

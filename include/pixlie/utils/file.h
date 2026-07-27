@@ -3,7 +3,7 @@
 
 #include <filesystem>
 
-#include "pixlie/file_utils/file_data.h"
+#include "pixlie/common/file_data.h"
 
 /// Decodes a JPEG and applies its orientation metadata.
 /// @throws std::runtime_error if the file cannot be read or decoded.

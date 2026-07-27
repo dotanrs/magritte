@@ -1,7 +1,7 @@
 #ifndef PIXLIE_IMAGE_SAMPLE_H
 #define PIXLIE_IMAGE_SAMPLE_H
 
-#include "pixlie/file_utils/file_data.h"
+#include "../../common/file_data.h"
 
 struct BilinearSample {
     double red;

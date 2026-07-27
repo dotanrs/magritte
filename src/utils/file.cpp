@@ -1,4 +1,4 @@
-#include "pixlie/file_utils/file_utils.h"
+#include "../../include/pixlie/utils/file.h"
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <CoreGraphics/CoreGraphics.h>
