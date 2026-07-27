@@ -24,6 +24,8 @@ add_executable(pixlie main.cpp
         include/pixlie/processors/blur.h
         src/processors/toolbox/fisheye.cpp
         include/pixlie/processors/fisheye.h
+        src/processors/drawing/flow_lines.cpp
+        include/pixlie/processors/flow_lines.h
         src/processors/filters/lighting.cpp
         include/pixlie/processors/lighting.h
         include/pixlie/processors/assignment_processor.h
@@ -87,6 +89,7 @@ if (BUILD_TESTING)
             tests/processors_test.cpp
             tests/processors/blur_test.cpp
             tests/processors/fisheye_test.cpp
+            tests/processors/flow_lines_test.cpp
             tests/processors/lighting_test.cpp
             tests/processors/local_rgb_test.cpp
             tests/processors/local_warp_test.cpp
@@ -105,6 +108,7 @@ if (BUILD_TESTING)
             src/processors/layout/mirror.cpp
             src/processors/filters/blur.cpp
             src/processors/toolbox/fisheye.cpp
+            src/processors/drawing/flow_lines.cpp
             src/processors/filters/lighting.cpp
             src/processors/formulas/rgb_formula.cpp
             src/processors/localized/local_rgb.cpp

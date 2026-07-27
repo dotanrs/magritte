@@ -154,6 +154,36 @@ namespace {
             return result;
         }
 
+        [[nodiscard]] VectorFormula parse_vector() {
+            if (formula_.empty()) {
+                throw std::invalid_argument(
+                    "flow field equation cannot be empty"
+                );
+            }
+
+            skip_whitespace();
+            if (!consume('(')) {
+                fail(
+                    "flow field equation must be a parenthesized vector pair"
+                );
+            }
+
+            VectorFormula result;
+            result.x = parse_expression();
+            expect_tuple_separator("flow field components");
+            result.y = parse_expression();
+
+            skip_whitespace();
+            if (!consume(')')) {
+                fail("expected ')' after the vertical field expression");
+            }
+            skip_whitespace();
+            if (position_ != formula_.size()) {
+                fail("unexpected character after flow field equation");
+            }
+            return result;
+        }
+
     private:
         void expect_tuple_separator(
             std::string_view tuple_name = "RGB expressions"
@@ -523,6 +553,17 @@ WarpFormula parse_warp_formula(const std::vector<std::string> &arguments) {
         );
     }
     return FormulaParser(arguments.front()).parse_warp();
+}
+
+VectorFormula parse_vector_formula(
+    const std::vector<std::string> &arguments
+) {
+    if (arguments.size() != 1) {
+        throw std::invalid_argument(
+            "flow field processor expects one vector pair"
+        );
+    }
+    return FormulaParser(arguments.front()).parse_vector();
 }
 
 WarpFormula parse_local_warp_formula(

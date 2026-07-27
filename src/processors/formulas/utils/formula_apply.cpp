@@ -12,7 +12,9 @@
 namespace {
     struct FormulaContext {
         const FileData &data;
-        const Pixel &pixel;
+        double red;
+        double green;
+        double blue;
         double x;
         double y;
         double width;
@@ -35,11 +37,11 @@ namespace {
             case FormulaNodeKind::number:
                 return node.number;
             case FormulaNodeKind::red:
-                return context.pixel.red;
+                return context.red;
             case FormulaNodeKind::green:
-                return context.pixel.green;
+                return context.green;
             case FormulaNodeKind::blue:
-                return context.pixel.blue;
+                return context.blue;
             case FormulaNodeKind::saturation:
                 return context.saturation;
             case FormulaNodeKind::x:
@@ -175,7 +177,9 @@ namespace {
     ) {
         return FormulaContext{
             .data = data,
-            .pixel = pixel,
+            .red = static_cast<double>(pixel.red),
+            .green = static_cast<double>(pixel.green),
+            .blue = static_cast<double>(pixel.blue),
             .x = static_cast<double>(x),
             .y = static_cast<double>(y),
             .width = static_cast<double>(data.width),
@@ -285,6 +289,26 @@ namespace {
         pixel.blue = channel_value((blue + match) * 255.0);
     }
 } // namespace
+
+double evaluate_formula_at(
+    const FormulaNode &formula,
+    const FileData &data,
+    double x,
+    double y
+) {
+    const BilinearSample sampled = sample_bilinear_values(data, x, y);
+    const FormulaContext context{
+        .data = data,
+        .red = sampled.red,
+        .green = sampled.green,
+        .blue = sampled.blue,
+        .x = x,
+        .y = y,
+        .width = static_cast<double>(data.width),
+        .height = static_cast<double>(data.height),
+    };
+    return evaluate(formula, context);
+}
 
 FileData apply_rgb_formula(
     FileData data,

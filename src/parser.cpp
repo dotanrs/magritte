@@ -8,6 +8,7 @@
 #include "pixlie/utils/string.h"
 #include "pixlie/processors/blur.h"
 #include "pixlie/processors/fisheye.h"
+#include "pixlie/processors/flow_lines.h"
 #include "pixlie/processors/lighting.h"
 #include "pixlie/processors/local_rgb.h"
 #include "pixlie/processors/local_warp.h"
@@ -30,12 +31,13 @@ namespace {
         return std::nullopt;
     }
 
-    const std::array<std::reference_wrapper<const ImageProcessor>, 12>
+    const std::array<std::reference_wrapper<const ImageProcessor>, 13>
     processors{
         rotate_processor(),
         mirror_processor(),
         blur_processor(),
         fisheye_processor(),
+        flow_lines_processor(),
         lighting_processor(),
         rgb_formula_processor(),
         local_rgb_processor(),

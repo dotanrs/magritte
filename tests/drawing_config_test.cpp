@@ -26,9 +26,9 @@ canvas:
   height: 480
 processors:
   - name: background
-    comment: 'rgb = (245, 241, 230)'
+    command: 'rgb = (245, 241, 230)'
   - name: blue field
-    comment: "rgb = (R, 80 + 60 * sin(D / 8), 180)"
+    command: "rgb = (R, 80 + 60 * sin(D / 8), 180)"
 )YAML");
 
     const DrawingConfig config = parse_drawing_config(input, "drawing.yml");
@@ -48,7 +48,7 @@ processors:
     expect(
         config.processors[1].command ==
             "rgb = (R, 80 + 60 * sin(D / 8), 180)",
-        "drawing processor comment"
+        "drawing processor command"
     );
 
     expect_invalid(
@@ -64,14 +64,14 @@ processors:
     expect_invalid(
         "canvas:\n  file_name: x.jpg\n  width: 5\n  height: 5\n"
         "processors:\n  - name: incomplete\n",
-        "drawing requires each processor comment"
+        "drawing requires each processor command"
     );
 
     std::istringstream scalar_source(R"YAML(
 source_image: "input/photo.jpg"
 processors:
   - name: soften
-    comment: "blur 2"
+    command: "blur 2"
 )YAML");
     const DrawingConfig source_config =
         parse_drawing_config(scalar_source, "source.yml");

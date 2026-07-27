@@ -200,9 +200,9 @@ namespace {
                 fail(source, line, "duplicate processor name");
             }
             processor.name = parse_scalar(value, source, line);
-        } else if (key == "comment") {
+        } else if (key == "command") {
             if (!processor.command.empty()) {
-                fail(source, line, "duplicate processor comment");
+                fail(source, line, "duplicate processor command");
             }
             processor.command = parse_scalar(value, source, line);
         } else {
@@ -248,7 +248,7 @@ DrawingConfig parse_drawing_config(
         if (processor->name.empty() || processor->command.empty()) {
             throw std::invalid_argument(
                 std::string(source_name) +
-                ": every processor requires name and comment"
+                ": every processor requires name and command"
             );
         }
         config.processors.push_back(std::move(*processor));

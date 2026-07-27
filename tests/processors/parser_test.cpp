@@ -3,6 +3,7 @@
 #include "pixlie/parser.h"
 #include "pixlie/processors/blur.h"
 #include "pixlie/processors/fisheye.h"
+#include "pixlie/processors/flow_lines.h"
 #include "pixlie/processors/lighting.h"
 #include "pixlie/processors/local_rgb.h"
 #include "pixlie/processors/local_warp.h"
@@ -148,6 +149,30 @@ expect(
     "fisheye processor should decline another processor's command"
 );
 
+const auto flow_line_arguments =
+    flow_lines_processor().parse_arguments(
+        "flow-lines 18 600 1.25 1.2 #173F70 0.8 = (-V, U)"
+    );
+expect(
+    flow_line_arguments ==
+    std::optional<std::vector<std::string>>{
+        {
+            "18",
+            "600",
+            "1.25",
+            "1.2",
+            "#173F70",
+            "0.8",
+            "(-V, U)",
+        }
+    },
+    "flow-lines should parse style arguments and its vector equation"
+);
+expect(
+    !flow_lines_processor().parse_arguments("blur 3").has_value(),
+    "flow-lines should decline another processor's command"
+);
+
 const auto lighting_arguments =
     lighting_processor().parse_arguments(
         "lighting 315 #FFD080 64 0.7"
@@ -269,6 +294,12 @@ expect(
         "loop-warp 3 = (X + sin(Y), clamp(Y, 0, H - 1))"
     ).has_value(),
     "parser should accept a counted loop-warp formula"
+);
+expect(
+    parse_processor_command(
+        "flow-lines 18 600 1.25 1.2 #173F70 0.8 = (-V, U)"
+    ).has_value(),
+    "parser should accept a flow-lines vector field"
 );
 expect(
     parse_processor_command("g = B * 2").has_value(),

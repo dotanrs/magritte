@@ -81,7 +81,7 @@ errors occurred.
 
 A `.yml` or `.yaml` input creates a new black canvas instead of reading an
 existing image when it contains `canvas`. The canvas filename is resolved
-relative to the YAML file, and each processor `comment` is the same command
+relative to the YAML file, and each processor `command` is the same command
 that would be passed to `-p`:
 
 ```yaml
@@ -91,7 +91,7 @@ canvas:
   height: 1200
 processors:
   - name: flowing cobalt lines
-    comment: "rgb = (28 + 220 * clamp(abs(sin(Y / 11 + 1.8 * sin(X / 65) + 0.7 * cos(D / 31))) * 10, 0, 1), 70 + 170 * clamp(abs(sin(Y / 11 + 1.8 * sin(X / 65) + 0.7 * cos(D / 31))) * 10, 0, 1), 150 + 90 * clamp(abs(sin(Y / 11 + 1.8 * sin(X / 65) + 0.7 * cos(D / 31))) * 10, 0, 1))"
+    command: "rgb = (28 + 220 * clamp(abs(sin(Y / 11 + 1.8 * sin(X / 65) + 0.7 * cos(D / 31))) * 10, 0, 1), 70 + 170 * clamp(abs(sin(Y / 11 + 1.8 * sin(X / 65) + 0.7 * cos(D / 31))) * 10, 0, 1), 150 + 90 * clamp(abs(sin(Y / 11 + 1.8 * sin(X / 65) + 0.7 * cos(D / 31))) * 10, 0, 1))"
 ```
 
 Run it with:
@@ -106,9 +106,9 @@ To process an existing JPEG, replace `canvas` with `source_image`:
 source_image: "photos/input.jpg"
 processors:
   - name: soft mirror
-    comment: "mirror y"
+    command: "mirror y"
   - name: diffuse
-    comment: "blur 2"
+    command: "blur 2"
 ```
 
 The equivalent mapped form is also accepted:
@@ -118,7 +118,7 @@ source_image:
   file_name: "photos/input.jpg"
 processors:
   - name: diffuse
-    comment: "blur 2"
+    command: "blur 2"
 ```
 
 The source path is resolved relative to the YAML file and the result uses the
@@ -130,8 +130,12 @@ confirmation as image processing. Pass `--overwrite` to replace it
 non-interactively. The supported schema is intentionally small: `canvas`
 requires `file_name`, positive integer `width`, and positive integer `height`;
 `source_image` requires a filename; and `processors` is a list whose items
-require `name` and `comment`. Plain, single-quoted, and double-quoted scalar
+require `name` and `command`. Plain, single-quoted, and double-quoted scalar
 values are accepted.
+
+Standalone feature recipes live in [`docs`](docs). Each command must stay on
+one line because drawing files intentionally support a small YAML subset rather
+than block scalars.
 
 Original plotter-inspired recipes and their rendered JPEGs live in
 [`examples/drawings`](examples/drawings).
@@ -146,6 +150,9 @@ Original plotter-inspired recipes and their rendered JPEGs live in
 - `fisheye <x> <y> <amount> [radius]` applies a radial lens centered on the given percentage coordinates. Positive
   amounts magnify; amounts between `-1` and `0` shrink. Radius is an optional percentage of the image's shorter
   dimension and defaults to `100`.
+- `flow-lines <spacing> <steps> <step-size> <width> <#RRGGBB> [opacity] = (<VX>, <VY>)` draws antialiased
+  streamlines through a formula-defined vector field. Seeds use a deterministic grid, paths are traced in both
+  directions with RK4 integration, and an occupancy map keeps neighboring paths separated.
 - `lighting <preset> [strength]` applies one of the ready-to-use `golden-hour`, `moonlight`, `studio`, or `synthwave`
   looks. Optional strength is from `0` to `1`.
 - `lighting <angle> <#RRGGBB> <threshold|auto> [strength [softness [atmosphere]]]` creates a custom directional gel
@@ -206,6 +213,40 @@ The target can also encode a swap while leaving other channels untouched:
 
 Three separate assignments would behave differently because processors run
 sequentially and later formulas see changes made by earlier processors.
+
+### Flow lines
+
+The two equations after `=` define the horizontal and vertical components of a
+vector field. The tracer normalizes each vector, so `step-size` controls travel
+distance while the equations control direction:
+
+```sh
+# Horizontal lines
+-p "flow-lines 24 800 1.25 1.2 #173F70 = (1, 0)"
+
+# Circular flow around the canvas center
+-p "flow-lines 24 800 1.25 1.2 #173F70 0.85 = (-V, U)"
+
+# A spatially varying current
+-p "flow-lines 20 1000 1.1 1 #C74732 = \
+  (cos(1.4 * sin(Y / 130)), sin(1.4 * sin(Y / 130)))"
+```
+
+Arguments mean:
+
+- `spacing`: distance between initial grid seeds and the minimum separation
+  used by the occupancy map.
+- `steps`: maximum RK4 steps in each direction from a seed.
+- `step-size`: distance in pixels advanced by each integration step.
+- `width`: antialiased stroke width in pixels.
+- `#RRGGBB`: constant stroke color.
+- `opacity`: optional value from `0` to `1`, defaulting to `1`.
+- `(VX, VY)`: vector direction equations using the normal formula variables
+  and functions. At fractional positions, `R`, `G`, and `B` are bilinearly
+  sampled from the current image.
+
+The renderer composites over the current image without changing its alpha
+channel. Invalid or zero-length vectors terminate the affected path.
 
 ### Iterated RGB formulas
 

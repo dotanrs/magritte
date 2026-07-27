@@ -71,6 +71,11 @@ struct WarpFormula {
     Formula source_y;
 };
 
+struct VectorFormula {
+    Formula x;
+    Formula y;
+};
+
 /// Parses either a fixed RGB tuple from one argument or a channel target and
 /// its matching expression(s) from two arguments. Multi-channel formulas use
 /// a parenthesized tuple; a single-channel formula is one expression.
@@ -90,6 +95,12 @@ struct WarpFormula {
 /// Parses a parenthesized `(source_x, source_y)` expression pair.
 /// @throws std::invalid_argument for a missing argument or invalid pair.
 [[nodiscard]] WarpFormula parse_warp_formula(
+    const std::vector<std::string> &arguments
+);
+
+/// Parses a parenthesized `(horizontal, vertical)` vector-field equation.
+/// @throws std::invalid_argument for a missing argument or invalid pair.
+[[nodiscard]] VectorFormula parse_vector_formula(
     const std::vector<std::string> &arguments
 );
 

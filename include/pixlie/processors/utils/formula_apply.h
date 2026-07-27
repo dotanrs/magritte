@@ -4,6 +4,16 @@
 #include "pixlie/processor.h"
 #include "pixlie/processors/utils/formula_parse.h"
 
+/// Evaluates a formula at an arbitrary floating-point canvas coordinate.
+/// RGB variables are bilinearly sampled from `data`. The raw result is
+/// returned so vector-valued processors can preserve signs and magnitudes.
+[[nodiscard]] double evaluate_formula_at(
+    const FormulaNode &formula,
+    const FileData &data,
+    double x,
+    double y
+);
+
 /// Replaces the selected RGB channels, evaluating every expression against the
 /// same original value of each formulas. Untargeted channels and alpha are
 /// preserved.
