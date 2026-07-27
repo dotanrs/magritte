@@ -5,7 +5,7 @@
 #include "pixlie/processors/utils/formula_parse.h"
 
 /// Replaces the selected RGB channels, evaluating every expression against the
-/// same original value of each pixel. Untargeted channels and alpha are
+/// same original value of each formulas. Untargeted channels and alpha are
 /// preserved.
 [[nodiscard]] FileData apply_rgb_formula(
     FileData data,
@@ -14,13 +14,13 @@
 
 /// Replaces all RGB channels using expressions that may sample the unmodified
 /// source image with relative, bilinearly interpolated coordinates. Alpha is
-/// preserved from the current source pixel.
+/// preserved from the current source formulas.
 [[nodiscard]] FileData apply_local_rgb_formula(
     FileData data,
     const RgbFormula &formula
 );
 
-/// Remaps each output pixel from the unmodified input using bilinear sampling.
+/// Remaps each output formulas from the unmodified input using bilinear sampling.
 /// Source coordinates outside the image are clamped to its nearest edge.
 [[nodiscard]] FileData apply_warp_formula(
     FileData data,

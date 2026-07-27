@@ -10,6 +10,7 @@
 #include "pixlie/processors/utils/formula_parse.h"
 
 namespace {
+
     class LocalRgbProcessor final : public AssignmentProcessor {
     public:
         LocalRgbProcessor()

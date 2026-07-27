@@ -13,37 +13,37 @@ add_executable(pixlie main.cpp
         include/pixlie/file_utils/file_data.h
         src/parser.cpp
         include/pixlie/parser.h
-        src/processors/rotate.cpp
+        src/processors/layout/rotate.cpp
         include/pixlie/processors/rotate.h
-        src/processors/mirror.cpp
+        src/processors/layout/mirror.cpp
         include/pixlie/processors/mirror.h
-        src/processors/blur.cpp
+        src/processors/filters/blur.cpp
         include/pixlie/processors/blur.h
-        src/processors/fisheye.cpp
+        src/processors/toolbox/fisheye.cpp
         include/pixlie/processors/fisheye.h
-        src/processors/lighting.cpp
+        src/processors/filters/lighting.cpp
         include/pixlie/processors/lighting.h
         include/pixlie/processors/assignment_processor.h
-        src/processors/rgb_formula.cpp
+        src/processors/formulas/rgb_formula.cpp
         include/pixlie/processors/rgb_formula.h
-        src/processors/local_rgb.cpp
+        src/processors/localized/local_rgb.cpp
         include/pixlie/processors/local_rgb.h
-        src/processors/saturation_formula.cpp
+        src/processors/formulas/saturation_formula.cpp
         include/pixlie/processors/saturation_formula.h
-        src/processors/warp_formula.cpp
+        src/processors/formulas/warp_formula.cpp
         include/pixlie/processors/warp_formula.h
-        src/processors/loop_processor.cpp
+        src/processors/loops/loop_processor.cpp
         include/pixlie/processors/loop_processor.h
         include/pixlie/processors/loop_assignment_processor.h
-        src/processors/loop_warp.cpp
+        src/processors/loops/loop_warp.cpp
         include/pixlie/processors/loop_warp.h
-        src/processors/loop_rgb.cpp
+        src/processors/loops/loop_rgb.cpp
         include/pixlie/processors/loop_rgb.h
-        src/processors/utils/formula_parse.cpp
+        src/processors/formulas/utils/formula_parse.cpp
         include/pixlie/processors/utils/formula_parse.h
-        src/processors/utils/formula_apply.cpp
+        src/processors/formulas/utils/formula_apply.cpp
         include/pixlie/processors/utils/formula_apply.h
-        src/processors/utils/image_sample.cpp
+        src/processors/formulas/utils/image_sample.cpp
         include/pixlie/processors/utils/image_sample.h
         include/pixlie/processors/utils/argument_parse.h
         include/pixlie/processors/image_processor.h)
@@ -79,21 +79,21 @@ if (BUILD_TESTING)
     add_executable(pixlie_processor_tests
             tests/processors_test.cpp
             src/parser.cpp
-            src/processors/rotate.cpp
-            src/processors/mirror.cpp
-            src/processors/blur.cpp
-            src/processors/fisheye.cpp
-            src/processors/lighting.cpp
-            src/processors/rgb_formula.cpp
-            src/processors/local_rgb.cpp
-            src/processors/saturation_formula.cpp
-            src/processors/warp_formula.cpp
-            src/processors/loop_processor.cpp
-            src/processors/loop_warp.cpp
-            src/processors/loop_rgb.cpp
-            src/processors/utils/formula_parse.cpp
-            src/processors/utils/formula_apply.cpp
-            src/processors/utils/image_sample.cpp
+            src/processors/layout/rotate.cpp
+            src/processors/layout/mirror.cpp
+            src/processors/filters/blur.cpp
+            src/processors/toolbox/fisheye.cpp
+            src/processors/filters/lighting.cpp
+            src/processors/formulas/rgb_formula.cpp
+            src/processors/localized/local_rgb.cpp
+            src/processors/formulas/saturation_formula.cpp
+            src/processors/formulas/warp_formula.cpp
+            src/processors/loops/loop_processor.cpp
+            src/processors/loops/loop_warp.cpp
+            src/processors/loops/loop_rgb.cpp
+            src/processors/formulas/utils/formula_parse.cpp
+            src/processors/formulas/utils/formula_apply.cpp
+            src/processors/formulas/utils/image_sample.cpp
             src/utils/logging.cpp)
     target_include_directories(pixlie_processor_tests PRIVATE
             "${CMAKE_CURRENT_SOURCE_DIR}/include")

@@ -15,7 +15,7 @@
 void save_file(const std::filesystem::path &output, const FileData &data);
 
 /// Verifies that the dimensions are nonzero, their product does not overflow,
-/// and the pixel count equals `width * height`.
+/// and the formulas count equals `width * height`.
 /// @throws std::runtime_error when the image buffer violates the invariant.
 void validate_file_data(const FileData &data);
 
