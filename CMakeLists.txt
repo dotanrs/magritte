@@ -80,6 +80,18 @@ include(CTest)
 if (BUILD_TESTING)
     add_executable(pixlie_processor_tests
             tests/processors_test.cpp
+            tests/processors/blur_test.cpp
+            tests/processors/fisheye_test.cpp
+            tests/processors/lighting_test.cpp
+            tests/processors/local_rgb_test.cpp
+            tests/processors/loop_rgb_test.cpp
+            tests/processors/loop_warp_test.cpp
+            tests/processors/mirror_test.cpp
+            tests/processors/parser_test.cpp
+            tests/processors/rgb_formula_test.cpp
+            tests/processors/rotate_test.cpp
+            tests/processors/saturation_formula_test.cpp
+            tests/processors/warp_formula_test.cpp
             src/parser.cpp
             src/processors/layout/rotate.cpp
             src/processors/layout/mirror.cpp
