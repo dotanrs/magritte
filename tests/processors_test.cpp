@@ -14,6 +14,7 @@ void test_formula_normalized_and_polar_coordinates();
 void test_formula_math_functions();
 void test_simultaneous_rgb_formula();
 void test_local_rgb_formula();
+void test_local_warp_formula();
 void test_warp_formula();
 void test_loop_rgb();
 void test_loop_warp();
@@ -37,6 +38,7 @@ int main() {
     test_formula_math_functions();
     test_simultaneous_rgb_formula();
     test_local_rgb_formula();
+    test_local_warp_formula();
     test_warp_formula();
     test_loop_rgb();
     test_loop_warp();

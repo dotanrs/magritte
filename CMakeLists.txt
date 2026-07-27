@@ -28,6 +28,8 @@ add_executable(pixlie main.cpp
         include/pixlie/processors/rgb_formula.h
         src/processors/localized/local_rgb.cpp
         include/pixlie/processors/local_rgb.h
+        src/processors/localized/local_warp.cpp
+        include/pixlie/processors/local_warp.h
         src/processors/formulas/saturation_formula.cpp
         include/pixlie/processors/saturation_formula.h
         src/processors/formulas/warp_formula.cpp
@@ -84,6 +86,7 @@ if (BUILD_TESTING)
             tests/processors/fisheye_test.cpp
             tests/processors/lighting_test.cpp
             tests/processors/local_rgb_test.cpp
+            tests/processors/local_warp_test.cpp
             tests/processors/loop_rgb_test.cpp
             tests/processors/loop_warp_test.cpp
             tests/processors/mirror_test.cpp
@@ -100,6 +103,7 @@ if (BUILD_TESTING)
             src/processors/filters/lighting.cpp
             src/processors/formulas/rgb_formula.cpp
             src/processors/localized/local_rgb.cpp
+            src/processors/localized/local_warp.cpp
             src/processors/formulas/saturation_formula.cpp
             src/processors/formulas/warp_formula.cpp
             src/processors/loops/loop_processor.cpp

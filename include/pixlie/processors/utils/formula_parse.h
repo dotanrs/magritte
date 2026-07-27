@@ -93,6 +93,13 @@ struct WarpFormula {
     const std::vector<std::string> &arguments
 );
 
+/// Parses a parenthesized `(source_x, source_y)` expression pair in the local
+/// dialect, which additionally supports source-image sampling functions.
+/// @throws std::invalid_argument for a missing argument or invalid pair.
+[[nodiscard]] WarpFormula parse_local_warp_formula(
+    const std::vector<std::string> &arguments
+);
+
 /// Parses an expression in the saturation dialect, where `S` replaces the RGB
 /// channel variables.
 /// @throws std::invalid_argument for a missing argument or invalid expression.

@@ -5,6 +5,7 @@
 #include "pixlie/processors/fisheye.h"
 #include "pixlie/processors/lighting.h"
 #include "pixlie/processors/local_rgb.h"
+#include "pixlie/processors/local_warp.h"
 #include "pixlie/processors/loop_rgb.h"
 #include "pixlie/processors/loop_warp.h"
 #include "pixlie/processors/mirror.h"
@@ -65,6 +66,18 @@ expect(
         "rgb = (R, G, B)"
     ).has_value(),
     "local-rgb should require its own assignment keyword"
+);
+
+const auto local_warp_arguments =
+    local_warp_processor().parse_arguments(
+        "local-warp = (X + red(1, 0) / 255, Y)"
+    );
+expect(
+    local_warp_arguments ==
+    std::optional<std::vector<std::string>>{
+        {"(X + red(1, 0) / 255, Y)"}
+    },
+    "local-warp should parse its sampling formula"
 );
 
 const auto warp_arguments =
@@ -455,9 +468,9 @@ expect(
     "ordinary RGB formulas should reject local sampling functions"
 );
 expect(
-    error_message.find("only available in local-rgb") !=
+    error_message.find("only available in local-rgb and local-warp") !=
     std::string::npos,
-    "parser should direct sampling functions to local-rgb"
+    "parser should direct sampling functions to local processors"
 );
 error_message.clear();
 expect(

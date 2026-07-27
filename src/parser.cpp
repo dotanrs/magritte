@@ -10,6 +10,7 @@
 #include "pixlie/processors/fisheye.h"
 #include "pixlie/processors/lighting.h"
 #include "pixlie/processors/local_rgb.h"
+#include "pixlie/processors/local_warp.h"
 #include "pixlie/processors/loop_rgb.h"
 #include "pixlie/processors/loop_warp.h"
 #include "pixlie/processors/mirror.h"
@@ -29,7 +30,7 @@ namespace {
         return std::nullopt;
     }
 
-    const std::array<std::reference_wrapper<const ImageProcessor>, 11>
+    const std::array<std::reference_wrapper<const ImageProcessor>, 12>
     processors{
         rotate_processor(),
         mirror_processor(),
@@ -38,6 +39,7 @@ namespace {
         lighting_processor(),
         rgb_formula_processor(),
         local_rgb_processor(),
+        local_warp_processor(),
         saturation_formula_processor(),
         loop_rgb_processor(),
         loop_warp_processor(),

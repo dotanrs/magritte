@@ -284,7 +284,7 @@ namespace {
                  definition->kind == FormulaNodeKind::sample_blue)) {
                 fail(
                     "function '" + name +
-                    "' is only available in local-rgb formulas"
+                    "' is only available in local-rgb and local-warp formulas"
                 );
             }
 
@@ -523,6 +523,17 @@ WarpFormula parse_warp_formula(const std::vector<std::string> &arguments) {
         );
     }
     return FormulaParser(arguments.front()).parse_warp();
+}
+
+WarpFormula parse_local_warp_formula(
+    const std::vector<std::string> &arguments
+) {
+    if (arguments.size() != 1) {
+        throw std::invalid_argument(
+            "local warp formula processor expects one coordinate pair"
+        );
+    }
+    return FormulaParser(arguments.front(), false, true).parse_warp();
 }
 
 Formula parse_saturation_formula(const std::vector<std::string> &arguments) {

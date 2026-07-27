@@ -102,6 +102,8 @@ errors occurred.
   into the next iteration.
 - `local-rgb = (<red>, <green>, <blue>)` changes all three channels using formulas that can sample neighboring pixels
   from the unmodified input image.
+- `local-warp = (<source-x>, <source-y>)` remaps pixels using formulas that can sample neighboring colors from the
+  unmodified input image.
 - `s = <formula>` changes HSL saturation while preserving hue and lightness.
 - `warp = (<source-x>, <source-y>)` remaps pixels with mathematical source coordinates.
 - `loop-warp <iterations> = (<source-x>, <source-y>)` repeatedly applies a warp, feeding each result into the next.
@@ -187,6 +189,19 @@ This diagonal color emboss compares pixels on opposite sides of the current pixe
 
 All output pixels read the same unmodified source, so results never depend on traversal order. Alpha is preserved from
 the current source pixel.
+
+### Local warp formulas
+
+`local-warp` combines warp coordinates with the `red(dx, dy)`, `green(dx, dy)`, and `blue(dx, dy)` sampling functions
+from `local-rgb`. The sampled colors come from offsets around the current output coordinate and can determine which
+source coordinate is selected:
+
+```sh
+-p "local-warp = (X + (red(1, 0) - red(-1, 0)) / 32, Y)"
+```
+
+Both the color lookups used by the formulas and the final bilinear pixel lookup read the same unmodified input image.
+Coordinates beyond an edge clamp to that edge.
 
 ### Warp formulas
 
