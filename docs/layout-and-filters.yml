@@ -4,5 +4,7 @@ canvas:
   width: 480
   height: 320
 processors:
-  - name: color the canvas
-    command: "rgb = (r + 40 + 180 * X / W, g + 70 + 130 * Y / H, b)"
+#  - name: color the canvas
+#    command: "rgb = (r + 40 + 180 * X / W, g + 70 + 130 * Y / H, b)"
+  - name: increase contrast
+    command: "contrast 1.5"

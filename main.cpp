@@ -1,17 +1,12 @@
-#include <algorithm>
-#include <cctype>
-#include <filesystem>
 #include <iostream>
 #include <stdexcept>
 #include <string>
 #include <string_view>
-#include <utility>
 
+#include "pixlie/cli.h"
 #include "pixlie/drawing_config.h"
 #include "pixlie/processor.h"
 #include "pixlie/utils/logging.h"
-
-namespace fs = std::filesystem;
 
 namespace {
     void print_usage(std::ostream &output, std::string_view program) {
@@ -19,7 +14,8 @@ namespace {
                 << " <input.jpg> [-o <output.jpg>] [--overwrite]"
                    " [--debug] [-p <processor>]...\n"
                 << "       " << program
-                << " <drawing.yml> [input.jpg] [--overwrite] [--debug]\n"
+                << " <drawing.yml> [input.jpg] [-o <output.jpg>]"
+                   " [--overwrite] [--debug]\n"
                 << "\n"
                 << "Processes a JPEG, or creates a drawing from a YAML file.\n"
                 << "If no output is supplied, <input>_copy.jpg is used.\n"
@@ -36,7 +32,8 @@ namespace {
                 << "  canvas:              Creates file_name at width and height\n"
                 << "  source_image:        Reads an existing JPEG instead of canvas\n"
                 << "  processors:          Named commands; command is the -p value\n"
-                << "  Optional input.jpg:  Replaces canvas or source_image entirely\n";
+                << "  Optional input.jpg:  Replaces canvas or source_image entirely\n"
+                << "  Optional -o path:    Replaces the configured output path\n";
         output << "\n"
                 << "Processors:\n"
                 << "  rotate <int>         Rotate clockwise by 90 degrees <int> times\n"
@@ -44,7 +41,7 @@ namespace {
                 << "  blur <radius>        Box blur with a nonnegative integer radius\n"
                 << "  fisheye <x> <y> <amount> [radius]\n"
                 << "                       Radial warp using percentage coordinates\n"
-                << "  twist <x> <y> <force>\n"
+                << "  twist <x> <y> <force> [radius]\n"
                 << "                       Distance-scaled twist around a percent center\n"
                 << "  flow-lines <spacing> <steps> <step> <width> <#RRGGBB>\n"
                 << "             [opacity] = (<VX>, <VY>)\n"
@@ -64,90 +61,6 @@ namespace {
                 << "  s = <formula>        Replace HSL saturation using the S variable\n";
     }
 
-    fs::path default_output_path(const fs::path &input) {
-        return input.parent_path() / (input.stem().string() + "_copy" + input.extension().string());
-    }
-
-    Options parse_arguments(int argc, char *argv[]) {
-        if (argc < 2) {
-            throw std::invalid_argument("missing input image");
-        }
-
-        Options options;
-        options.input = argv[1];
-
-        for (int index = 2; index < argc; ++index) {
-            const std::string_view argument = argv[index];
-            if (argument == "-o" || argument == "--output") {
-                if (++index >= argc) {
-                    throw std::invalid_argument("missing path after " + std::string(argument));
-                }
-                options.output = argv[index];
-            } else if (argument == "-p" || argument == "--processor") {
-                if (++index >= argc) {
-                    throw std::invalid_argument("missing command after " + std::string(argument));
-                }
-                options.processors.push_back({
-                    .name = {},
-                    .command = argv[index],
-                });
-            } else if (argument == "--overwrite") {
-                options.overwrite = true;
-            } else if (argument == "-d" || argument == "--debug") {
-                options.debug = true;
-            } else {
-                throw std::invalid_argument("unknown argument: " + std::string(argument));
-            }
-        }
-
-        if (options.output.empty()) {
-            options.output = default_output_path(options.input);
-        }
-
-        return options;
-    }
-
-    bool is_drawing_path(const fs::path &path) {
-        std::string extension = path.extension().string();
-        std::transform(
-            extension.begin(),
-            extension.end(),
-            extension.begin(),
-            [](unsigned char character) {
-                return static_cast<char>(std::tolower(character));
-            }
-        );
-        return extension == ".yml" || extension == ".yaml";
-    }
-
-    struct DrawingArguments {
-        std::optional<fs::path> source_override;
-        bool overwrite = false;
-        bool debug = false;
-    };
-
-    DrawingArguments parse_drawing_arguments(int argc, char *argv[]) {
-        DrawingArguments arguments;
-        for (int index = 2; index < argc; ++index) {
-            const std::string_view argument = argv[index];
-            if (argument == "--overwrite") {
-                arguments.overwrite = true;
-            } else if (argument == "-d" || argument == "--debug") {
-                arguments.debug = true;
-            } else if (!argument.empty() && argument.front() == '-') {
-                throw std::invalid_argument(
-                    "unknown drawing argument: " + std::string(argument)
-                );
-            } else if (!arguments.source_override) {
-                arguments.source_override = fs::path(argument);
-            } else {
-                throw std::invalid_argument(
-                    "multiple drawing input images were supplied"
-                );
-            }
-        }
-        return arguments;
-    }
 } // namespace
 
 int main(int argc, char *argv[]) {
@@ -160,19 +73,26 @@ int main(int argc, char *argv[]) {
     }
 
     try {
-        if (argc >= 2 && is_drawing_path(argv[1])) {
-            const DrawingArguments arguments =
-                parse_drawing_arguments(argc, argv);
+        const CommandLineArguments arguments =
+            parse_command_line(argc, argv);
+        if (arguments.drawing) {
             log(LogLevel::info, "pixlie drawing started");
             process_drawing(
-                argv[1],
+                arguments.input,
                 arguments.overwrite,
                 arguments.debug,
-                arguments.source_override
+                arguments.source_override,
+                arguments.output
             );
             return 0;
         }
-        const Options options = parse_arguments(argc, argv);
+        const Options options{
+            .input = arguments.input,
+            .output = *arguments.output,
+            .processors = arguments.processors,
+            .overwrite = arguments.overwrite,
+            .debug = arguments.debug,
+        };
         log(LogLevel::info, "pixlie started");
         process_image(options);
         return 0;

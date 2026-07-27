@@ -58,8 +58,9 @@ Add `--debug` (or `-d`) to include visual guides in the output:
 ```
 
 Debug mode runs the same processor commands and then adds any hints supported
-by those processors. Currently only `fisheye` provides hints: it draws the
-circle and radius in yellow and marks its center with a magenta crosshair.
+by those processors. `fisheye` draws its circle and radius in yellow and marks
+its center with a magenta crosshair. `twist` uses the same circle and center
+colors, plus a cyan curved line that shows the spin direction and strength.
 
 Generate a radial interference pattern from the image coordinates:
 
@@ -111,6 +112,14 @@ This replaces either `canvas` or `source_image` entirely. Canvas dimensions and
 `file_name` are ignored, and the result uses the normal
 `photos/input_copy.jpg` destination.
 
+Pass `-o` or `--output` to override either the canvas `file_name` or the
+default destination used for a source image:
+
+```sh
+./build/pixlie examples/drawings/blue-field.yml \
+  -o results/blue-field.jpg
+```
+
 To process an existing JPEG, replace `canvas` with `source_image`:
 
 ```yaml
@@ -158,12 +167,15 @@ Original plotter-inspired recipes and their rendered JPEGs live in
 - `mirror y` mirrors the image vertically.
 - `blur <radius>` applies a box blur to RGB using a nonnegative integer pixel radius. Pixels near an edge average only
   the available neighborhood; alpha is preserved.
+- `contrast <factor>` increases RGB contrast around the midpoint. A factor of `1` leaves the image unchanged; larger
+  finite factors move darker values toward black and lighter values toward white. Alpha is preserved.
 - `fisheye <x> <y> <amount> [radius]` applies a radial lens centered on the given percentage coordinates. Positive
   amounts magnify; amounts between `-1` and `0` shrink. Radius is an optional percentage of the image's shorter
   dimension and defaults to `100`.
-- `twist <x> <y> <force>` twists around percentage coordinates `x` and `y`. Rotation increases linearly with distance
+- `twist <x> <y> <force> [radius]` twists around percentage coordinates `x` and `y`. Rotation increases with distance
   from the center at `force` radians per 100 pixels. Smaller magnitudes are gentler, and negative values reverse the
-  direction.
+  direction. The optional radius is a percentage of the image's shorter dimension; the twist fades smoothly to zero
+  at its boundary.
 - `flow-lines <spacing> <steps> <step-size> <width> <#RRGGBB> [opacity] = (<VX>, <VY>)` draws antialiased
   streamlines through a formula-defined vector field. Seeds use a deterministic grid, paths are traced in both
   directions with RK4 integration, and an occupancy map keeps neighboring paths separated.

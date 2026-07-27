@@ -16,7 +16,8 @@ void process_drawing(
     const fs::path &path,
     bool overwrite,
     bool debug,
-    const std::optional<fs::path> &source_override
+    const std::optional<fs::path> &source_override,
+    const std::optional<fs::path> &output_override
 ) {
     DrawingConfig config = load_drawing_config(path);
     if (source_override) {
@@ -27,7 +28,9 @@ void process_drawing(
     if (config.source_image) {
         Options options{
             .input = *config.source_image,
-            .output = default_output_path(*config.source_image),
+            .output = output_override.value_or(
+                default_output_path(*config.source_image)
+            ),
             .processors = std::move(config.processors),
             .overwrite = overwrite,
             .debug = debug,
@@ -46,7 +49,7 @@ void process_drawing(
         ),
     };
     process_created_image(
-        canvas_config.file_name,
+        output_override.value_or(canvas_config.file_name),
         std::move(canvas),
         config.processors,
         overwrite,

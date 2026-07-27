@@ -2,6 +2,7 @@
 #include "../common/test_support.h"
 #include "pixlie/parser.h"
 #include "pixlie/processors/blur.h"
+#include "pixlie/processors/contrast.h"
 #include "pixlie/processors/fisheye.h"
 #include "pixlie/processors/flow_lines.h"
 #include "pixlie/processors/lighting.h"
@@ -26,6 +27,18 @@ expect(
 expect(
     !rotate_processor().parse_arguments("mirror x").has_value(),
     "rotate processor should decline another processor's command"
+);
+
+const auto contrast_arguments =
+    contrast_processor().parse_arguments("contrast 2");
+expect(
+    contrast_arguments ==
+    std::optional<std::vector<std::string>>{{"2"}},
+    "contrast processor should parse its factor"
+);
+expect(
+    !contrast_processor().parse_arguments("blur 3").has_value(),
+    "contrast processor should decline another processor's command"
 );
 
 const auto rgb_arguments =
@@ -151,11 +164,11 @@ expect(
 );
 
 const auto twist_arguments =
-    twist_processor().parse_arguments("twist 50 40 0.75");
+    twist_processor().parse_arguments("twist 50 40 0.75 20");
 expect(
     twist_arguments ==
-    std::optional<std::vector<std::string>>{{"50", "40", "0.75"}},
-    "twist processor should parse its center and force"
+    std::optional<std::vector<std::string>>{{"50", "40", "0.75", "20"}},
+    "twist processor should parse its center, force, and radius"
 );
 expect(
     !twist_processor().parse_arguments("blur 3").has_value(),
@@ -225,6 +238,10 @@ expect(
 expect(
     parse_processor_command("blur 3").has_value(),
     "parser should accept a valid blur command"
+);
+expect(
+    parse_processor_command("contrast 2").has_value(),
+    "parser should accept a contrast command"
 );
 expect(
     parse_processor_command("fisheye 50 50 -0.5").has_value(),
@@ -421,8 +438,18 @@ expect(
     "parser should require all three twist arguments"
 );
 expect(
-    error_message == "twist expects three numbers: x y force",
+    error_message ==
+    "twist expects three or four numbers: x y force [radius]",
     "parser should describe missing twist arguments"
+);
+error_message.clear();
+expect(
+    !parse_processor_command("twist 50 50 1 0", &error_message).has_value(),
+    "parser should reject a nonpositive twist radius"
+);
+expect(
+    error_message == "twist radius must be greater than 0",
+    "parser should describe an invalid twist radius"
 );
 error_message.clear();
 expect(
@@ -497,12 +524,12 @@ expect(
 );
 error_message.clear();
 expect(
-    !parse_processor_command("contrast 2", &error_message).has_value(),
-    "parser should reject an unknown processor"
+    !parse_processor_command("contrast 0.5", &error_message).has_value(),
+    "parser should reject a contrast factor below one"
 );
 expect(
-    error_message == "unknown processor",
-    "parser should describe an unknown processor"
+    error_message == "contrast factor must be at least 1",
+    "parser should describe an invalid contrast factor"
 );
 error_message.clear();
 expect(

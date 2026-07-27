@@ -3,8 +3,10 @@
 #include "common/test_support.h"
 
 void test_rotation();
+void test_cli_output_argument();
 void test_mirror();
 void test_blur();
+void test_contrast();
 void test_lighting();
 void test_red_formula_and_clamping();
 void test_green_formula();
@@ -21,6 +23,7 @@ void test_loop_warp();
 void test_fisheye();
 void test_fisheye_debug_hints();
 void test_twist();
+void test_twist_debug_hints();
 void test_flow_lines();
 void test_saturation_formula();
 void test_rgb_formula_target_order();
@@ -29,9 +32,11 @@ void test_command_parser();
 void test_drawing_config();
 
 int main() {
+    test_cli_output_argument();
     test_rotation();
     test_mirror();
     test_blur();
+    test_contrast();
     test_lighting();
     test_red_formula_and_clamping();
     test_green_formula();
@@ -48,6 +53,7 @@ int main() {
     test_fisheye();
     test_fisheye_debug_hints();
     test_twist();
+    test_twist_debug_hints();
     test_flow_lines();
     test_saturation_formula();
     test_rgb_formula_target_order();

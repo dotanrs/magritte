@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.20)
 project(pixlie VERSION 0.1.0 LANGUAGES CXX)
 
 add_executable(pixlie main.cpp
+        src/cli.cpp
+        include/pixlie/cli.h
         src/drawing.cpp
         src/drawing_config.cpp
         include/pixlie/drawing_config.h
@@ -22,6 +24,8 @@ add_executable(pixlie main.cpp
         include/pixlie/processors/mirror.h
         src/processors/filters/blur.cpp
         include/pixlie/processors/blur.h
+        src/processors/toolbox/contrast.cpp
+        include/pixlie/processors/contrast.h
         src/processors/toolbox/fisheye.cpp
         include/pixlie/processors/fisheye.h
         src/processors/toolbox/twist.cpp
@@ -89,7 +93,9 @@ include(CTest)
 if (BUILD_TESTING)
     add_executable(pixlie_processor_tests
             tests/processors_test.cpp
+            tests/cli_test.cpp
             tests/processors/blur_test.cpp
+            tests/processors/contrast_test.cpp
             tests/processors/fisheye_test.cpp
             tests/processors/flow_lines_test.cpp
             tests/processors/lighting_test.cpp
@@ -105,11 +111,13 @@ if (BUILD_TESTING)
             tests/processors/rotate_test.cpp
             tests/processors/saturation_formula_test.cpp
             tests/processors/warp_formula_test.cpp
+            src/cli.cpp
             src/parser.cpp
             src/drawing_config.cpp
             src/processors/layout/rotate.cpp
             src/processors/layout/mirror.cpp
             src/processors/filters/blur.cpp
+            src/processors/toolbox/contrast.cpp
             src/processors/toolbox/fisheye.cpp
             src/processors/toolbox/twist.cpp
             src/processors/drawing/flow_lines.cpp

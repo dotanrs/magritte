@@ -39,13 +39,15 @@ struct DrawingConfig {
     const std::filesystem::path &path
 );
 
-/// Runs the processors described by `path`. When `source_override` is set, it
-/// replaces either YAML input mode and the drawing is processed as an image.
+/// Runs the processors described by `path`. `source_override` replaces either
+/// YAML input mode, and `output_override` replaces the configured/default
+/// destination.
 void process_drawing(
     const std::filesystem::path &path,
     bool overwrite = false,
     bool debug = false,
-    const std::optional<std::filesystem::path> &source_override = std::nullopt
+    const std::optional<std::filesystem::path> &source_override = std::nullopt,
+    const std::optional<std::filesystem::path> &output_override = std::nullopt
 );
 
 #endif // PIXLIE_DRAWING_CONFIG_H
