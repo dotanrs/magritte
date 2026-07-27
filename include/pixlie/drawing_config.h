@@ -39,11 +39,13 @@ struct DrawingConfig {
     const std::filesystem::path &path
 );
 
-/// Creates a black canvas and runs the processors described by `path`.
+/// Runs the processors described by `path`. When `source_override` is set, it
+/// replaces either YAML input mode and the drawing is processed as an image.
 void process_drawing(
     const std::filesystem::path &path,
     bool overwrite = false,
-    bool debug = false
+    bool debug = false,
+    const std::optional<std::filesystem::path> &source_override = std::nullopt
 );
 
 #endif // PIXLIE_DRAWING_CONFIG_H

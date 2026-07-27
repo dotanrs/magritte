@@ -100,6 +100,17 @@ Run it with:
 ./build/pixlie examples/drawings/blue-field.yml
 ```
 
+To ignore the YAML input configuration and run its processors on an existing
+JPEG, pass the image as a second positional argument:
+
+```sh
+./build/pixlie examples/drawings/blue-field.yml photos/input.jpg
+```
+
+This replaces either `canvas` or `source_image` entirely. Canvas dimensions and
+`file_name` are ignored, and the result uses the normal
+`photos/input_copy.jpg` destination.
+
 To process an existing JPEG, replace `canvas` with `source_image`:
 
 ```yaml

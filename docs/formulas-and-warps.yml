@@ -5,8 +5,8 @@ canvas:
   height: 320
 processors:
   - name: radial color bands
-    command: "rgb = (127 + 127 * sin(D / 9), 127 + 127 * sin(D / 13 + A * 3), 127 + 127 * cos(D / 7))"
+    command: "rgb = (r + + 127 * sin(D / 9), g + 127 * sin(D / 13 + A * 3), b + 127 * cos(D / 7))"
   - name: twist around the center
-    command: "warp = ((W - 1) / 2 + D * cos(A + D / 90), (H - 1) / 2 + D * sin(A + D / 90))"
+    command: "warp = ((W - 1) / 2 + D * cos(A + D / 400), (H - 1) / 2 + D * sin(A + D / 400))"
   - name: reduce saturation
     command: "s = S * 0.75"

@@ -19,7 +19,7 @@ namespace {
                 << " <input.jpg> [-o <output.jpg>] [--overwrite]"
                    " [--debug] [-p <processor>]...\n"
                 << "       " << program
-                << " <drawing.yml> [--overwrite] [--debug]\n"
+                << " <drawing.yml> [input.jpg] [--overwrite] [--debug]\n"
                 << "\n"
                 << "Processes a JPEG, or creates a drawing from a YAML file.\n"
                 << "If no output is supplied, <input>_copy.jpg is used.\n"
@@ -35,7 +35,8 @@ namespace {
                 << "Drawing YAML:\n"
                 << "  canvas:              Creates file_name at width and height\n"
                 << "  source_image:        Reads an existing JPEG instead of canvas\n"
-                << "  processors:          Named commands; comment is the -p value\n";
+                << "  processors:          Named commands; command is the -p value\n"
+                << "  Optional input.jpg:  Replaces canvas or source_image entirely\n";
         output << "\n"
                 << "Processors:\n"
                 << "  rotate <int>         Rotate clockwise by 90 degrees <int> times\n"
@@ -117,22 +118,33 @@ namespace {
         return extension == ".yml" || extension == ".yaml";
     }
 
-    std::pair<bool, bool> parse_drawing_arguments(int argc, char *argv[]) {
+    struct DrawingArguments {
+        std::optional<fs::path> source_override;
         bool overwrite = false;
         bool debug = false;
+    };
+
+    DrawingArguments parse_drawing_arguments(int argc, char *argv[]) {
+        DrawingArguments arguments;
         for (int index = 2; index < argc; ++index) {
             const std::string_view argument = argv[index];
             if (argument == "--overwrite") {
-                overwrite = true;
+                arguments.overwrite = true;
             } else if (argument == "-d" || argument == "--debug") {
-                debug = true;
-            } else {
+                arguments.debug = true;
+            } else if (!argument.empty() && argument.front() == '-') {
                 throw std::invalid_argument(
                     "unknown drawing argument: " + std::string(argument)
                 );
+            } else if (!arguments.source_override) {
+                arguments.source_override = fs::path(argument);
+            } else {
+                throw std::invalid_argument(
+                    "multiple drawing input images were supplied"
+                );
             }
         }
-        return {overwrite, debug};
+        return arguments;
     }
 } // namespace
 
@@ -147,10 +159,15 @@ int main(int argc, char *argv[]) {
 
     try {
         if (argc >= 2 && is_drawing_path(argv[1])) {
-            const auto [overwrite, debug] =
+            const DrawingArguments arguments =
                 parse_drawing_arguments(argc, argv);
             log(LogLevel::info, "pixlie drawing started");
-            process_drawing(argv[1], overwrite, debug);
+            process_drawing(
+                argv[1],
+                arguments.overwrite,
+                arguments.debug,
+                arguments.source_override
+            );
             return 0;
         }
         const Options options = parse_arguments(argc, argv);

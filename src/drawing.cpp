@@ -15,9 +15,15 @@ namespace {
 void process_drawing(
     const fs::path &path,
     bool overwrite,
-    bool debug
+    bool debug,
+    const std::optional<fs::path> &source_override
 ) {
     DrawingConfig config = load_drawing_config(path);
+    if (source_override) {
+        config.canvas.reset();
+        config.source_image =
+            fs::absolute(*source_override).lexically_normal();
+    }
     if (config.source_image) {
         Options options{
             .input = *config.source_image,
