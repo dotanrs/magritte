@@ -12,6 +12,7 @@
 #include "pixlie/processors/mirror.h"
 #include "pixlie/processors/rgb_formula.h"
 #include "pixlie/processors/rotate.h"
+#include "pixlie/processors/twist.h"
 #include "pixlie/processors/warp_formula.h"
 
 void test_processor_argument_parsing() {
@@ -149,6 +150,18 @@ expect(
     "fisheye processor should decline another processor's command"
 );
 
+const auto twist_arguments =
+    twist_processor().parse_arguments("twist 50 40 0.75");
+expect(
+    twist_arguments ==
+    std::optional<std::vector<std::string>>{{"50", "40", "0.75"}},
+    "twist processor should parse its center and force"
+);
+expect(
+    !twist_processor().parse_arguments("blur 3").has_value(),
+    "twist processor should decline another processor's command"
+);
+
 const auto flow_line_arguments =
     flow_lines_processor().parse_arguments(
         "flow-lines 18 600 1.25 1.2 #173F70 0.8 = (-V, U)"
@@ -220,6 +233,10 @@ expect(
 expect(
     parse_processor_command("fisheye 50 50 -0.5 25").has_value(),
     "parser should accept a fisheye command with explicit radius"
+);
+expect(
+    parse_processor_command("twist 50 50 0.5").has_value(),
+    "parser should accept a twist command"
 );
 expect(
     parse_processor_command(
@@ -388,6 +405,24 @@ expect(
 expect(
     error_message == "fisheye radius must be greater than 0",
     "parser should describe an invalid fisheye radius"
+);
+error_message.clear();
+expect(
+    !parse_processor_command("twist 101 50 1", &error_message).has_value(),
+    "parser should reject an out-of-range twist center"
+);
+expect(
+    error_message == "twist x and y must be percentages from 0 to 100",
+    "parser should describe invalid twist percentages"
+);
+error_message.clear();
+expect(
+    !parse_processor_command("twist 50 50", &error_message).has_value(),
+    "parser should require all three twist arguments"
+);
+expect(
+    error_message == "twist expects three numbers: x y force",
+    "parser should describe missing twist arguments"
 );
 error_message.clear();
 expect(

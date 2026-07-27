@@ -161,6 +161,9 @@ Original plotter-inspired recipes and their rendered JPEGs live in
 - `fisheye <x> <y> <amount> [radius]` applies a radial lens centered on the given percentage coordinates. Positive
   amounts magnify; amounts between `-1` and `0` shrink. Radius is an optional percentage of the image's shorter
   dimension and defaults to `100`.
+- `twist <x> <y> <force>` twists around percentage coordinates `x` and `y`. Rotation increases linearly with distance
+  from the center at `force` radians per 100 pixels. Smaller magnitudes are gentler, and negative values reverse the
+  direction.
 - `flow-lines <spacing> <steps> <step-size> <width> <#RRGGBB> [opacity] = (<VX>, <VY>)` draws antialiased
   streamlines through a formula-defined vector field. Seeds use a deterministic grid, paths are traced in both
   directions with RK4 integration, and an occupancy map keeps neighboring paths separated.

@@ -18,6 +18,7 @@
 #include "pixlie/processors/rgb_formula.h"
 #include "pixlie/processors/rotate.h"
 #include "pixlie/processors/saturation_formula.h"
+#include "pixlie/processors/twist.h"
 #include "pixlie/processors/warp_formula.h"
 
 namespace {
@@ -31,12 +32,13 @@ namespace {
         return std::nullopt;
     }
 
-    const std::array<std::reference_wrapper<const ImageProcessor>, 13>
+    const std::array<std::reference_wrapper<const ImageProcessor>, 14>
     processors{
         rotate_processor(),
         mirror_processor(),
         blur_processor(),
         fisheye_processor(),
+        twist_processor(),
         flow_lines_processor(),
         lighting_processor(),
         rgb_formula_processor(),

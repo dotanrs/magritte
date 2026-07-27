@@ -1,8 +1,4 @@
 .idea
 build
 examples
-!examples/
-examples/*
-!examples/drawings/
-!examples/drawings/**
 .DS_Store

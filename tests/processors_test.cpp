@@ -20,6 +20,7 @@ void test_loop_rgb();
 void test_loop_warp();
 void test_fisheye();
 void test_fisheye_debug_hints();
+void test_twist();
 void test_flow_lines();
 void test_saturation_formula();
 void test_rgb_formula_target_order();
@@ -46,6 +47,7 @@ int main() {
     test_loop_warp();
     test_fisheye();
     test_fisheye_debug_hints();
+    test_twist();
     test_flow_lines();
     test_saturation_formula();
     test_rgb_formula_target_order();

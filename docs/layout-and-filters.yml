@@ -5,12 +5,4 @@ canvas:
   height: 320
 processors:
   - name: color the canvas
-    command: "rgb = (40 + 180 * X / W, 70 + 130 * Y / H, 190)"
-  - name: rotate clockwise
-    command: "rotate 1"
-  - name: mirror vertically
-    command: "mirror y"
-  - name: soften the result
-    command: "blur 2"
-  - name: add a center lens
-    command: "fisheye 50 50 0.6 35"
+    command: "rgb = (r + 40 + 180 * X / W, g + 70 + 130 * Y / H, b)"

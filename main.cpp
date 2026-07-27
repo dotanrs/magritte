@@ -44,6 +44,8 @@ namespace {
                 << "  blur <radius>        Box blur with a nonnegative integer radius\n"
                 << "  fisheye <x> <y> <amount> [radius]\n"
                 << "                       Radial warp using percentage coordinates\n"
+                << "  twist <x> <y> <force>\n"
+                << "                       Distance-scaled twist around a percent center\n"
                 << "  flow-lines <spacing> <steps> <step> <width> <#RRGGBB>\n"
                 << "             [opacity] = (<VX>, <VY>)\n"
                 << "                       Draw RK4-traced vector-field streamlines\n"
