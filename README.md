@@ -87,9 +87,11 @@ errors occurred.
 - `fisheye <x> <y> <amount> [radius]` applies a radial lens centered on the given percentage coordinates. Positive
   amounts magnify; amounts between `-1` and `0` shrink. Radius is an optional percentage of the image's shorter
   dimension and defaults to `100`.
-- `lighting <angle> <#RRGGBB> <threshold> [strength]` casts visible parallel rays from the given source angle. Each ray
-  screen-blends the light color along its path through its first threshold-reaching pixel, then stops. Strength is
-  optional and defaults to `1`.
+- `lighting <preset> [strength]` applies one of the ready-to-use `golden-hour`, `moonlight`, `studio`, or `synthwave`
+  looks. Optional strength is from `0` to `1`.
+- `lighting <angle> <#RRGGBB> <threshold|auto> [strength [softness [atmosphere]]]` creates a custom directional gel
+  light. It uses image luminance as scene structure, rolls the light off across the frame, softens occlusion, and adds
+  restrained shadow contrast instead of painting solid ray-shaped color blocks.
 - `r = <formula>` changes only the red channel.
 - `g = <formula>` changes only the green channel.
 - `b = <formula>` changes only the blue channel.
@@ -217,30 +219,40 @@ This applies a slight rotation twelve times:
 Each iteration samples the image produced by the preceding iteration. An
 iteration count of `0` leaves the image unchanged.
 
-### Directional lighting
 
-`lighting` draws colored directional beams that terminate against exposed
-surfaces:
+### Lighting
+
+Start with a preset; it chooses a color palette, direction, softness, atmospheric fill, and shadow balance:
 
 ```sh
--p "lighting 315 #FFD080 64 0.7"
+# Warm light from the upper right
+-p "lighting golden-hour"
+
+# Warm key plus a cool rim light
+-p "lighting studio 0.8"
+
+# Pink and cyan lights from opposite sides
+-p "lighting synthwave"
 ```
 
-The angle is measured in degrees clockwise in image space and describes where
-the light source sits: `0` is right, `90` is bottom, `180` is left, and `270`
-is top. Angles wrap, so `-45` and `315` are equivalent.
+Presets use `auto` luminance analysis, so they adapt to both dark illustrations and bright photographs. For a custom
+light, angles describe where the source sits: `0` is right, `90` is below, `180` is left, and `270` is above.
 
-The color uses six-digit hexadecimal RGB. The integer threshold ranges from
-`0` to `255`; a pixel is hit when its Rec. 709 luminance is greater than or
-equal to that threshold. Darker pixels transmit the ray. The hit
-pixel and every transmitting pixel leading to it receive a screen blend, making
-the beam visible without replacing existing texture. The ray stops before
-pixels behind the hit, producing a shadow. The optional strength ranges from
-`0` to `1`, and alpha is preserved.
+```sh
+-p "lighting 315 #FF9A62 auto 0.85 12 0.08"
+```
 
-This behavior works especially well on images with a dark or transparent-looking
-background and brighter subject pixels. A preprocessing formula can create
-that field from a bright photograph:
+The custom controls after the color are:
+
+- `threshold`: a luminance from `0` to `255`, or `auto` to estimate it from the image.
+- `strength`: overall amount from `0` to `1`; defaults to `0.78`.
+- `softness`: penumbra size as a percentage of the shorter image dimension, from `0` to `50`; defaults to `8`.
+- `atmosphere`: how much color reaches regions below the luminance threshold, from `0` to `1`; defaults to `0.06`.
+
+Use a low atmosphere for clean relighting and a higher value for a visible color wash. Multiple lighting commands still
+compose from left to right.
+
+
 
 ```sh
 -p "rgb = (255 - R, 255 - G, 255 - B)" \

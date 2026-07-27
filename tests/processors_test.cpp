@@ -139,111 +139,74 @@ namespace {
         };
         FileData image{
             .width = 5,
-            .height = 2,
-            .pixels = std::vector<Pixel>(10, dark),
+            .height = 1,
+            .pixels = std::vector<Pixel>(5, dark),
         };
         image.pixels[1] =
             Pixel{.red = 100, .green = 100, .blue = 100, .alpha = 80};
         image.pixels[3] =
             Pixel{.red = 150, .green = 150, .blue = 150, .alpha = 120};
-        image.pixels[9] =
-            Pixel{.red = 80, .green = 80, .blue = 80, .alpha = 160};
 
         const FileData from_left = lighting_processor().apply(
             image,
-            {"180", "#FF0000", "50"}
+            {"180", "#FF0000", "50", "1", "0", "0"}
         );
         expect(
-            from_left.pixels[0].red == 255 &&
+            from_left.pixels[0].red == 10 &&
             from_left.pixels[0].green == 10 &&
-            from_left.pixels[0].blue == 10 &&
-            from_left.pixels[1].red == 255 &&
-            from_left.pixels[1].green == 100 &&
-            from_left.pixels[1].blue == 100,
-            "lighting should screen its color along the ray and onto its hit"
+            from_left.pixels[0].blue == 10,
+            "lighting should leave empty dark regions alone when atmosphere is zero"
         );
         expect(
-            from_left.pixels[2].red == 10 &&
-            from_left.pixels[3].red == 150 &&
-            from_left.pixels[8].red == 255 &&
-            from_left.pixels[9].red == 255,
-            "lighting should stop each visible ray independently after its hit"
+            from_left.pixels[1].red > image.pixels[1].red &&
+            from_left.pixels[1].red > from_left.pixels[3].red &&
+            from_left.pixels[1].green < image.pixels[1].green,
+            "lighting should tint the source-facing surface more than an occluded one"
         );
         expect(
             from_left.pixels[0].alpha == 40 &&
             from_left.pixels[1].alpha == 80 &&
-            from_left.pixels[9].alpha == 160,
-            "lighting should preserve alpha along beams and at collision pixels"
+            from_left.pixels[3].alpha == 120,
+            "lighting should preserve alpha"
         );
 
-        const FileData from_right = lighting_processor().apply(
-            std::move(image),
-            {"0", "#0000FF", "50"}
-        );
-        expect(
-            from_right.pixels[4].blue == 255 &&
-            from_right.pixels[3].blue == 255 &&
-            from_right.pixels[2].blue == 10 &&
-            from_right.pixels[1].blue == 100,
-            "zero degrees should place the light source to the image's right"
-        );
-
-        FileData threshold_image{
-            .width = 2,
-            .height = 1,
-            .pixels = {
-                Pixel{.red = 49, .green = 49, .blue = 49, .alpha = 20},
-                Pixel{.red = 50, .green = 50, .blue = 50, .alpha = 30},
-            },
-        };
-        const FileData threshold_result = lighting_processor().apply(
-            std::move(threshold_image),
-            {"180", "#FF0000", "50"}
-        );
-        expect(
-            threshold_result.pixels[0].red == 255 &&
-            threshold_result.pixels[0].green == 49 &&
-            threshold_result.pixels[1].red == 255 &&
-            threshold_result.pixels[1].green == 50,
-            "lighting should show the beam below threshold and include the hit"
-        );
-
-        FileData strength_image{
-            .width = 1,
-            .height = 1,
-            .pixels = {
-                Pixel{.red = 100, .green = 100, .blue = 100, .alpha = 42},
-            },
-        };
-        const FileData partial = lighting_processor().apply(
-            std::move(strength_image),
-            {"-180", "#C86432", "50", "0.5"}
-        );
-        expect(
-            partial.pixels[0].red == 161 &&
-            partial.pixels[0].green == 130 &&
-            partial.pixels[0].blue == 115 &&
-            partial.pixels[0].alpha == 42,
-            "lighting strength should scale screen blending and preserve alpha"
-        );
-
-        FileData diagonal_image{
+        FileData atmosphere_image{
             .width = 3,
-            .height = 3,
-            .pixels = std::vector<Pixel>(
-                9,
-                Pixel{.red = 100, .green = 100, .blue = 100, .alpha = 255}
-            ),
+            .height = 1,
+            .pixels = std::vector<Pixel>(3, dark),
         };
-        const FileData diagonal = lighting_processor().apply(
-            std::move(diagonal_image),
-            {"315", "#FF0000", "50"}
+        const FileData atmosphere = lighting_processor().apply(
+            std::move(atmosphere_image),
+            {"0", "#0000FF", "200", "1", "0", "0.5"}
         );
         expect(
-            diagonal.pixels[1].red == 255 &&
-            diagonal.pixels[5].red == 255 &&
-            diagonal.pixels[4].red == 100,
-            "diagonal lighting should cover source-facing edges without reaching behind them"
+            atmosphere.pixels[2].blue > atmosphere.pixels[0].blue &&
+            atmosphere.pixels[0].blue > dark.blue,
+            "atmosphere should make a smooth color wash toward the light source"
+        );
+
+        const FileData no_strength = lighting_processor().apply(
+            image,
+            {"golden-hour", "0"}
+        );
+        expect(
+            red_values(no_strength) == red_values(image) &&
+            no_strength.pixels[1].green == image.pixels[1].green &&
+            no_strength.pixels[3].blue == image.pixels[3].blue,
+            "a preset strength of zero should leave the image unchanged"
+        );
+
+        const FileData synthwave = lighting_processor().apply(
+            image,
+            {"synthwave"}
+        );
+        expect(
+            (
+                synthwave.pixels[0].red != image.pixels[0].red ||
+                synthwave.pixels[0].blue != image.pixels[0].blue
+            ) &&
+            synthwave.pixels[0].alpha == image.pixels[0].alpha,
+            "multi-light presets should transform RGB while preserving alpha"
         );
     }
 
@@ -1015,6 +978,13 @@ namespace {
             },
             "lighting processor should parse angle, color, threshold, and strength"
         );
+        const auto lighting_preset_arguments =
+            lighting_processor().parse_arguments("lighting studio 0.8");
+        expect(
+            lighting_preset_arguments ==
+            std::optional<std::vector<std::string>>{{"studio", "0.8"}},
+            "lighting processor should parse a preset and its strength"
+        );
         expect(
             !lighting_processor().parse_arguments("blur 3").has_value(),
             "lighting processor should decline another processor's command"
@@ -1057,6 +1027,16 @@ namespace {
                 "lighting 315 #FFD080 64 0.7"
             ).has_value(),
             "parser should accept a lighting command"
+        );
+        expect(
+            parse_processor_command("lighting synthwave").has_value(),
+            "parser should accept a lighting preset"
+        );
+        expect(
+            parse_processor_command(
+                "lighting 315 #FFD080 auto 0.7 12 0.1"
+            ).has_value(),
+            "parser should accept automatic threshold, softness, and atmosphere"
         );
         expect(
             parse_processor_command("r = (R + G) / 2").has_value(),
@@ -1232,6 +1212,31 @@ namespace {
         expect(
             error_message == "lighting strength must be from 0 to 1",
             "parser should describe an invalid lighting strength"
+        );
+        error_message.clear();
+        expect(
+            !parse_processor_command(
+                "lighting 45 #FFD080 auto 0.8 51",
+                &error_message
+            ).has_value(),
+            "parser should reject out-of-range lighting softness"
+        );
+        expect(
+            error_message ==
+            "lighting softness must be from 0 to 50 percent",
+            "parser should describe invalid lighting softness"
+        );
+        error_message.clear();
+        expect(
+            !parse_processor_command(
+                "lighting vaporwave",
+                &error_message
+            ).has_value(),
+            "parser should reject unknown lighting presets"
+        );
+        expect(
+            error_message.find("golden-hour") != std::string::npos,
+            "parser should list the available lighting presets"
         );
         error_message.clear();
         expect(
