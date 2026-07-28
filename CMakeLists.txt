@@ -24,6 +24,8 @@ add_executable(pixlie main.cpp
         include/pixlie/processors/mirror.h
         src/processors/filters/blur.cpp
         include/pixlie/processors/blur.h
+        src/processors/toolbox/black_and_white.cpp
+        include/pixlie/processors/black_and_white.h
         src/processors/toolbox/contrast.cpp
         include/pixlie/processors/contrast.h
         src/processors/toolbox/fisheye.cpp
@@ -97,6 +99,7 @@ if (BUILD_TESTING)
             tests/processors_test.cpp
             tests/cli_test.cpp
             tests/processors/blur_test.cpp
+            tests/processors/black_and_white_test.cpp
             tests/processors/contrast_test.cpp
             tests/processors/fisheye_test.cpp
             tests/processors/flow_lines_test.cpp
@@ -120,6 +123,7 @@ if (BUILD_TESTING)
             src/processors/layout/rotate.cpp
             src/processors/layout/mirror.cpp
             src/processors/filters/blur.cpp
+            src/processors/toolbox/black_and_white.cpp
             src/processors/toolbox/contrast.cpp
             src/processors/toolbox/fisheye.cpp
             src/processors/toolbox/twist.cpp

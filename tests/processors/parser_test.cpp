@@ -1,6 +1,7 @@
 #include <optional>
 #include "../common/test_support.h"
 #include "pixlie/parser.h"
+#include "pixlie/processors/black_and_white.h"
 #include "pixlie/processors/blur.h"
 #include "pixlie/processors/contrast.h"
 #include "pixlie/processors/fisheye.h"
@@ -40,6 +41,18 @@ expect(
 expect(
     !contrast_processor().parse_arguments("blur 3").has_value(),
     "contrast processor should decline another processor's command"
+);
+
+const auto black_and_white_arguments =
+    black_and_white_processor().parse_arguments("black-and-white 1.2");
+expect(
+    black_and_white_arguments ==
+    std::optional<std::vector<std::string>>{{"1.2"}},
+    "black-and-white processor should parse its brightness multiplier"
+);
+expect(
+    !black_and_white_processor().parse_arguments("blur 3").has_value(),
+    "black-and-white processor should decline another processor's command"
 );
 
 const auto rgb_arguments =
@@ -257,6 +270,10 @@ expect(
     "parser should accept a contrast command"
 );
 expect(
+    parse_processor_command("black-and-white 1.2").has_value(),
+    "parser should accept a black-and-white command"
+);
+expect(
     parse_processor_command("fisheye 50 50 -0.5").has_value(),
     "parser should accept a fisheye command with default radius"
 );
@@ -389,6 +406,19 @@ expect(
 expect(
     error_message == "blur radius must be a nonnegative integer",
     "parser should describe an invalid blur radius"
+);
+error_message.clear();
+expect(
+    !parse_processor_command(
+        "black-and-white -0.1",
+        &error_message
+    ).has_value(),
+    "parser should reject a negative black-and-white brightness multiplier"
+);
+expect(
+    error_message ==
+    "black-and-white brightness multiplier must be nonnegative",
+    "parser should describe an invalid black-and-white brightness multiplier"
 );
 error_message.clear();
 expect(

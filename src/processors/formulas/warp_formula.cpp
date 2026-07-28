@@ -1,3 +1,8 @@
+// Processor: `warp = (<source-x>, <source-y>)`.
+// Remaps every output pixel by bilinearly sampling the input image.
+// `source-x` and `source-y` are formulas that return the input coordinates to
+// sample for the current output coordinate.
+
 #include "pixlie/processors/warp_formula.h"
 
 #include <string>

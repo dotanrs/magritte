@@ -1,3 +1,8 @@
+// Processor: `s = <formula>`.
+// Recomputes each pixel's HSL saturation while preserving hue, lightness, and
+// alpha. `formula` produces saturation on the 0-255 scale and may use the
+// current saturation `S`, image coordinates, constants, and math functions.
+
 #include "pixlie/processors/saturation_formula.h"
 
 #include <string>

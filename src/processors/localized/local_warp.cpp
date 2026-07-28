@@ -1,3 +1,9 @@
+// Processor: `local-warp = (<source-x>, <source-y>)`.
+// Remaps every output pixel by bilinearly sampling the immutable input image.
+// `source-x` and `source-y` are source-coordinate formulas that may also use
+// `red(dx, dy)`, `green(dx, dy)`, and `blue(dx, dy)` to inspect neighboring
+// immutable input pixels.
+
 #include "pixlie/processors/local_warp.h"
 
 #include <string>

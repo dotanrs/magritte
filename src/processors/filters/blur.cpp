@@ -1,3 +1,7 @@
+// Processor: `blur <radius>`.
+// Applies an edge-truncated RGB box blur while preserving alpha. `radius` is
+// the nonnegative integer neighborhood radius in pixels; zero is a no-op.
+
 #include "pixlie/processors/blur.h"
 
 #include <algorithm>

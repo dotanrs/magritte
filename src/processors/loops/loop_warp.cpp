@@ -1,3 +1,8 @@
+// Processor: `loop-warp <iterations> = (<source-x>, <source-y>)`.
+// Repeatedly applies a coordinate warp, feeding each result into the next
+// pass. `iterations` is a nonnegative integer; `source-x` and `source-y` are
+// formulas for the input coordinates sampled during each pass.
+
 #include "pixlie/processors/loop_warp.h"
 
 #include "pixlie/processors/loop_assignment_processor.h"

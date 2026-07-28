@@ -1,3 +1,8 @@
+// Shared processor behavior for loop commands.
+// Repeatedly applies a wrapped processor, feeding each output into the next
+// iteration. The first parsed argument is a nonnegative iteration count; all
+// remaining arguments keep their wrapped processor's meanings.
+
 #include "pixlie/processors/loop_processor.h"
 
 #include <charconv>

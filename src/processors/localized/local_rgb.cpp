@@ -1,3 +1,9 @@
+// Processor: `local-rgb = (<red>, <green>, <blue>)`.
+// Recomputes all RGB channels while preserving alpha. `red`, `green`, and
+// `blue` are formulas for their corresponding output channels; in addition to
+// normal formula variables, they may sample neighboring immutable input
+// pixels with `red(dx, dy)`, `green(dx, dy)`, and `blue(dx, dy)`.
+
 #include "pixlie/processors/local_rgb.h"
 
 #include <string>

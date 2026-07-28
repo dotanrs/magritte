@@ -1,0 +1,8 @@
+# Convert examples/original.jpg to a slightly brighter grayscale image.
+# Run:
+#   ./build/pixlie --source examples/original.jpg \
+#     -f formulas/black-and-white.yml \
+#     -o examples/black-and-white.jpg --overwrite
+processors:
+  - name: bright black-and-white conversion
+    command: "black-and-white 1.1"

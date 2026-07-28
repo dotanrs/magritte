@@ -1,3 +1,10 @@
+// Processor: `fisheye <x> <y> <amount> [radius]`.
+// Applies a radial lens distortion. `x` and `y` are center coordinates as
+// percentages from 0 to 100; `amount` is greater than -1, with positive
+// values magnifying, negative values shrinking, and 0 a no-op; optional
+// `radius` is a positive percentage of the shorter image dimension and
+// defaults to 100.
+
 #include "pixlie/processors/fisheye.h"
 
 #include <algorithm>

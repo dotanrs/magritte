@@ -1,3 +1,12 @@
+// Processor: `flow-lines <spacing> <steps> <step-size> <width> <#RRGGBB>
+// [opacity] = (<VX>, <VY>)`.
+// Draws antialiased streamlines through a formula-defined vector field.
+// `spacing` is the seed and minimum path separation in pixels; `steps` is the
+// maximum integration steps in each direction; `step-size` is the distance
+// traveled per step; `width` is the stroke width in pixels; `#RRGGBB` is the
+// stroke color; optional `opacity` is from 0 to 1 and defaults to 1; `VX` and
+// `VY` are formulas for the field's horizontal and vertical components.
+
 #include "pixlie/processors/flow_lines.h"
 
 #include <algorithm>

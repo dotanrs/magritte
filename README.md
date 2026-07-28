@@ -163,6 +163,9 @@ each command must stay on one line. Basic one-to-three-step examples live in
 - `mirror y` mirrors the image vertically.
 - `blur <radius>` applies a box blur to RGB using a nonnegative integer pixel radius. Pixels near an edge average only
   the available neighborhood; alpha is preserved.
+- `black-and-white <brightness-multiplier>` converts RGB to perceptual grayscale, then scales the luminance by a
+  nonnegative finite multiplier. `1` preserves the calculated brightness, values above `1` brighten, values between
+  `0` and `1` darken, and `0` produces black. RGB values are clamped to `[0, 255]`; alpha is preserved.
 - `contrast <factor>` increases RGB contrast around the midpoint. A factor of `1` leaves the image unchanged; larger
   finite factors move darker values toward black and lighter values toward white. Alpha is preserved.
 - `fisheye <x> <y> <amount> [radius]` applies a radial lens centered on the given percentage coordinates. Positive

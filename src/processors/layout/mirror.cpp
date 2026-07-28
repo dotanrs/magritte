@@ -1,3 +1,7 @@
+// Processor: `mirror <axis>`.
+// Reflects the image without changing its dimensions. `axis` must be `x` to
+// exchange left and right pixels, or `y` to exchange top and bottom pixels.
+
 #include "pixlie/processors/mirror.h"
 
 #include <stdexcept>

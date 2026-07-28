@@ -1,3 +1,10 @@
+// Processor: `spin <x> <y> <angle> [radius]`.
+// Rotates source coordinates by a fixed angle around a chosen center. `x` and
+// `y` are center percentages from 0 to 100; `angle` is a signed number of
+// degrees; optional `radius` is a positive percentage of the shorter image
+// dimension, outside of which pixels remain unchanged. Without `radius`, the
+// rotation applies to the whole image.
+
 #include "pixlie/processors/spin.h"
 
 #include <algorithm>

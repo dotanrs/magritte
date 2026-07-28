@@ -1,3 +1,11 @@
+// Processor: `twist <x> <y> <force> [radius]`.
+// Twists source coordinates increasingly with distance from a chosen center.
+// `x` and `y` are center percentages from 0 to 100; `force` is signed radians
+// per 100 pixels, with its sign choosing direction; optional `radius` is a
+// positive percentage of the shorter image dimension and makes the twist
+// fade smoothly to zero at its boundary. Without `radius`, the twist extends
+// across the whole image without radial falloff.
+
 #include "pixlie/processors/twist.h"
 
 #include <algorithm>

@@ -1,3 +1,8 @@
+// Processor: `contrast <factor>`.
+// Scales RGB values away from the midpoint while preserving alpha. `factor`
+// is a finite number at least 1; 1 is a no-op and larger values increase
+// contrast before channels are clamped to their valid range.
+
 #include "pixlie/processors/contrast.h"
 
 #include <algorithm>

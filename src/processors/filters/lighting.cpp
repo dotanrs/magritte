@@ -1,3 +1,15 @@
+// Processor: `lighting <preset> [strength]` or
+// `lighting <angle> <#RRGGBB> <threshold|auto>
+// [strength [softness [atmosphere]]]`.
+// Adds directional colored lighting while preserving alpha. `preset` selects
+// golden-hour, moonlight, studio, or synthwave; preset `strength` scales that
+// look from 0 to 1. For a custom light, `angle` is the source direction in
+// degrees (0 right, 90 below, 180 left, 270 above), `#RRGGBB` is its color,
+// and `threshold` is a luminance from 0 to 255 or `auto`. Optional `strength`
+// is the overall amount from 0 to 1 (default 0.78), `softness` is the penumbra
+// as 0-50% of the shorter dimension (default 8), and `atmosphere` is the
+// below-threshold color wash from 0 to 1 (default 0.06).
+
 #include "pixlie/processors/lighting.h"
 
 #include <algorithm>

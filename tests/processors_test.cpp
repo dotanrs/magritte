@@ -6,6 +6,7 @@ void test_rotation();
 void test_cli_arguments();
 void test_mirror();
 void test_blur();
+void test_black_and_white();
 void test_contrast();
 void test_lighting();
 void test_red_formula_and_clamping();
@@ -38,6 +39,7 @@ int main() {
     test_rotation();
     test_mirror();
     test_blur();
+    test_black_and_white();
     test_contrast();
     test_lighting();
     test_red_formula_and_clamping();

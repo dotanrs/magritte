@@ -1,3 +1,9 @@
+// Processor: `<channels> = <formula-or-tuple>`.
+// Recomputes a non-repeating target made from `r`, `g`, and `b` while
+// preserving untargeted channels and alpha. `channels` gives the destination
+// order; a one-channel target takes one formula, while a multi-channel target
+// takes an equally sized tuple whose expressions all read the original pixel.
+
 #include "pixlie/processors/rgb_formula.h"
 
 #include <algorithm>

@@ -1,3 +1,8 @@
+// Processor: `rotate <turns>`.
+// Rotates the image in 90-degree increments and updates its dimensions.
+// `turns` is a signed integer reduced modulo four; positive values rotate
+// clockwise and negative values rotate in the opposite direction.
+
 #include "pixlie/processors/rotate.h"
 
 #include <charconv>
