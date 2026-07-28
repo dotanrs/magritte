@@ -3,8 +3,8 @@
 #
 # Run:
 #   ./build/magritte --source formulas/examples/original.jpeg \
-#     -f formulas/bottom-wave-color.yml \
-#     -o formulas/examples/bottom-wave-color.jpg --overwrite
+#     -f formulas/slenderman.yml \
+#     -o formulas/examples/slenderman.jpg --overwrite
 processors:
   - name: black and white
     command: >
