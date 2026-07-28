@@ -1,6 +1,6 @@
 # Generate coordinate-based color, twist it, and adjust its saturation.
 canvas:
-  file_name: "formulas-and-warps.jpg"
+  file_name: "hitchcock.jpg"
   width: 480
   height: 320
 processors:
