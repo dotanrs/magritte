@@ -18,6 +18,12 @@ namespace {
         std::size_t number;
         std::size_t indent;
         std::string text;
+        std::optional<std::string> block_scalar;
+    };
+
+    struct PhysicalLine {
+        std::size_t number;
+        std::string text;
     };
 
     struct FormulaStepBuilder {
@@ -160,11 +166,115 @@ namespace {
         return result;
     }
 
+    std::optional<char> block_scalar_style(std::string_view value) {
+        value = trim_view(value);
+        if (value.empty() ||
+            value.front() == '\'' ||
+            value.front() == '"') {
+            return std::nullopt;
+        }
+        for (std::size_t index = 0; index < value.size(); ++index) {
+            if (value[index] == '#' &&
+                (index == 0 ||
+                 std::isspace(static_cast<unsigned char>(value[index - 1])))) {
+                value = trim_view(value.substr(0, index));
+                break;
+            }
+        }
+        if (value == ">" || value == "|") {
+            return value.front();
+        }
+        return std::nullopt;
+    }
+
+    std::string render_block_scalar(
+        const std::vector<PhysicalLine> &physical_lines,
+        std::size_t begin,
+        std::size_t end,
+        char style,
+        std::string_view source,
+        std::size_t header_line
+    ) {
+        std::optional<std::size_t> content_indent;
+        for (std::size_t index = begin; index < end; ++index) {
+            const PhysicalLine &line = physical_lines[index];
+            const std::size_t first = line.text.find_first_not_of(' ');
+            if (first == std::string::npos) {
+                continue;
+            }
+            if (line.text[first] == '\t') {
+                fail(
+                    source,
+                    line.number,
+                    "tabs are not supported for indentation"
+                );
+            }
+            if (!content_indent) {
+                content_indent = first;
+            } else if (first < *content_indent) {
+                fail(
+                    source,
+                    line.number,
+                    "invalid block scalar indentation"
+                );
+            }
+        }
+        if (!content_indent) {
+            fail(source, header_line, "block scalar cannot be empty");
+        }
+
+        std::vector<std::string> content;
+        std::vector<bool> more_indented;
+        content.reserve(end - begin);
+        more_indented.reserve(end - begin);
+        for (std::size_t index = begin; index < end; ++index) {
+            const std::string &text = physical_lines[index].text;
+            const std::size_t first = text.find_first_not_of(' ');
+            if (first == std::string::npos) {
+                content.emplace_back();
+                more_indented.push_back(false);
+                continue;
+            }
+            content.push_back(text.substr(*content_indent));
+            more_indented.push_back(first > *content_indent);
+        }
+
+        std::string result;
+        if (style == '|') {
+            for (const std::string &line: content) {
+                result += line;
+                result.push_back('\n');
+            }
+        } else {
+            for (std::size_t index = 0; index < content.size(); ++index) {
+                const bool empty = content[index].empty();
+                if (index > 0) {
+                    const bool previous_empty = content[index - 1].empty();
+                    if (empty) {
+                        result.push_back('\n');
+                    } else if (!previous_empty) {
+                        result.push_back(
+                            more_indented[index - 1] ||
+                            more_indented[index] ? '\n' : ' '
+                        );
+                    }
+                }
+                result += content[index];
+            }
+        }
+
+        while (!result.empty() && result.back() == '\n') {
+            result.pop_back();
+        }
+        result.push_back('\n');
+        return result;
+    }
+
     std::vector<Line> read_lines(
         std::istream &input,
         std::string_view source
     ) {
-        std::vector<Line> lines;
+        std::vector<PhysicalLine> physical_lines;
         std::string text;
         std::size_t number = 0;
         while (std::getline(input, text)) {
@@ -172,52 +282,126 @@ namespace {
             if (!text.empty() && text.back() == '\r') {
                 text.pop_back();
             }
-            const std::size_t first = text.find_first_not_of(' ');
-            if (first == std::string::npos) {
-                continue;
-            }
-            if (text[first] == '\t') {
-                fail(source, number, "tabs are not supported for indentation");
-            }
-            const std::string_view content =
-                trim_view(std::string_view(text).substr(first));
-            if (content.empty() || content.front() == '#') {
-                continue;
-            }
-            lines.push_back({number, first, std::string(content)});
+            physical_lines.push_back({number, std::move(text)});
         }
         if (!input.eof() && input.fail()) {
             throw std::invalid_argument(
                 "could not read formula file: " + std::string(source)
             );
         }
+
+        std::vector<Line> lines;
+        for (std::size_t index = 0; index < physical_lines.size();) {
+            const PhysicalLine &line = physical_lines[index];
+            const std::size_t first = line.text.find_first_not_of(' ');
+            if (first == std::string::npos) {
+                ++index;
+                continue;
+            }
+            if (line.text[first] == '\t') {
+                fail(
+                    source,
+                    line.number,
+                    "tabs are not supported for indentation"
+                );
+            }
+            const std::string_view content =
+                trim_view(std::string_view(line.text).substr(first));
+            if (content.empty() || content.front() == '#') {
+                ++index;
+                continue;
+            }
+
+            std::optional<char> style;
+            const std::size_t separator = content.find(':');
+            if (separator != std::string_view::npos) {
+                style = block_scalar_style(content.substr(separator + 1));
+            }
+            if (!style) {
+                lines.push_back({
+                    line.number,
+                    first,
+                    std::string(content),
+                    std::nullopt,
+                });
+                ++index;
+                continue;
+            }
+
+            std::size_t end = index + 1;
+            while (end < physical_lines.size()) {
+                const PhysicalLine &candidate = physical_lines[end];
+                const std::size_t candidate_first =
+                    candidate.text.find_first_not_of(' ');
+                if (candidate_first == std::string::npos) {
+                    ++end;
+                    continue;
+                }
+                if (candidate.text[candidate_first] == '\t') {
+                    fail(
+                        source,
+                        candidate.number,
+                        "tabs are not supported for indentation"
+                    );
+                }
+                if (candidate_first <= first) {
+                    break;
+                }
+                ++end;
+            }
+            lines.push_back({
+                line.number,
+                first,
+                std::string(content),
+                render_block_scalar(
+                    physical_lines,
+                    index + 1,
+                    end,
+                    *style,
+                    source,
+                    line.number
+                ),
+            });
+            index = end;
+        }
         return lines;
+    }
+
+    std::string parse_line_scalar(
+        const Line &line,
+        std::string_view value,
+        std::string_view source
+    ) {
+        if (line.block_scalar) {
+            return *line.block_scalar;
+        }
+        return parse_scalar(value, source, line.number);
     }
 
     void set_step_field(
         FormulaStepBuilder &step,
+        const Line &line,
         std::string_view key,
         std::string_view value,
-        std::string_view source,
-        std::size_t line
+        std::string_view source
     ) {
         if (key == "name") {
             if (!step.name.empty()) {
-                fail(source, line, "duplicate processor name");
+                fail(source, line.number, "duplicate processor name");
             }
-            step.name = parse_scalar(value, source, line);
+            step.name = parse_line_scalar(line, value, source);
         } else if (key == "command") {
             if (!step.command.empty()) {
-                fail(source, line, "duplicate processor command");
+                fail(source, line.number, "duplicate processor command");
             }
-            step.command = parse_scalar(value, source, line);
+            step.command = parse_line_scalar(line, value, source);
         } else if (key == "formula") {
             if (step.formula) {
-                fail(source, line, "duplicate formula reference");
+                fail(source, line.number, "duplicate formula reference");
             }
-            step.formula = parse_scalar(value, source, line);
+            step.formula = parse_line_scalar(line, value, source);
         } else {
-            fail(source, line, "unknown processor field");
+            fail(source, line.number, "unknown processor field");
         }
     }
 
@@ -380,10 +564,10 @@ FormulaConfig parse_formula_config(
             split_field(item, source_name, line.number);
         set_step_field(
             *step,
+            line,
             key,
             value,
-            source_name,
-            line.number
+            source_name
         );
     }
     if (section == Section::processors) {

@@ -1,0 +1,24 @@
+# Add a liquid wave and overlapping chromatic echoes that strengthen toward
+# the bottom of the image and smoothly decay to no effect near the top.
+#
+# Run:
+#   ./build/magritte --source formulas/examples/original.jpeg \
+#     -f formulas/bottom-wave-color.yml \
+#     -o formulas/examples/bottom-wave-color.jpg --overwrite
+processors:
+  - name: orient formula coordinates toward the displayed bottom
+    command: "mirror y"
+  - name: black and white
+    command: black-and-white 0.7
+  - name: overlapping cyan magenta and gold color echoes
+    command: >
+      local-rgb =
+      (
+      R * (1 - 0.62 * pow(clamp((Y / (H - 1) - 0.15) / 0.68, 0, 1), 2)) + red(24 * pow(clamp((Y / (H - 1) - 0.15) / 0.68, 0, 1), 2) + 6 * pow(clamp((Y / (H - 1) - 0.20) / 0.68, 0, 1), 2) * sin(Y / 13), 0) * 0.62 * pow(clamp((Y / (H - 1) - 0.32) / 0.68, 0, 1), 2) + 18 * pow(clamp((Y / (H - 1) - 0.32) / 0.68, 0, 1), 2) * (1 + sin(X / 31 + Y / 23)),
+      G * (1 - 0.42 * pow(clamp((Y / (H - 1) - 0.15) / 0.68, 0, 1), 2)) + green(5 * pow(clamp((Y / (H - 1) - 0.10) / 0.68, 0, 1), 2) * sin(Y / 11), 0) * 0.42 * pow(clamp((Y / (H - 1) - 0.15) / 0.68, 0, 1), 2) + 10 * pow(clamp((Y / (H - 1) - 0.32) / 0.68, 0, 1), 2) * (1 + sin(X / 37 + Y / 19 + 2)),
+      B * (1 - 0.62 * pow(clamp((Y / (H - 1) - 0.5) / 0.68, 0, 1), 2)) + blue(-24 * pow(clamp((Y / (H - 1) - 0.10) / 0.68, 0, 1), 2) + 6 * pow(clamp((Y / (H - 1) - 0.10) / 0.68, 0, 1), 2) * cos(Y / 17), 0) * 0.62 * pow(clamp((Y / (H - 1) - 0.32) / 0.68, 0, 1), 2) + 20 * pow(clamp((Y / (H - 1) - 0.32) / 0.68, 0, 1), 2) * (1 + sin(X / 29 + Y / 21 + 4))
+      )
+  - name: bottom-weighted liquid wave
+    command: "warp = (X + 32 * pow(clamp((Y / (H - 1) - 0.32) / 0.68, 0, 1), 2) * sin(Y / 18 + X / 95), Y + 8 * pow(clamp((Y / (H - 1) - 0.32) / 0.68, 0, 1), 2) * sin(X / 43))"
+  - name: restore the original image orientation
+    command: "mirror y"

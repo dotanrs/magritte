@@ -8,6 +8,7 @@
 
 #include "common/test_support.h"
 #include "magritte/formula.h"
+#include "magritte/parser.h"
 
 namespace {
     namespace fs = std::filesystem;
@@ -62,6 +63,72 @@ processors:
         std::get<ProcessorSpec>(config.steps[1]).command ==
             "rgb = (R, 80 + 60 * sin(D / 8), 180)",
         "formula processor command"
+    );
+
+    std::istringstream block_scalars(R"YAML(
+processors:
+  - name: folded command
+    command: > # Fold physical lines into spaces.
+      local-rgb =
+      (
+      R,
+      G,
+      B
+      )
+  - name: literal command
+    command: |
+      rgb =
+      (
+      R,
+      G,
+      B
+      )
+)YAML");
+    const FormulaConfig block_scalar_config =
+        parse_formula_config(block_scalars, "blocks.yml");
+    expect(
+        block_scalar_config.steps.size() == 2,
+        "formula accepts folded and literal block scalars"
+    );
+    expect(
+        std::get<ProcessorSpec>(block_scalar_config.steps[0]).command ==
+            "local-rgb = ( R, G, B )\n",
+        "folded block scalar replaces ordinary line breaks with spaces"
+    );
+    expect(
+        std::get<ProcessorSpec>(block_scalar_config.steps[1]).command ==
+            "rgb =\n(\nR,\nG,\nB\n)\n",
+        "literal block scalar preserves line breaks"
+    );
+    expect(
+        parse_processor_command(
+            std::get<ProcessorSpec>(
+                block_scalar_config.steps[0]
+            ).command
+        ).has_value(),
+        "folded block scalar produces a valid processor command"
+    );
+    expect(
+        parse_processor_command(
+            std::get<ProcessorSpec>(
+                block_scalar_config.steps[1]
+            ).command
+        ).has_value(),
+        "literal block scalar produces a valid processor command"
+    );
+    expect_invalid(
+        "processors:\n"
+        "  - name: empty block\n"
+        "    command: >\n",
+        "formula rejects an empty block scalar"
+    );
+    expect_invalid(
+        "processors:\n"
+        "  - name: inconsistent indentation\n"
+        "    command: >\n"
+        "      rgb =\n"
+        "     (R, G, B)\n",
+        "formula rejects inconsistent block scalar indentation"
     );
 
     expect_invalid(

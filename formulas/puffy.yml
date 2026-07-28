@@ -1,9 +1,0 @@
-# Recreate examples/keep/puffy.jpg from examples/original.jpg.
-# Run:
-#   ./build/magritte --source examples/original.jpg -f formulas/puffy.yml \
-#     -o examples/keep/puffy.jpg --overwrite
-processors:
-  - name: expand the portrait around the lower center
-    command: "fisheye 50 70 0.9"
-  - name: compress the face into the focal point
-    command: "fisheye 40 70 -0.9 40"

@@ -37,7 +37,7 @@ struct ResolvedPipeline {
 ///
 /// This intentionally supports the small YAML subset used by formula files:
 /// mappings, processor sequence items, sub-formula references, comments, and
-/// quoted or plain scalars.
+/// plain, quoted, folded (`>`), or literal (`|`) scalars.
 /// A canvas is optional at parse time because `--source` can supply the image.
 /// @throws std::invalid_argument for malformed or incomplete input.
 [[nodiscard]] FormulaConfig parse_formula_config(

@@ -85,8 +85,23 @@ intentionally small:
   integer `height`.
 - A processor item requires `name` and `command`.
 - A formula-reference item contains only `formula`.
-- Plain, single-quoted, and double-quoted scalars are accepted.
-- Each processor command must stay on one line.
+- Plain, single-quoted, double-quoted, folded (`>`), and literal (`|`) scalars
+  are accepted.
+- Use a folded block to split a long processor command across readable lines.
+  Its ordinary line breaks become spaces:
+
+  ```yaml
+  - name: horizontal wave
+    command: >
+      warp =
+      (
+      X + 20 * sin(Y / 15),
+      Y
+      )
+  ```
+
+- A literal block preserves its line breaks. Both block styles require content
+  to be indented farther than the field containing `>` or `|`.
 
 Formula files can include other formulas in the same ordered `processors`
 list:
