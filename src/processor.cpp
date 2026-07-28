@@ -208,7 +208,7 @@ void process_created_image(
     save_file(normalized_output, data);
     log(
         LogLevel::info,
-        "Drawing complete (" + std::to_string(commands.size()) +
+        "Generated image complete (" + std::to_string(commands.size()) +
         " processors applied)"
     );
     print_processor_results(results);

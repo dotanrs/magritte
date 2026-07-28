@@ -13,6 +13,7 @@
 #include "pixlie/processors/mirror.h"
 #include "pixlie/processors/rgb_formula.h"
 #include "pixlie/processors/rotate.h"
+#include "pixlie/processors/spin.h"
 #include "pixlie/processors/twist.h"
 #include "pixlie/processors/warp_formula.h"
 
@@ -175,6 +176,18 @@ expect(
     "twist processor should decline another processor's command"
 );
 
+const auto spin_arguments =
+    spin_processor().parse_arguments("spin 50 40 90 20");
+expect(
+    spin_arguments ==
+    std::optional<std::vector<std::string>>{{"50", "40", "90", "20"}},
+    "spin processor should parse its center, angle, and radius"
+);
+expect(
+    !spin_processor().parse_arguments("blur 3").has_value(),
+    "spin processor should decline another processor's command"
+);
+
 const auto flow_line_arguments =
     flow_lines_processor().parse_arguments(
         "flow-lines 18 600 1.25 1.2 #173F70 0.8 = (-V, U)"
@@ -254,6 +267,10 @@ expect(
 expect(
     parse_processor_command("twist 50 50 0.5").has_value(),
     "parser should accept a twist command"
+);
+expect(
+    parse_processor_command("spin 50 50 45 25").has_value(),
+    "parser should accept a spin command"
 );
 expect(
     parse_processor_command(
@@ -450,6 +467,34 @@ expect(
 expect(
     error_message == "twist radius must be greater than 0",
     "parser should describe an invalid twist radius"
+);
+error_message.clear();
+expect(
+    !parse_processor_command("spin 101 50 90", &error_message).has_value(),
+    "parser should reject an out-of-range spin center"
+);
+expect(
+    error_message == "spin x and y must be percentages from 0 to 100",
+    "parser should describe invalid spin percentages"
+);
+error_message.clear();
+expect(
+    !parse_processor_command("spin 50 50", &error_message).has_value(),
+    "parser should require all three spin arguments"
+);
+expect(
+    error_message ==
+    "spin expects three or four numbers: x y angle [radius]",
+    "parser should describe missing spin arguments"
+);
+error_message.clear();
+expect(
+    !parse_processor_command("spin 50 50 90 0", &error_message).has_value(),
+    "parser should reject a nonpositive spin radius"
+);
+expect(
+    error_message == "spin radius must be greater than 0",
+    "parser should describe an invalid spin radius"
 );
 error_message.clear();
 expect(

@@ -4,9 +4,9 @@ project(pixlie VERSION 0.1.0 LANGUAGES CXX)
 add_executable(pixlie main.cpp
         src/cli.cpp
         include/pixlie/cli.h
-        src/drawing.cpp
-        src/drawing_config.cpp
-        include/pixlie/drawing_config.h
+        src/formula.cpp
+        src/formula_config.cpp
+        include/pixlie/formula.h
         src/utils/logging.cpp
         include/pixlie/utils/logging.h
         src/input_validation.cpp
@@ -30,6 +30,8 @@ add_executable(pixlie main.cpp
         include/pixlie/processors/fisheye.h
         src/processors/toolbox/twist.cpp
         include/pixlie/processors/twist.h
+        src/processors/toolbox/spin.cpp
+        include/pixlie/processors/spin.h
         src/processors/drawing/flow_lines.cpp
         include/pixlie/processors/flow_lines.h
         src/processors/filters/lighting.cpp
@@ -100,26 +102,28 @@ if (BUILD_TESTING)
             tests/processors/flow_lines_test.cpp
             tests/processors/lighting_test.cpp
             tests/processors/twist_test.cpp
+            tests/processors/spin_test.cpp
             tests/processors/local_rgb_test.cpp
             tests/processors/local_warp_test.cpp
             tests/processors/loop_rgb_test.cpp
             tests/processors/loop_warp_test.cpp
             tests/processors/mirror_test.cpp
             tests/processors/parser_test.cpp
-            tests/drawing_config_test.cpp
+            tests/formula_config_test.cpp
             tests/processors/rgb_formula_test.cpp
             tests/processors/rotate_test.cpp
             tests/processors/saturation_formula_test.cpp
             tests/processors/warp_formula_test.cpp
             src/cli.cpp
             src/parser.cpp
-            src/drawing_config.cpp
+            src/formula_config.cpp
             src/processors/layout/rotate.cpp
             src/processors/layout/mirror.cpp
             src/processors/filters/blur.cpp
             src/processors/toolbox/contrast.cpp
             src/processors/toolbox/fisheye.cpp
             src/processors/toolbox/twist.cpp
+            src/processors/toolbox/spin.cpp
             src/processors/drawing/flow_lines.cpp
             src/processors/filters/lighting.cpp
             src/processors/formulas/rgb_formula.cpp

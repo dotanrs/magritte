@@ -4,36 +4,35 @@
 #include <string_view>
 
 #include "pixlie/cli.h"
-#include "pixlie/drawing_config.h"
-#include "pixlie/processor.h"
+#include "pixlie/formula.h"
 #include "pixlie/utils/logging.h"
 
 namespace {
     void print_usage(std::ostream &output, std::string_view program) {
         output << "Usage: " << program
-                << " <input.jpg> [-o <output.jpg>] [--overwrite]"
-                   " [--debug] [-p <processor>]...\n"
-                << "       " << program
-                << " <drawing.yml> [input.jpg] [-o <output.jpg>]"
-                   " [--overwrite] [--debug]\n"
+                << " [--source <source.jpg>]"
+                   " [-p <processor> | -f <formula.yml>]..."
+                   " [-o <output.jpg>]"
+                   " [--debug] [--overwrite]\n"
                 << "\n"
-                << "Processes a JPEG, or creates a drawing from a YAML file.\n"
-                << "If no output is supplied, <input>_copy.jpg is used.\n"
+                << "Every -p and -f runs in the order supplied.\n"
+                << "Without --source, the first processing argument must be\n"
+                << "a formula that includes a canvas.\n"
                 << "\n"
                 << "Options:\n"
-                << "  -o, --output <path>  Destination image path\n"
-                << "      --overwrite      Replace an existing output without prompting\n"
-                << "  -d, --debug          Add visual processor hints to the output\n"
-                << "  -p, --processor <command>\n"
-                << "                       Processor command; may be repeated\n"
+                << "  --source <path>      Source JPEG\n"
+                << "  -p <command>         Processor command; may be repeated\n"
+                << "  -f <path>            Formula YAML; may be repeated\n"
+                << "  -o <path>            Destination JPEG\n"
+                << "  --debug              Add visual processor hints to the output\n"
+                << "  --overwrite          Replace an existing output without prompting\n"
                 << "  -h, --help           Show this help message\n";
         output << "\n"
-                << "Drawing YAML:\n"
-                << "  canvas:              Creates file_name at width and height\n"
-                << "  source_image:        Reads an existing JPEG instead of canvas\n"
-                << "  processors:          Named commands; command is the -p value\n"
-                << "  Optional input.jpg:  Replaces canvas or source_image entirely\n"
-                << "  Optional -o path:    Replaces the configured output path\n";
+                << "Formula YAML:\n"
+                << "  canvas:              Initializes a source-less run\n"
+                << "  processors:          Ordered commands or formula references\n"
+                << "  - formula: <path>    Include a formula relative to this file\n"
+                << "  -o <path>            Replaces the canvas file_name\n";
         output << "\n"
                 << "Processors:\n"
                 << "  rotate <int>         Rotate clockwise by 90 degrees <int> times\n"
@@ -43,6 +42,8 @@ namespace {
                 << "                       Radial warp using percentage coordinates\n"
                 << "  twist <x> <y> <force> [radius]\n"
                 << "                       Distance-scaled twist around a percent center\n"
+                << "  spin <x> <y> <angle> [radius]\n"
+                << "                       Fixed-angle rotation around a percent center\n"
                 << "  flow-lines <spacing> <steps> <step> <width> <#RRGGBB>\n"
                 << "             [opacity] = (<VX>, <VY>)\n"
                 << "                       Draw RK4-traced vector-field streamlines\n"
@@ -75,26 +76,14 @@ int main(int argc, char *argv[]) {
     try {
         const CommandLineArguments arguments =
             parse_command_line(argc, argv);
-        if (arguments.drawing) {
-            log(LogLevel::info, "pixlie drawing started");
-            process_drawing(
-                arguments.input,
-                arguments.overwrite,
-                arguments.debug,
-                arguments.source_override,
-                arguments.output
-            );
-            return 0;
-        }
-        const Options options{
-            .input = arguments.input,
-            .output = *arguments.output,
-            .processors = arguments.processors,
-            .overwrite = arguments.overwrite,
-            .debug = arguments.debug,
-        };
         log(LogLevel::info, "pixlie started");
-        process_image(options);
+        process_pipeline(
+            arguments.steps,
+            arguments.overwrite,
+            arguments.debug,
+            arguments.source,
+            arguments.output
+        );
         return 0;
     } catch (const std::invalid_argument &error) {
         log(LogLevel::error, error.what());

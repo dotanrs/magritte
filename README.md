@@ -1,7 +1,8 @@
 # pixlie
 
-`pixlie` is a C++ command-line JPEG processor. Processor commands are supplied with repeatable `-p` flags and run from
-left to right.
+`pixlie` is a C++ command-line JPEG processor. Processor commands (`-p`) and
+formula files (`-f`) may be repeated in any combination and run from left to
+right.
 
 JPEG decoding and encoding currently use the macOS ImageIO framework.
 
@@ -17,27 +18,27 @@ cmake --build build
 Normalize and save an image as `photo_copy.jpg`:
 
 ```sh
-./build/pixlie photo.jpg
+./build/pixlie --source photo.jpg
 ```
 
 If the output file already exists, `pixlie` asks before replacing it. Pass
 `--overwrite` to replace it without prompting:
 
 ```sh
-./build/pixlie photo.jpg --output results/edited.jpg --overwrite
+./build/pixlie --source photo.jpg -o results/edited.jpg --overwrite
 ```
 
 Rotate clockwise by 90 degrees:
 
 ```sh
-./build/pixlie photo.jpg --output results/rotated.jpg \
+./build/pixlie --source photo.jpg -o results/rotated.jpg \
   -p "rotate 1"
 ```
 
 Mirror across the y-axis and apply a three-pixel-radius blur:
 
 ```sh
-./build/pixlie photo.jpg --output results/soft-mirror.jpg \
+./build/pixlie --source photo.jpg -o results/soft-mirror.jpg \
   -p "mirror y" \
   -p "blur 3"
 ```
@@ -45,15 +46,15 @@ Mirror across the y-axis and apply a three-pixel-radius blur:
 Run multiple processors sequentially:
 
 ```sh
-./build/pixlie photo.jpg --output results/edited.jpg \
+./build/pixlie --source photo.jpg -o results/edited.jpg \
   -p "rotate 1" \
   -p "rgb = (r * 2 - g, (r + b) / 2, 255 - b)"
 ```
 
-Add `--debug` (or `-d`) to include visual guides in the output:
+Add `--debug` to include visual guides in the output:
 
 ```sh
-./build/pixlie photo.jpg --output results/fisheye-debug.jpg --debug \
+./build/pixlie --source photo.jpg -o results/fisheye-debug.jpg --debug \
   -p "fisheye 50 50 1 25"
 ```
 
@@ -61,11 +62,12 @@ Debug mode runs the same processor commands and then adds any hints supported
 by those processors. `fisheye` draws its circle and radius in yellow and marks
 its center with a magenta crosshair. `twist` uses the same circle and center
 colors, plus a cyan curved line that shows the spin direction and strength.
+`spin` uses a straight cyan line to show its fixed angle.
 
 Generate a radial interference pattern from the image coordinates:
 
 ```sh
-./build/pixlie photo.jpg --output results/interference.jpg \
+./build/pixlie --source photo.jpg -o results/interference.jpg \
   -p "r = 127 + 127 * sin(D / 8 + A * 6)" \
   -p "g = 127 + 127 * sin(D / 11 - A * 4)" \
   -p "b = 127 + 127 * cos(D / 6)"
@@ -78,87 +80,81 @@ Invalid processor commands are logged and skipped without preventing other proce
 `pixlie` prints successful processor commands in green followed by invalid commands and their errors in yellow when any
 errors occurred.
 
-## Drawing files
+## Formula files
 
-A `.yml` or `.yaml` input creates a new black canvas instead of reading an
-existing image when it contains `canvas`. The canvas filename is resolved
-relative to the YAML file, and each processor `command` is the same command
-that would be passed to `-p`:
+Pass a `.yml` or `.yaml` formula with `-f`. Formula processors use the same
+commands as `-p`:
 
 ```yaml
 canvas:
-  file_name: output/blue-field.jpg
-  width: 900
-  height: 1200
+  file_name: "gradient.jpg"
+  width: 480
+  height: 320
 processors:
-  - name: flowing cobalt lines
-    command: "rgb = (28 + 220 * clamp(abs(sin(Y / 11 + 1.8 * sin(X / 65) + 0.7 * cos(D / 31))) * 10, 0, 1), 70 + 170 * clamp(abs(sin(Y / 11 + 1.8 * sin(X / 65) + 0.7 * cos(D / 31))) * 10, 0, 1), 150 + 90 * clamp(abs(sin(Y / 11 + 1.8 * sin(X / 65) + 0.7 * cos(D / 31))) * 10, 0, 1))"
+  - name: warm gradient
+    command: "rgb = (35 + 190 * X / W, 45 + 150 * Y / H, 170)"
 ```
 
-Run it with:
+Without `--source`, the first processing argument must be `-f`, and that
+formula must include a canvas, either directly or through a sub-formula:
 
 ```sh
-./build/pixlie examples/drawings/blue-field.yml
+./build/pixlie -f formulas/canvas-gradient.yml
 ```
 
-To ignore the YAML input configuration and run its processors on an existing
-JPEG, pass the image as a second positional argument:
+The canvas is black before its processors run. Its `file_name` is resolved
+relative to the formula file. Pass `-o` to override that destination.
+
+With a source image, formulas do not need a canvas:
 
 ```sh
-./build/pixlie examples/drawings/blue-field.yml photos/input.jpg
+./build/pixlie \
+  --source photos/input.jpg \
+  -f formulas/mirror-and-soften.yml
 ```
 
-This replaces either `canvas` or `source_image` entirely. Canvas dimensions and
-`file_name` are ignored, and the result uses the normal
-`photos/input_copy.jpg` destination.
+Any canvases in formulas are ignored when `--source` is present. The default
+destination is `photos/input_copy.jpg`, and `-o` can override it.
 
-Pass `-o` or `--output` to override either the canvas `file_name` or the
-default destination used for a source image:
+`-p` and `-f` share one ordered pipeline. This rotates first, expands the two
+processors in `mirror-and-soften.yml`, and then increases contrast:
 
 ```sh
-./build/pixlie examples/drawings/blue-field.yml \
-  -o results/blue-field.jpg
+./build/pixlie --source photos/input.jpg \
+  -p "rotate 1" \
+  -f formulas/mirror-and-soften.yml \
+  -p "contrast 1.2"
 ```
 
-To process an existing JPEG, replace `canvas` with `source_image`:
+Formula files can include sub-formulas in the same ordered `processors` list:
 
 ```yaml
-source_image: "photos/input.jpg"
+canvas:
+  file_name: "composition.jpg"
+  width: 480
+  height: 320
 processors:
-  - name: soft mirror
-    command: "mirror y"
-  - name: diffuse
-    command: "blur 2"
+  - formula: "color-gradient.yml"
+  - name: rotate clockwise
+    command: "rotate 1"
+  - name: increase contrast
+    command: "contrast 1.15"
 ```
 
-The equivalent mapped form is also accepted:
+Relative sub-formula paths resolve beside the formula that references them, so
+files in [`formulas`](formulas) can compose each other by filename. Recursive
+reference cycles are rejected. A sub-formula's processors are inserted exactly
+where its reference appears.
 
-```yaml
-source_image:
-  file_name: "photos/input.jpg"
-processors:
-  - name: diffuse
-    command: "blur 2"
-```
+If more formulas follow the first formula in a source-less run, their canvases
+are ignored; the first formula's canvas remains the pipeline input.
 
-The source path is resolved relative to the YAML file and the result uses the
-normal `<source>_copy.jpg` destination. A drawing file must set exactly one of
-`canvas` and `source_image`; setting both is an error.
-
-If the destination already exists, the drawing path uses the same overwrite
-confirmation as image processing. Pass `--overwrite` to replace it
-non-interactively. The supported schema is intentionally small: `canvas`
-requires `file_name`, positive integer `width`, and positive integer `height`;
-`source_image` requires a filename; and `processors` is a list whose items
-require `name` and `command`. Plain, single-quoted, and double-quoted scalar
-values are accepted.
-
-Standalone feature recipes live in [`docs`](docs). Each command must stay on
-one line because drawing files intentionally support a small YAML subset rather
-than block scalars.
-
-Original plotter-inspired recipes and their rendered JPEGs live in
-[`examples/drawings`](examples/drawings).
+The supported YAML subset is intentionally small. A canvas requires
+`file_name`, positive integer `width`, and positive integer `height`.
+Processor items require `name` and `command`; formula items contain only
+`formula`. Plain, single-quoted, and double-quoted scalars are accepted, and
+each command must stay on one line. Basic one-to-three-step examples live in
+[`formulas`](formulas).
 
 ## Processors
 
@@ -176,6 +172,9 @@ Original plotter-inspired recipes and their rendered JPEGs live in
   from the center at `force` radians per 100 pixels. Smaller magnitudes are gentler, and negative values reverse the
   direction. The optional radius is a percentage of the image's shorter dimension; the twist fades smoothly to zero
   at its boundary.
+- `spin <x> <y> <angle> [radius]` rotates source coordinates by a fixed angle in degrees around percentage coordinates
+  `x` and `y`; negative angles reverse the direction. The optional radius is a percentage of the image's shorter
+  dimension, and pixels outside it are unchanged.
 - `flow-lines <spacing> <steps> <step-size> <width> <#RRGGBB> [opacity] = (<VX>, <VY>)` draws antialiased
   streamlines through a formula-defined vector field. Seeds use a deterministic grid, paths are traced in both
   directions with RK4 integration, and an occupancy map keeps neighboring paths separated.

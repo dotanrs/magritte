@@ -3,7 +3,7 @@
 #include "common/test_support.h"
 
 void test_rotation();
-void test_cli_output_argument();
+void test_cli_arguments();
 void test_mirror();
 void test_blur();
 void test_contrast();
@@ -24,15 +24,17 @@ void test_fisheye();
 void test_fisheye_debug_hints();
 void test_twist();
 void test_twist_debug_hints();
+void test_spin();
+void test_spin_debug_hints();
 void test_flow_lines();
 void test_saturation_formula();
 void test_rgb_formula_target_order();
 void test_processor_argument_parsing();
 void test_command_parser();
-void test_drawing_config();
+void test_formula_config();
 
 int main() {
-    test_cli_output_argument();
+    test_cli_arguments();
     test_rotation();
     test_mirror();
     test_blur();
@@ -54,12 +56,14 @@ int main() {
     test_fisheye_debug_hints();
     test_twist();
     test_twist_debug_hints();
+    test_spin();
+    test_spin_debug_hints();
     test_flow_lines();
     test_saturation_formula();
     test_rgb_formula_target_order();
     test_processor_argument_parsing();
     test_command_parser();
-    test_drawing_config();
+    test_formula_config();
 
     if (failures == 0) {
         std::cout << "All processor tests passed\n";
