@@ -1,0 +1,5 @@
+# Create vibrant dynamic range of colors
+processors:
+  - name: recursively update the colors
+    command: "loop-rgb 7 = (mod(R * 1.17 + G * 0.31 + 17, 256), mod(G * 1.13 + B * 0.29 + 31, 256), mod(B * 1.11 + R * 0.27 + 47, 256))"
+
