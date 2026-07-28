@@ -55,13 +55,13 @@ The examples below transform the shared
 [`original.jpeg`](formulas/examples/original.jpeg) source image. Select an
 example to view its formula.
 
-| Original |                                         Slenderman                                         |                                          Hitchcock                                          |
-| :---: |:------------------------------------------------------------------------------------------:|:-------------------------------------------------------------------------------------------:|
-| ![Original source image](formulas/examples/original.jpeg) |     [![Slenderman example](formulas/examples/slenderman.jpg)](formulas/slenderman.yml)     |           [![Hitchcock](formulas/examples/hitchcock.jpg)](formulas/hitchcock.yml)           |
-| Source image |                        [`slenderman.yml`](formulas/slenderman.yml)                         |                          [`hitchcock.yml`](formulas/hitchcock.yml)                          |
-| **Mass gain** |                                      **Radioactive**                                       |                                      **Starling lens**                                      |
-| [![Mass gain example](formulas/examples/mass-gain.jpg)](formulas/mass-gain.yml) | [![Radioactive example](formulas/examples/radioactive.jpg)](formulas/radioactive.yml) | [![Starling lens example](formulas/examples/starling-lens.jpg)](formulas/starling-lens.yml) |
-| [`mass-gain.yml`](formulas/mass-gain.yml) |                       [`radioactive.yml`](formulas/radioactive.yml)                        |                      [`starling-lens.yml`](formulas/starling-lens.yml)                      |
+| Original |                                      Slenderman                                       |                                          Hitchcock                                          |
+| :---: |:-------------------------------------------------------------------------------------:|:-------------------------------------------------------------------------------------------:|
+| ![Original source image](formulas/examples/original.jpeg) |  [![Slenderman example](formulas/examples/slenderman.jpg)](formulas/slenderman.yml)   |           [![Hitchcock](formulas/examples/hitchcock.jpg)](formulas/hitchcock.yml)           |
+| Source image |                      [`slenderman.yml`](formulas/slenderman.yml)                      |                          [`hitchcock.yml`](formulas/hitchcock.yml)                          |
+| **Mass gain** |                                    **Iridescence**                                    |                                      **Starling lens**                                      |
+| [![Mass gain example](formulas/examples/mass-gain.jpg)](formulas/mass-gain.yml) | [![Iridescence example](formulas/examples/iridescence.jpg)](formulas/iridescence.yml) | [![Starling lens example](formulas/examples/starling-lens.jpg)](formulas/starling-lens.yml) |
+| [`mass-gain.yml`](formulas/mass-gain.yml) |                     [`iridescence.yml`](formulas/iridescence.yml)                     |                      [`starling-lens.yml`](formulas/starling-lens.yml)                      |
 
 ## Documentation
 
