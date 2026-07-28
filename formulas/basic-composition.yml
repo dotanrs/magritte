@@ -1,0 +1,11 @@
+# Three steps: include a sub-formula, then apply two processors.
+canvas:
+  file_name: "basic-composition.jpg"
+  width: 480
+  height: 320
+processors:
+  - formula: "color-gradient.yml"
+  - name: rotate clockwise
+    command: "rotate 1"
+  - name: increase contrast
+    command: "contrast 1.15"

@@ -1,0 +1,10 @@
+# Rotate a circular patch by a fixed angle.
+canvas:
+  file_name: "spin.jpg"
+  width: 480
+  height: 480
+processors:
+  - name: coordinate grid
+    command: "rgb = (40 + 180 * X / W, 40 + 180 * Y / H, 80 + 80 * sin(X / 12) * cos(Y / 12))"
+  - name: rotate the center patch
+    command: "spin 50 50 45 35"

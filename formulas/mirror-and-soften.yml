@@ -1,0 +1,6 @@
+# Two steps that can be applied to any source image or initialized canvas.
+processors:
+  - name: horizontal mirror
+    command: "mirror y"
+  - name: gentle blur
+    command: "blur 2"

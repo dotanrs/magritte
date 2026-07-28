@@ -1,0 +1,7 @@
+# One step: reuse the color gradient on a new canvas.
+canvas:
+  file_name: "canvas-gradient.jpg"
+  width: 480
+  height: 320
+processors:
+  - formula: "color-gradient.yml"

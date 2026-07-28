@@ -1,0 +1,12 @@
+# Generate coordinate-based color, twist it, and adjust its saturation.
+canvas:
+  file_name: "formulas-and-warps.jpg"
+  width: 480
+  height: 320
+processors:
+  - name: radial color bands
+    command: "rgb = (r + + 127 * sin(D / 9), g + 127 * sin(D / 13 + A * 3), b + 127 * cos(D / 7))"
+  - name: twist around the center
+    command: "twist 50 50 0.25"
+  - name: reduce saturation
+    command: "s = S * 0.75"
