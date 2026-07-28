@@ -7,7 +7,7 @@
 #include <variant>
 
 #include "common/test_support.h"
-#include "pixlie/formula.h"
+#include "magritte/formula.h"
 
 namespace {
     namespace fs = std::filesystem;
@@ -130,7 +130,7 @@ processors:
     const fs::path temp_directory =
         fs::temp_directory_path() /
         (
-            "pixlie-formula-test-" +
+            "magritte-formula-test-" +
             std::to_string(
                 std::chrono::steady_clock::now()
                     .time_since_epoch()

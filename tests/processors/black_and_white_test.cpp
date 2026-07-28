@@ -1,7 +1,7 @@
 #include <stdexcept>
 
 #include "../common/test_support.h"
-#include "pixlie/processors/black_and_white.h"
+#include "magritte/processors/black_and_white.h"
 
 void test_black_and_white() {
     FileData image{

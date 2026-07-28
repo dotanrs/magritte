@@ -1,6 +1,6 @@
 # Recreate examples/keep/puffy.jpg from examples/original.jpg.
 # Run:
-#   ./build/pixlie --source examples/original.jpg -f formulas/puffy.yml \
+#   ./build/magritte --source examples/original.jpg -f formulas/puffy.yml \
 #     -o examples/keep/puffy.jpg --overwrite
 processors:
   - name: expand the portrait around the lower center

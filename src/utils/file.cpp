@@ -1,4 +1,4 @@
-#include "../../include/pixlie/utils/file.h"
+#include "../../include/magritte/utils/file.h"
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <CoreGraphics/CoreGraphics.h>
@@ -13,7 +13,7 @@
 #include <type_traits>
 #include <vector>
 
-#include "pixlie/utils/logging.h"
+#include "magritte/utils/logging.h"
 
 namespace fs = std::filesystem;
 

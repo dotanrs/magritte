@@ -1,5 +1,5 @@
 #include "../common/test_support.h"
-#include "pixlie/processors/rgb_formula.h"
+#include "magritte/processors/rgb_formula.h"
 
 void test_red_formula_and_clamping() {
 FileData image{

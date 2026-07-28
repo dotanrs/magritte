@@ -1,6 +1,6 @@
-# pixlie
+# magritte
 
-`pixlie` is a C++20 command-line JPEG processor. It applies processor
+`magritte` is a C++20 command-line JPEG processor. It applies processor
 commands from left to right to transform a source image or generate an image
 from a blank canvas.
 
@@ -35,14 +35,14 @@ processors:
 Then run it:
 
 ```sh
-./build/pixlie -f my-image.yml
+./build/magritte -f my-image.yml
 ```
 
 To transform an existing JPEG, create a formula without the `canvas` section
 and provide a source:
 
 ```sh
-./build/pixlie --source photo.jpg -f photo-edit.yml -o edited.jpg
+./build/magritte --source photo.jpg -f photo-edit.yml -o edited.jpg
 ```
 
 See [`formulas/`](formulas) for runnable examples, including generated

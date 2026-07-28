@@ -1,6 +1,6 @@
 #include "../common/test_support.h"
-#include "pixlie/processors/fisheye.h"
-#include "pixlie/processors/rotate.h"
+#include "magritte/processors/fisheye.h"
+#include "magritte/processors/rotate.h"
 
 void test_fisheye() {
 const auto image = [] {

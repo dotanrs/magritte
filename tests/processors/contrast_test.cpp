@@ -1,5 +1,5 @@
 #include "../common/test_support.h"
-#include "pixlie/processors/contrast.h"
+#include "magritte/processors/contrast.h"
 
 void test_contrast() {
     FileData image{

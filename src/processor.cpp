@@ -2,7 +2,7 @@
 // Created by Dotan Reis on 26/07/2026.
 //
 
-#include "pixlie/processor.h"
+#include "magritte/processor.h"
 
 #include <algorithm>
 #include <cctype>
@@ -13,11 +13,11 @@
 #include <utility>
 #include <vector>
 
-#include "../include/pixlie/utils/file.h"
-#include "pixlie/input_validation.h"
-#include "pixlie/parser.h"
-#include "pixlie/processors/image_processor.h"
-#include "pixlie/utils/logging.h"
+#include "../include/magritte/utils/file.h"
+#include "magritte/input_validation.h"
+#include "magritte/parser.h"
+#include "magritte/processors/image_processor.h"
+#include "magritte/utils/logging.h"
 
 namespace {
     bool confirm_overwrite(const fs::path &output) {

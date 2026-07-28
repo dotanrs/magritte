@@ -1,4 +1,4 @@
-#include "pixlie/processors/utils/formula_apply.h"
+#include "magritte/processors/utils/formula_apply.h"
 
 #include <algorithm>
 #include <array>
@@ -7,7 +7,7 @@
 #include <limits>
 #include <stdexcept>
 #include <vector>
-#include "pixlie/processors/utils/image_sample.h"
+#include "magritte/processors/utils/image_sample.h"
 
 namespace {
     struct FormulaContext {

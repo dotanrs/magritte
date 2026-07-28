@@ -2,7 +2,7 @@
 #include <string>
 
 #include "../common/test_support.h"
-#include "pixlie/processors/twist.h"
+#include "magritte/processors/twist.h"
 
 void test_twist() {
     FileData image = blank_image(101, 101);

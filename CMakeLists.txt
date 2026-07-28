@@ -1,83 +1,83 @@
 cmake_minimum_required(VERSION 3.20)
-project(pixlie VERSION 0.1.0 LANGUAGES CXX)
+project(magritte VERSION 0.1.0 LANGUAGES CXX)
 
-add_executable(pixlie main.cpp
+add_executable(magritte main.cpp
         src/cli.cpp
-        include/pixlie/cli.h
+        include/magritte/cli.h
         src/formula.cpp
         src/formula_config.cpp
-        include/pixlie/formula.h
+        include/magritte/formula.h
         src/utils/logging.cpp
-        include/pixlie/utils/logging.h
+        include/magritte/utils/logging.h
         src/input_validation.cpp
-        include/pixlie/input_validation.h
+        include/magritte/input_validation.h
         src/processor.cpp
-        include/pixlie/processor.h
+        include/magritte/processor.h
         src/utils/file.cpp
-        include/pixlie/utils/file.h
-        include/pixlie/common/file_data.h
+        include/magritte/utils/file.h
+        include/magritte/common/file_data.h
         src/parser.cpp
-        include/pixlie/parser.h
+        include/magritte/parser.h
         src/processors/layout/rotate.cpp
-        include/pixlie/processors/rotate.h
+        include/magritte/processors/rotate.h
         src/processors/layout/mirror.cpp
-        include/pixlie/processors/mirror.h
+        include/magritte/processors/mirror.h
         src/processors/filters/blur.cpp
-        include/pixlie/processors/blur.h
+        include/magritte/processors/blur.h
         src/processors/toolbox/black_and_white.cpp
-        include/pixlie/processors/black_and_white.h
+        include/magritte/processors/black_and_white.h
         src/processors/toolbox/contrast.cpp
-        include/pixlie/processors/contrast.h
+        include/magritte/processors/contrast.h
         src/processors/toolbox/fisheye.cpp
-        include/pixlie/processors/fisheye.h
+        include/magritte/processors/fisheye.h
         src/processors/toolbox/twist.cpp
-        include/pixlie/processors/twist.h
+        include/magritte/processors/twist.h
         src/processors/toolbox/spin.cpp
-        include/pixlie/processors/spin.h
+        include/magritte/processors/spin.h
         src/processors/drawing/flow_lines.cpp
-        include/pixlie/processors/flow_lines.h
+        include/magritte/processors/flow_lines.h
         src/processors/filters/lighting.cpp
-        include/pixlie/processors/lighting.h
-        include/pixlie/processors/assignment_processor.h
+        include/magritte/processors/lighting.h
+        include/magritte/processors/assignment_processor.h
         src/processors/formulas/rgb_formula.cpp
-        include/pixlie/processors/rgb_formula.h
+        include/magritte/processors/rgb_formula.h
         src/processors/localized/local_rgb.cpp
-        include/pixlie/processors/local_rgb.h
+        include/magritte/processors/local_rgb.h
         src/processors/localized/local_warp.cpp
-        include/pixlie/processors/local_warp.h
+        include/magritte/processors/local_warp.h
         src/processors/formulas/saturation_formula.cpp
-        include/pixlie/processors/saturation_formula.h
+        include/magritte/processors/saturation_formula.h
         src/processors/formulas/warp_formula.cpp
-        include/pixlie/processors/warp_formula.h
+        include/magritte/processors/warp_formula.h
         src/processors/loops/loop_processor.cpp
-        include/pixlie/processors/loop_processor.h
-        include/pixlie/processors/loop_assignment_processor.h
+        include/magritte/processors/loop_processor.h
+        include/magritte/processors/loop_assignment_processor.h
         src/processors/loops/loop_warp.cpp
-        include/pixlie/processors/loop_warp.h
+        include/magritte/processors/loop_warp.h
         src/processors/loops/loop_rgb.cpp
-        include/pixlie/processors/loop_rgb.h
+        include/magritte/processors/loop_rgb.h
         src/processors/formulas/utils/formula_parse.cpp
-        include/pixlie/processors/utils/formula_parse.h
+        include/magritte/processors/utils/formula_parse.h
         src/processors/formulas/utils/formula_apply.cpp
-        include/pixlie/processors/utils/formula_apply.h
+        include/magritte/processors/utils/formula_apply.h
         src/processors/formulas/utils/image_sample.cpp
-        include/pixlie/processors/utils/image_sample.h
-        include/pixlie/processors/utils/argument_parse.h
-        include/pixlie/processors/image_processor.h
+        include/magritte/processors/utils/image_sample.h
+        include/magritte/processors/utils/argument_parse.h
+        include/magritte/processors/image_processor.h
         src/utils/string.cpp
-        include/pixlie/utils/string.h)
+        include/magritte/utils/string.h)
 
-target_include_directories(pixlie PRIVATE
+target_include_directories(magritte PRIVATE
         "${CMAKE_CURRENT_SOURCE_DIR}/include"
 )
 
-target_compile_features(pixlie PRIVATE cxx_std_20)
+target_compile_features(magritte PRIVATE cxx_std_20)
 
 if (APPLE)
     find_library(CORE_FOUNDATION_FRAMEWORK CoreFoundation REQUIRED)
     find_library(CORE_GRAPHICS_FRAMEWORK CoreGraphics REQUIRED)
     find_library(IMAGE_IO_FRAMEWORK ImageIO REQUIRED)
-    target_link_libraries(pixlie PRIVATE
+    target_link_libraries(magritte PRIVATE
             "${CORE_FOUNDATION_FRAMEWORK}"
             "${CORE_GRAPHICS_FRAMEWORK}"
             "${IMAGE_IO_FRAMEWORK}")
@@ -86,16 +86,16 @@ else ()
 endif ()
 
 if (MSVC)
-    target_compile_options(pixlie PRIVATE /W4 /permissive-)
+    target_compile_options(magritte PRIVATE /W4 /permissive-)
 else ()
-    target_compile_options(pixlie PRIVATE -Wall -Wextra -Wpedantic)
+    target_compile_options(magritte PRIVATE -Wall -Wextra -Wpedantic)
 endif ()
 
-install(TARGETS pixlie RUNTIME DESTINATION bin)
+install(TARGETS magritte RUNTIME DESTINATION bin)
 
 include(CTest)
 if (BUILD_TESTING)
-    add_executable(pixlie_processor_tests
+    add_executable(magritte_processor_tests
             tests/processors_test.cpp
             tests/cli_test.cpp
             tests/processors/blur_test.cpp
@@ -143,17 +143,17 @@ if (BUILD_TESTING)
             src/processors/formulas/utils/image_sample.cpp
             src/utils/logging.cpp
             src/utils/string.cpp
-            include/pixlie/utils/string.h)
-    target_include_directories(pixlie_processor_tests PRIVATE
+            include/magritte/utils/string.h)
+    target_include_directories(magritte_processor_tests PRIVATE
             "${CMAKE_CURRENT_SOURCE_DIR}/include")
-    target_compile_features(pixlie_processor_tests PRIVATE cxx_std_20)
+    target_compile_features(magritte_processor_tests PRIVATE cxx_std_20)
 
     if (MSVC)
-        target_compile_options(pixlie_processor_tests PRIVATE /W4 /permissive-)
+        target_compile_options(magritte_processor_tests PRIVATE /W4 /permissive-)
     else ()
-        target_compile_options(pixlie_processor_tests PRIVATE
+        target_compile_options(magritte_processor_tests PRIVATE
                 -Wall -Wextra -Wpedantic)
     endif ()
 
-    add_test(NAME processors COMMAND pixlie_processor_tests)
+    add_test(NAME processors COMMAND magritte_processor_tests)
 endif ()

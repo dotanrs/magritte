@@ -1,4 +1,4 @@
-#include "pixlie/cli.h"
+#include "magritte/cli.h"
 
 #include <stdexcept>
 #include <string>

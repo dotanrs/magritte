@@ -1,5 +1,5 @@
 #include "../common/test_support.h"
-#include "pixlie/processors/spin.h"
+#include "magritte/processors/spin.h"
 
 void test_spin() {
     FileData image = blank_image(101, 101);

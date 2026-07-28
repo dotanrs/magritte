@@ -1,6 +1,6 @@
 # Usage guide
 
-`pixlie` can create an image from a blank canvas or transform an existing JPEG.
+`magritte` can create an image from a blank canvas or transform an existing JPEG.
 Although individual commands can be passed with `-p`, the recommended workflow
 is to put the complete image recipe in a `.yml` formula and run it with `-f`.
 
@@ -46,13 +46,13 @@ the previous one.
 Create the image declared by a formula:
 
 ```sh
-./build/pixlie -f path/to/formula.yml
+./build/magritte -f path/to/formula.yml
 ```
 
 Or apply a formula to a source JPEG:
 
 ```sh
-./build/pixlie \
+./build/magritte \
   --source photos/input.jpg \
   -f path/to/formula.yml \
   -o results/edited.jpg
@@ -66,7 +66,7 @@ Pass `-o` to override either the formula canvas's `file_name` or the default
 source-image destination:
 
 ```sh
-./build/pixlie -f formulas/canvas-gradient.yml -o results/gradient.jpg
+./build/magritte -f formulas/canvas-gradient.yml -o results/gradient.jpg
 ```
 
 ### 3. Start from the examples
@@ -118,7 +118,7 @@ input.
 Use `-p` for a quick, one-off processor:
 
 ```sh
-./build/pixlie --source photo.jpg -o results/rotated.jpg \
+./build/magritte --source photo.jpg -o results/rotated.jpg \
   -p "rotate 1"
 ```
 
@@ -126,7 +126,7 @@ Both `-p` and `-f` can be repeated. They form one pipeline and run from left to
 right in exactly the order supplied:
 
 ```sh
-./build/pixlie --source photos/input.jpg \
+./build/magritte --source photos/input.jpg \
   -p "rotate 1" \
   -f formulas/mirror-and-soften.yml \
   -p "contrast 1.2"
@@ -140,7 +140,7 @@ next, and contrast runs last.
 Add `--debug` to draw visual guides for processors that support them:
 
 ```sh
-./build/pixlie \
+./build/magritte \
   --source photo.jpg \
   -f formulas/puffy.yml \
   -o results/puffy-debug.jpg \
@@ -148,7 +148,7 @@ Add `--debug` to draw visual guides for processors that support them:
 ```
 
 Debug mode still applies the real transformation. Immediately after each
-processor runs, `pixlie` draws that processor's guides onto the current image.
+processor runs, `magritte` draws that processor's guides onto the current image.
 Those guides become part of the pipeline, so processors that run later can
 also transform them. Processors without a debug visualization behave normally
 and add nothing.
@@ -166,11 +166,11 @@ path for debug runs when you also want a clean final image.
 
 ## Output and errors
 
-If the output already exists, `pixlie` asks before replacing it. Use
+If the output already exists, `magritte` asks before replacing it. Use
 `--overwrite` to replace it without prompting:
 
 ```sh
-./build/pixlie -f formulas/canvas-gradient.yml --overwrite
+./build/magritte -f formulas/canvas-gradient.yml --overwrite
 ```
 
 The command writes timestamped progress logs to standard error. Invalid

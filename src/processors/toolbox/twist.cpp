@@ -6,7 +6,7 @@
 // fade smoothly to zero at its boundary. Without `radius`, the twist extends
 // across the whole image without radial falloff.
 
-#include "pixlie/processors/twist.h"
+#include "magritte/processors/twist.h"
 
 #include <algorithm>
 #include <cmath>
@@ -17,8 +17,8 @@
 #include <utility>
 #include <vector>
 
-#include "pixlie/processors/utils/argument_parse.h"
-#include "pixlie/processors/utils/image_sample.h"
+#include "magritte/processors/utils/argument_parse.h"
+#include "magritte/processors/utils/image_sample.h"
 
 namespace {
     struct TwistArguments {

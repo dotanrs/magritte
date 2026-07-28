@@ -3,10 +3,10 @@
 // pass. `iterations` is a nonnegative integer; `source-x` and `source-y` are
 // formulas for the input coordinates sampled during each pass.
 
-#include "pixlie/processors/loop_warp.h"
+#include "magritte/processors/loop_warp.h"
 
-#include "pixlie/processors/loop_assignment_processor.h"
-#include "pixlie/processors/warp_formula.h"
+#include "magritte/processors/loop_assignment_processor.h"
+#include "magritte/processors/warp_formula.h"
 
 const ImageProcessor &loop_warp_processor() {
     static const LoopAssignmentProcessor processor{

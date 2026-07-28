@@ -2,7 +2,7 @@
 // Created by Dotan Reis on 27/07/2026.
 //
 
-#include "pixlie/utils/string.h"
+#include "magritte/utils/string.h"
 #include <string>
 
 std::string_view trim(std::string_view value) {

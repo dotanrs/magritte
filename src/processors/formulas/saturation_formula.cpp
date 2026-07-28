@@ -3,15 +3,15 @@
 // alpha. `formula` produces saturation on the 0-255 scale and may use the
 // current saturation `S`, image coordinates, constants, and math functions.
 
-#include "pixlie/processors/saturation_formula.h"
+#include "magritte/processors/saturation_formula.h"
 
 #include <string>
 #include <string_view>
 #include <utility>
 #include <vector>
-#include "pixlie/processors/assignment_processor.h"
-#include "pixlie/processors/utils/formula_apply.h"
-#include "pixlie/processors/utils/formula_parse.h"
+#include "magritte/processors/assignment_processor.h"
+#include "magritte/processors/utils/formula_apply.h"
+#include "magritte/processors/utils/formula_parse.h"
 
 namespace {
     class SaturationFormulaProcessor final : public AssignmentProcessor {

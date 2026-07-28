@@ -3,7 +3,7 @@
 // is a nonnegative finite multiplier applied to luminance before clamping;
 // 1 preserves the computed luminance and 0 produces black.
 
-#include "pixlie/processors/black_and_white.h"
+#include "magritte/processors/black_and_white.h"
 
 #include <cmath>
 #include <cstdlib>
@@ -14,7 +14,7 @@
 #include <utility>
 #include <vector>
 
-#include "pixlie/processors/utils/argument_parse.h"
+#include "magritte/processors/utils/argument_parse.h"
 
 namespace {
     double parse_brightness_multiplier(

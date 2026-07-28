@@ -1,7 +1,7 @@
 #include <optional>
 
 #include "../common/test_support.h"
-#include "pixlie/processors/local_warp.h"
+#include "magritte/processors/local_warp.h"
 
 void test_local_warp_formula() {
 const auto image = [] {

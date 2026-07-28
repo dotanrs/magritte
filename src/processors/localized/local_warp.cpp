@@ -4,16 +4,16 @@
 // `red(dx, dy)`, `green(dx, dy)`, and `blue(dx, dy)` to inspect neighboring
 // immutable input pixels.
 
-#include "pixlie/processors/local_warp.h"
+#include "magritte/processors/local_warp.h"
 
 #include <string>
 #include <string_view>
 #include <utility>
 #include <vector>
 
-#include "pixlie/processors/assignment_processor.h"
-#include "pixlie/processors/utils/formula_apply.h"
-#include "pixlie/processors/utils/formula_parse.h"
+#include "magritte/processors/assignment_processor.h"
+#include "magritte/processors/utils/formula_apply.h"
+#include "magritte/processors/utils/formula_parse.h"
 
 namespace {
     class LocalWarpProcessor final : public AssignmentProcessor {

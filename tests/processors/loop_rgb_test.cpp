@@ -1,5 +1,5 @@
 #include "../common/test_support.h"
-#include "pixlie/processors/loop_rgb.h"
+#include "magritte/processors/loop_rgb.h"
 
 void test_loop_rgb() {
     const FileData cycled = loop_rgb_processor().apply(

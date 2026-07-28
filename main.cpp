@@ -3,9 +3,9 @@
 #include <string>
 #include <string_view>
 
-#include "pixlie/cli.h"
-#include "pixlie/formula.h"
-#include "pixlie/utils/logging.h"
+#include "magritte/cli.h"
+#include "magritte/formula.h"
+#include "magritte/utils/logging.h"
 
 namespace {
     void print_usage(std::ostream &output, std::string_view program) {
@@ -65,7 +65,7 @@ namespace {
 } // namespace
 
 int main(int argc, char *argv[]) {
-    const std::string_view program = argc > 0 ? argv[0] : "pixlie";
+    const std::string_view program = argc > 0 ? argv[0] : "magritte";
 
     if (argc == 2 && (std::string_view(argv[1]) == "-h" ||
                       std::string_view(argv[1]) == "--help")) {
@@ -76,7 +76,7 @@ int main(int argc, char *argv[]) {
     try {
         const CommandLineArguments arguments =
             parse_command_line(argc, argv);
-        log(LogLevel::info, "pixlie started");
+        log(LogLevel::info, "magritte started");
         process_pipeline(
             arguments.steps,
             arguments.overwrite,

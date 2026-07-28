@@ -7,7 +7,7 @@
 // stroke color; optional `opacity` is from 0 to 1 and defaults to 1; `VX` and
 // `VY` are formulas for the field's horizontal and vertical components.
 
-#include "pixlie/processors/flow_lines.h"
+#include "magritte/processors/flow_lines.h"
 
 #include <algorithm>
 #include <charconv>
@@ -24,9 +24,9 @@
 #include <utility>
 #include <vector>
 
-#include "pixlie/processors/utils/argument_parse.h"
-#include "pixlie/processors/utils/formula_apply.h"
-#include "pixlie/processors/utils/formula_parse.h"
+#include "magritte/processors/utils/argument_parse.h"
+#include "magritte/processors/utils/formula_apply.h"
+#include "magritte/processors/utils/formula_parse.h"
 
 namespace {
     struct Point {

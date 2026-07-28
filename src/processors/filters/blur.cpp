@@ -2,7 +2,7 @@
 // Applies an edge-truncated RGB box blur while preserving alpha. `radius` is
 // the nonnegative integer neighborhood radius in pixels; zero is a no-op.
 
-#include "pixlie/processors/blur.h"
+#include "magritte/processors/blur.h"
 
 #include <algorithm>
 #include <array>
@@ -13,7 +13,7 @@
 #include <string_view>
 #include <utility>
 #include <vector>
-#include "pixlie/processors/utils/argument_parse.h"
+#include "magritte/processors/utils/argument_parse.h"
 
 namespace {
 

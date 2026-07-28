@@ -1,5 +1,5 @@
 #include "../common/test_support.h"
-#include "pixlie/processors/saturation_formula.h"
+#include "magritte/processors/saturation_formula.h"
 
 void test_saturation_formula() {
 FileData image{

@@ -1,4 +1,4 @@
-#include "pixlie/processors/utils/image_sample.h"
+#include "magritte/processors/utils/image_sample.h"
 
 #include <algorithm>
 #include <cmath>

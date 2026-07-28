@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-#include "pixlie/common/file_data.h"
+#include "magritte/common/file_data.h"
 
 inline int failures = 0;
 

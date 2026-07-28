@@ -3,15 +3,15 @@
 // `source-x` and `source-y` are formulas that return the input coordinates to
 // sample for the current output coordinate.
 
-#include "pixlie/processors/warp_formula.h"
+#include "magritte/processors/warp_formula.h"
 
 #include <string>
 #include <string_view>
 #include <utility>
 #include <vector>
-#include "pixlie/processors/assignment_processor.h"
-#include "pixlie/processors/utils/formula_apply.h"
-#include "pixlie/processors/utils/formula_parse.h"
+#include "magritte/processors/assignment_processor.h"
+#include "magritte/processors/utils/formula_apply.h"
+#include "magritte/processors/utils/formula_parse.h"
 
 namespace {
     class WarpFormulaProcessor final : public AssignmentProcessor {

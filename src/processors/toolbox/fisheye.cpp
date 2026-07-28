@@ -5,7 +5,7 @@
 // `radius` is a positive percentage of the shorter image dimension and
 // defaults to 100.
 
-#include "pixlie/processors/fisheye.h"
+#include "magritte/processors/fisheye.h"
 
 #include <algorithm>
 #include <cmath>
@@ -15,8 +15,8 @@
 #include <string_view>
 #include <utility>
 #include <vector>
-#include "pixlie/processors/utils/argument_parse.h"
-#include "pixlie/processors/utils/image_sample.h"
+#include "magritte/processors/utils/argument_parse.h"
+#include "magritte/processors/utils/image_sample.h"
 
 namespace {
     struct FisheyeArguments {

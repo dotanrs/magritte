@@ -1,5 +1,5 @@
 #include "../common/test_support.h"
-#include "pixlie/processors/mirror.h"
+#include "magritte/processors/mirror.h"
 
 void test_mirror() {
 const auto image = [] {

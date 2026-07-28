@@ -1,5 +1,5 @@
 #include "../common/test_support.h"
-#include "pixlie/processors/local_rgb.h"
+#include "magritte/processors/local_rgb.h"
 
 void test_local_rgb_formula() {
 const auto image = [] {

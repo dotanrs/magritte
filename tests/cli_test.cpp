@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "common/test_support.h"
-#include "pixlie/cli.h"
+#include "magritte/cli.h"
 
 namespace {
     CommandLineArguments parse(
@@ -26,7 +26,7 @@ namespace {
 
 void test_cli_arguments() {
     const CommandLineArguments source = parse({
-        "pixlie",
+        "magritte",
         "--source",
         "input.jpg",
         "-o",
@@ -45,7 +45,7 @@ void test_cli_arguments() {
     );
 
     const CommandLineArguments formula = parse({
-        "pixlie",
+        "magritte",
         "-f",
         "formulas/canvas.yml",
     });
@@ -58,7 +58,7 @@ void test_cli_arguments() {
     );
 
     const CommandLineArguments combined = parse({
-        "pixlie",
+        "magritte",
         "--source",
         "source.jpg",
         "-p",
@@ -85,28 +85,28 @@ void test_cli_arguments() {
     );
 
     try {
-        static_cast<void>(parse({"pixlie", "-p", "blur 1"}));
+        static_cast<void>(parse({"magritte", "-p", "blur 1"}));
         expect(false, "CLI should require a formula first without a source");
     } catch (const std::invalid_argument &) {
         expect(true, "CLI should require a formula first without a source");
     }
 
     try {
-        static_cast<void>(parse({"pixlie"}));
+        static_cast<void>(parse({"magritte"}));
         expect(false, "CLI should require an input image or formula");
     } catch (const std::invalid_argument &) {
         expect(true, "CLI should require an input image or formula");
     }
 
     try {
-        static_cast<void>(parse({"pixlie", "input.jpg"}));
+        static_cast<void>(parse({"magritte", "input.jpg"}));
         expect(false, "CLI should reject positional input");
     } catch (const std::invalid_argument &) {
         expect(true, "CLI should reject positional input");
     }
 
     try {
-        static_cast<void>(parse({"pixlie", "--file", "old.yml"}));
+        static_cast<void>(parse({"magritte", "--file", "old.yml"}));
         expect(false, "CLI should reject the obsolete --file option");
     } catch (const std::invalid_argument &) {
         expect(true, "CLI should reject the obsolete --file option");

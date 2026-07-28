@@ -4,7 +4,7 @@
 // order; a one-channel target takes one formula, while a multi-channel target
 // takes an equally sized tuple whose expressions all read the original pixel.
 
-#include "pixlie/processors/rgb_formula.h"
+#include "magritte/processors/rgb_formula.h"
 
 #include <algorithm>
 #include <cctype>
@@ -13,8 +13,8 @@
 #include <string_view>
 #include <utility>
 #include <vector>
-#include "pixlie/processors/utils/formula_apply.h"
-#include "pixlie/processors/utils/formula_parse.h"
+#include "magritte/processors/utils/formula_apply.h"
+#include "magritte/processors/utils/formula_parse.h"
 
 namespace {
     std::string_view trim(std::string_view value) {

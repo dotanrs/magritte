@@ -1,5 +1,5 @@
 #include "../common/test_support.h"
-#include "pixlie/processors/lighting.h"
+#include "magritte/processors/lighting.h"
 
 void test_lighting() {
 const Pixel dark{

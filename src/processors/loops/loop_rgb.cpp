@@ -3,10 +3,10 @@
 // `iterations` is a nonnegative integer; `red`, `green`, and `blue` are the
 // formulas for their corresponding channels in each pass.
 
-#include "pixlie/processors/loop_rgb.h"
+#include "magritte/processors/loop_rgb.h"
 
-#include "pixlie/processors/loop_assignment_processor.h"
-#include "pixlie/processors/rgb_formula.h"
+#include "magritte/processors/loop_assignment_processor.h"
+#include "magritte/processors/rgb_formula.h"
 
 const ImageProcessor &loop_rgb_processor() {
     static const LoopAssignmentProcessor processor{

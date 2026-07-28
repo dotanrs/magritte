@@ -3,7 +3,7 @@
 // `turns` is a signed integer reduced modulo four; positive values rotate
 // clockwise and negative values rotate in the opposite direction.
 
-#include "pixlie/processors/rotate.h"
+#include "magritte/processors/rotate.h"
 
 #include <charconv>
 #include <stdexcept>
@@ -11,7 +11,7 @@
 #include <string_view>
 #include <utility>
 #include <vector>
-#include "pixlie/processors/utils/argument_parse.h"
+#include "magritte/processors/utils/argument_parse.h"
 
 namespace {
     int parse_turns(const std::vector<std::string> &arguments) {

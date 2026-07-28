@@ -1,4 +1,4 @@
-#include "pixlie/formula.h"
+#include "magritte/formula.h"
 
 #include <utility>
 #include <vector>

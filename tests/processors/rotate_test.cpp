@@ -1,5 +1,5 @@
 #include "../common/test_support.h"
-#include "pixlie/processors/rotate.h"
+#include "magritte/processors/rotate.h"
 
 void test_rotation() {
 const Pixel pixel{.red = 0, .green = 0, .blue = 0, .alpha = 255};

@@ -1,5 +1,5 @@
 #include "../common/test_support.h"
-#include "pixlie/processors/blur.h"
+#include "magritte/processors/blur.h"
 
 void test_blur() {
 FileData image{

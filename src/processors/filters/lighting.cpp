@@ -10,7 +10,7 @@
 // as 0-50% of the shorter dimension (default 8), and `atmosphere` is the
 // below-threshold color wash from 0 to 1 (default 0.06).
 
-#include "pixlie/processors/lighting.h"
+#include "magritte/processors/lighting.h"
 
 #include <algorithm>
 #include <array>
@@ -29,7 +29,7 @@
 #include <utility>
 #include <vector>
 
-#include "pixlie/processors/utils/argument_parse.h"
+#include "magritte/processors/utils/argument_parse.h"
 
 namespace {
     struct Light {

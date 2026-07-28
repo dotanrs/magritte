@@ -1,6 +1,6 @@
 #include "../common/test_support.h"
 
-#include "pixlie/processors/flow_lines.h"
+#include "magritte/processors/flow_lines.h"
 
 namespace {
     FileData white_image(std::size_t width, std::size_t height) {

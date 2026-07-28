@@ -2,14 +2,14 @@
 // Created by Dotan Reis on 26/07/2026.
 //
 
-#include "../include/pixlie/input_validation.h"
+#include "../include/magritte/input_validation.h"
 #include <array>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
 
-#include "pixlie/utils/logging.h"
+#include "magritte/utils/logging.h"
 
 namespace fs = std::filesystem;
 

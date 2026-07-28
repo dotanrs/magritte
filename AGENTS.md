@@ -1,13 +1,13 @@
 # Repository guide
 
-`pixlie` is a C++20 command-line JPEG processor. Processor commands are parsed
+`magritte` is a C++20 command-line JPEG processor. Processor commands are parsed
 from left to right and applied sequentially to a `FileData` image.
 
 ## Folder structure
 
 - `main.cpp` is the CLI entry point.
-- `include/pixlie/` contains the headers shared by the application and tests.
-  Processor declarations live in `include/pixlie/processors/`, while
+- `include/magritte/` contains the headers shared by the application and tests.
+  Processor declarations live in `include/magritte/processors/`, while
   `common/` contains the image data types and `utils/` contains general
   helpers.
 - `src/` contains the CLI workflow, formula-file support, validation, file I/O,
@@ -70,7 +70,7 @@ left-to-right pipeline.
 
 For every new processor:
 
-1. Add its declaration under `include/pixlie/processors/` and place its
+1. Add its declaration under `include/magritte/processors/` and place its
    implementation in the matching `src/processors/` behavior folder.
 2. Register it in `src/parser.cpp`. Registry order matters when command
    syntaxes can overlap.

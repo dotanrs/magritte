@@ -5,7 +5,7 @@
 // dimension, outside of which pixels remain unchanged. Without `radius`, the
 // rotation applies to the whole image.
 
-#include "pixlie/processors/spin.h"
+#include "magritte/processors/spin.h"
 
 #include <algorithm>
 #include <cmath>
@@ -17,8 +17,8 @@
 #include <utility>
 #include <vector>
 
-#include "pixlie/processors/utils/argument_parse.h"
-#include "pixlie/processors/utils/image_sample.h"
+#include "magritte/processors/utils/argument_parse.h"
+#include "magritte/processors/utils/image_sample.h"
 
 namespace {
     struct SpinArguments {

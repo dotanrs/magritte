@@ -1,5 +1,5 @@
 #include "../common/test_support.h"
-#include "pixlie/processors/loop_warp.h"
+#include "magritte/processors/loop_warp.h"
 
 void test_loop_warp() {
     const auto image = [] {

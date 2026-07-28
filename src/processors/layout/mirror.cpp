@@ -2,14 +2,14 @@
 // Reflects the image without changing its dimensions. `axis` must be `x` to
 // exchange left and right pixels, or `y` to exchange top and bottom pixels.
 
-#include "pixlie/processors/mirror.h"
+#include "magritte/processors/mirror.h"
 
 #include <stdexcept>
 #include <string>
 #include <string_view>
 #include <utility>
 #include <vector>
-#include "pixlie/processors/utils/argument_parse.h"
+#include "magritte/processors/utils/argument_parse.h"
 
 namespace {
 
