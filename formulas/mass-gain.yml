@@ -1,0 +1,25 @@
+# Exaggerate the man's chest, shoulders, and upper arms with overlapping
+# fisheye lenses.
+#
+# Run:
+#   ./build/magritte --source formulas/examples/original.jpeg \
+#     -f formulas/mass-gain.yml \
+#     -o formulas/examples/muscular-man.jpg --overwrite
+processors:
+  - name: broaden the left pec
+    command: "fisheye 42 51 1.1 14"
+  - name: broaden the right pec
+    command: "fisheye 62 51 1.1 14"
+  - name: enlarge the left shoulder
+    command: "fisheye 32 58 1.8 10"
+  - name: enlarge the right shoulder
+    command: "fisheye 72 58 1.8 10"
+  - name: Narrow waist
+    command: "fisheye 54 10 -0.2 25"
+  - name: Narrow belly
+    command: "fisheye 54 30 -0.2 25"
+  - name: Smaller apple
+    command: "fisheye 52 75 -0.5 4"
+  - name: square chin
+    command: "fisheye 53 68 1.6 5"
+
