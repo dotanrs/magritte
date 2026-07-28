@@ -1,0 +1,17 @@
+# Create a wave and colors
+processors:
+  - name: waves
+    command: >
+      loop-warp 10 = (
+      0.52 * (W - 1) + sqrt(pow(X - 0.52 * (W - 1), 2) + pow(Y - 0.77 * (H - 1), 2)) * (0.992 + 0.006 * sin(5 * atan2(Y - 0.77 * (H - 1), X - 0.52 * (W - 1)))) * cos(atan2(Y - 0.77 * (H - 1), X - 0.52 * (W - 1)) + 0.003 * sin(sqrt(pow(X - 0.52 * (W - 1), 2) + pow(Y - 0.77 * (H - 1), 2)) / (0.02018 * min(W, H)))),
+      0.77 * (H - 1) + sqrt(pow(X - 0.52 * (W - 1), 2) + pow(Y - 0.77 * (H - 1), 2)) * (0.992 + 0.006 * sin(5 * atan2(Y - 0.77 * (H - 1), X - 0.52 * (W - 1)))) * sin(atan2(Y - 0.77 * (H - 1), X - 0.52 * (W - 1)) + 0.003 * sin(sqrt(pow(X - 0.52 * (W - 1), 2) + pow(Y - 0.77 * (H - 1), 2)) / (0.02018 * min(W, H))))
+      )
+  - name: colors
+    command: >
+      rgb = (
+      0.9 * R + 0.1 * B,
+      G + 16 * sin(sqrt(pow(X - 0.52 * (W - 1), 2) + pow(Y - 0.77 * (H - 1), 2)) / (0.01298 * min(W, H))),
+      B + 24 * cos(5 * atan2(Y - 0.77 * (H - 1), X - 0.52 * (W - 1)))
+      )
+  - name: saturation
+    command: "s = S * 1.25"

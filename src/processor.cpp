@@ -187,6 +187,7 @@ void process_image(const Options &options) {
         " processors applied)"
     );
     print_processor_results(results);
+    std::clog << "\nFile saved to " + output.filename().string() << std::endl;
 }
 
 void process_created_image(
@@ -212,4 +213,6 @@ void process_created_image(
         " processors applied)"
     );
     print_processor_results(results);
+    log(LogLevel::info,
+        "File saved to " + normalized_output.filename().string());
 }
