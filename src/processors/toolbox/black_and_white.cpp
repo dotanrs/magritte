@@ -21,9 +21,7 @@ namespace {
         const std::vector<std::string> &arguments
     ) {
         if (arguments.size() != 1) {
-            throw std::invalid_argument(
-                "black-and-white expects exactly one brightness multiplier"
-            );
+            return 1; // Default multiplier
         }
 
         const std::string &text = arguments.front();
