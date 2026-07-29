@@ -19,6 +19,8 @@ namespace {
         double y;
         double width;
         double height;
+        double polar_origin_x;
+        double polar_origin_y;
         double saturation = 0.0;
     };
 
@@ -57,16 +59,14 @@ namespace {
             case FormulaNodeKind::normalized_y:
                 return normalized_coordinate(context.y, context.height);
             case FormulaNodeKind::distance: {
-                const double offset_x =
-                        context.x - (context.width - 1.0) / 2.0;
-                const double offset_y =
-                        context.y - (context.height - 1.0) / 2.0;
+                const double offset_x = context.x - context.polar_origin_x;
+                const double offset_y = context.y - context.polar_origin_y;
                 return std::hypot(offset_x, offset_y);
             }
             case FormulaNodeKind::angle:
                 return std::atan2(
-                    context.y - (context.height - 1.0) / 2.0,
-                    context.x - (context.width - 1.0) / 2.0
+                    context.y - context.polar_origin_y,
+                    context.x - context.polar_origin_x
                 );
             case FormulaNodeKind::add:
                 return evaluate(*node.left, context) +
@@ -173,8 +173,15 @@ namespace {
         const Pixel &pixel,
         std::size_t x,
         std::size_t y,
-        double saturation = 0.0
+        double saturation = 0.0,
+        std::optional<FormulaPolarOrigin> polar_origin = std::nullopt
     ) {
+        const double origin_x = polar_origin
+            ? polar_origin->x * (data.width - 1.0)
+            : (data.width - 1.0) / 2.0;
+        const double origin_y = polar_origin
+            ? polar_origin->y * (data.height - 1.0)
+            : (data.height - 1.0) / 2.0;
         return FormulaContext{
             .data = data,
             .red = static_cast<double>(pixel.red),
@@ -184,6 +191,8 @@ namespace {
             .y = static_cast<double>(y),
             .width = static_cast<double>(data.width),
             .height = static_cast<double>(data.height),
+            .polar_origin_x = origin_x,
+            .polar_origin_y = origin_y,
             .saturation = saturation,
         };
     }
@@ -306,6 +315,8 @@ double evaluate_formula_at(
         .y = y,
         .width = static_cast<double>(data.width),
         .height = static_cast<double>(data.height),
+        .polar_origin_x = (data.width - 1.0) / 2.0,
+        .polar_origin_y = (data.height - 1.0) / 2.0,
     };
     return evaluate(formula, context);
 }
@@ -317,7 +328,14 @@ FileData apply_rgb_formula(
     for (std::size_t y = 0; y < data.height; ++y) {
         for (std::size_t x = 0; x < data.width; ++x) {
             Pixel &pixel = data.pixels[y * data.width + x];
-            const FormulaContext context = make_context(data, pixel, x, y);
+            const FormulaContext context = make_context(
+                data,
+                pixel,
+                x,
+                y,
+                0.0,
+                formula.polar_origin
+            );
 
             std::array<std::uint8_t, 3> values{};
             for (std::size_t index = 0;

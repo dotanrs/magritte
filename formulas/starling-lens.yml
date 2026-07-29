@@ -8,10 +8,10 @@ processors:
       )
   - name: colors
     command: >
-      rgb = (
+      rgb offset 0.52 0.77 = (
       0.9 * R + 0.1 * B,
-      G + 16 * sin(sqrt(pow(X - 0.52 * (W - 1), 2) + pow(Y - 0.77 * (H - 1), 2)) / (0.01298 * min(W, H))),
-      B + 24 * cos(5 * atan2(Y - 0.77 * (H - 1), X - 0.52 * (W - 1)))
+      G + 16 * sin(D / (0.01298 * min(W, H))),
+      B + 24 * cos(5 * A)
       )
   - name: saturation
     command: "s = S * 1.25"

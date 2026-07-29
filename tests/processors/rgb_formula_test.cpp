@@ -135,6 +135,22 @@ expect(
     angle.pixels[1].red == 16,
     "A should be the clockwise image-space angle from the positive x-axis"
 );
+
+const FileData offset_polar = rgb_formula_processor().apply(
+    blank_image(3, 3),
+    {"rg", "(round((A + PI) * 10), D * 10)", "0", "0"}
+);
+expect(
+    offset_polar.pixels[2].red == 31 &&
+    offset_polar.pixels[6].red == 47 &&
+    offset_polar.pixels[8].red == 39,
+    "RGB offset should move the angle origin to normalized coordinates"
+);
+expect(
+    offset_polar.pixels[0].green == 0 &&
+    offset_polar.pixels[8].green == 28,
+    "RGB offset should move the distance origin with the angle origin"
+);
 }
 
 void test_formula_math_functions() {
@@ -270,4 +286,3 @@ expect(
     "a subset formula should read the original pixel simultaneously"
 );
 }
-

@@ -36,8 +36,8 @@ examples.
 
 ### Formulas
 
-- [`<channels> = <formula-or-tuple>`](#rgb-formula) replaces a subset of the
-  RGB channels.
+- [`<channels> [offset <x> <y>] = <formula-or-tuple>`](#rgb-formula) replaces
+  a subset of the RGB channels, optionally moving the polar origin.
 - [`s = <formula>`](#saturation-formula) changes HSL saturation.
 - [`warp = (<source-x>, <source-y>)`](#warp-formula) remaps pixels with
   mathematical source coordinates.
@@ -282,6 +282,7 @@ or zero-length vectors terminate the affected path.
 
 ```text
 <channels> = <formula-or-tuple>
+<channels> offset <x> <y> = <formula-or-tuple>
 ```
 
 Replaces any nonempty, non-repeating subset of `r`, `g`, and `b`. Target order
@@ -303,6 +304,20 @@ br = (R, B)
 
 Separate assignments behave differently because later processors see the
 changes made by earlier processors.
+
+The optional `offset` moves the origin used by `A` and `D`. Its `x` and `y`
+values are normalized image coordinates: `0 0` is the top-left pixel,
+`0.5 0.5` is the image center, and `1 1` is the bottom-right pixel. Finite
+values outside that range place the origin outside the image. For example,
+this moves radial bands to 25% from the left and 70% from the top:
+
+```text
+rgb offset 0.25 0.70 = (
+  R + 127 * sin(A * 180 / 2),
+  G + 127 * sin(A * 180 / 3),
+  B + 127 * sin(A * 180 / 2.5)
+)
+```
 
 [Back to top](#processor-reference)
 

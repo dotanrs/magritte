@@ -2,6 +2,7 @@
 #define MAGRITTE_FORMULA_PARSE_H
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -61,9 +62,17 @@ enum class ColorChannel {
     blue,
 };
 
+/// Normalized image coordinates for the origin used by polar variables.
+/// `(0, 0)` is the top-left pixel and `(1, 1)` is the bottom-right pixel.
+struct FormulaPolarOrigin {
+    double x;
+    double y;
+};
+
 struct RgbFormula {
     std::vector<ColorChannel> channels;
     std::vector<Formula> expressions;
+    std::optional<FormulaPolarOrigin> polar_origin;
 };
 
 struct WarpFormula {
@@ -76,9 +85,10 @@ struct VectorFormula {
     Formula y;
 };
 
-/// Parses either a fixed RGB tuple from one argument or a channel target and
-/// its matching expression(s) from two arguments. Multi-channel formulas use
-/// a parenthesized tuple; a single-channel formula is one expression.
+/// Parses either a fixed RGB tuple from one argument, a channel target and its
+/// matching expression(s) from two arguments, or those two arguments followed
+/// by normalized polar-origin x and y values. Multi-channel formulas use a
+/// parenthesized tuple; a single-channel formula is one expression.
 /// @throws std::invalid_argument for an invalid target or formula.
 [[nodiscard]] RgbFormula parse_rgb_formula(
     const std::vector<std::string> &arguments
