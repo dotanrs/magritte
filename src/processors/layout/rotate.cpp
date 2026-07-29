@@ -71,7 +71,8 @@ namespace {
 
         [[nodiscard]] FileData apply(
             FileData data,
-            const std::vector<std::string> &arguments
+            const std::vector<std::string> &arguments,
+            const MacroMap *
         ) const override {
             int turns = parse_turns(arguments) % 4;
             if (turns < 0) {

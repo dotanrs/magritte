@@ -811,7 +811,8 @@ namespace {
 
         [[nodiscard]] FileData apply(
             FileData data,
-            const std::vector<std::string> &arguments
+            const std::vector<std::string> &arguments,
+            const MacroMap *
         ) const override {
             return apply_lighting(
                 std::move(data),

@@ -171,7 +171,8 @@ public:
 
     [[nodiscard]] FileData apply(
         FileData data,
-        const std::vector<std::string>& arguments
+        const std::vector<std::string>& arguments,
+        const MacroMap *
     ) const override {
         return apply_box_blur(std::move(data), parse_radius(arguments));
     }

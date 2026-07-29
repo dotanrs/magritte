@@ -7,6 +7,8 @@ add_executable(magritte main.cpp
         src/formula.cpp
         src/formula_config.cpp
         include/magritte/formula.h
+        src/macro.cpp
+        include/magritte/macro.h
         src/utils/logging.cpp
         include/magritte/utils/logging.h
         src/input_validation.cpp
@@ -120,6 +122,7 @@ if (BUILD_TESTING)
             src/cli.cpp
             src/parser.cpp
             src/formula_config.cpp
+            src/macro.cpp
             src/processors/layout/rotate.cpp
             src/processors/layout/mirror.cpp
             src/processors/filters/blur.cpp

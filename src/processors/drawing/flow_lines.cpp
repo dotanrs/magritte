@@ -110,7 +110,8 @@ namespace {
     }
 
     FlowLineArguments parse_flow_line_arguments(
-        const std::vector<std::string> &arguments
+        const std::vector<std::string> &arguments,
+        const MacroMap *macros = nullptr
     ) {
         if (arguments.size() != 6 && arguments.size() != 7) {
             throw std::invalid_argument(
@@ -143,9 +144,14 @@ namespace {
             .opacity = has_opacity
                 ? parse_number(arguments[5], "opacity", 0.0, 1.0)
                 : 1.0,
-            .field = parse_vector_formula({
-                arguments[has_opacity ? 6 : 5]
-            }),
+            .field = macros == nullptr
+                ? parse_vector_formula({
+                    arguments[has_opacity ? 6 : 5]
+                })
+                : parse_vector_formula(
+                    {arguments[has_opacity ? 6 : 5]},
+                    *macros
+                ),
         };
     }
 
@@ -617,11 +623,16 @@ namespace {
 
         [[nodiscard]] FileData apply(
             FileData data,
-            const std::vector<std::string> &arguments
+            const std::vector<std::string> &arguments,
+            const MacroMap *macros
         ) const override {
+            const MacroMap empty_macros;
             return apply_flow_lines(
                 std::move(data),
-                parse_flow_line_arguments(arguments)
+                parse_flow_line_arguments(
+                    arguments,
+                    macros != nullptr ? macros : &empty_macros
+                )
             );
         }
     };

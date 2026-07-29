@@ -85,6 +85,13 @@ Trigonometric functions use radians. Color and saturation results are rounded
 and clamped to `[0, 255]`. Undefined results, such as the square root of a
 negative number, become `0`.
 
+Formula expressions may also use macros declared by `--macro` or a formula
+file's top-level `macros` section. Macro names must explicitly start with
+`macro_`; their values are formula expressions and can reference other macros.
+All CLI and file macros are collected before processing starts. Different
+definitions for the same name are rejected, and unknown or cyclic macros fail
+when a formula tries to resolve them.
+
 Saturation formulas use the same coordinates, constants, and functions with
 `S`, where saturation is represented in `[0, 255]`.
 

@@ -5,28 +5,31 @@
 #   ./build/magritte --source formulas/examples/original.jpeg \
 #     -f formulas/slenderman.yml \
 #     -o formulas/examples/slenderman.jpg --overwrite
+macros:
+  macro_desaturate=pow(clamp(V + 0.8, 0, 1), 1.5)
+  macro_mask_10=pow(clamp((V + 0.80) / 1.36, 0, 1), 2)
+  macro_mask_15=pow(clamp((V + 0.70) / 1.36, 0, 1), 2)
+  macro_mask_20=pow(clamp((V + 0.60) / 1.36, 0, 1), 2)
+  macro_mask_32=pow(clamp((V + 0.36) / 1.36, 0, 1), 2)
+  macro_mask_50=pow(clamp(V / 1.36, 0, 1), 2)
 processors:
   - name: black and white
-    command: >
-      s = S * pow(
-      clamp((Y / (H - 1) - 0.1) / 0.50, 0, 1),
-      1.5
-      )
+    command: "s = S * macro_desaturate"
   - name: overlapping cyan magenta and gold color echoes
     command: >
       local-rgb =
       (
-      R * (1 - 0.62 * pow(clamp((Y / (H - 1) - 0.15) / 0.68, 0, 1), 2)) + red(24 * pow(clamp((Y / (H - 1) - 0.15) / 0.68, 0, 1), 2) + 6 * pow(clamp((Y / (H - 1) - 0.20) / 0.68, 0, 1), 2) * sin(Y / 13), 0) * 0.62 * pow(clamp((Y / (H - 1) - 0.32) / 0.68, 0, 1), 2) + 18 * pow(clamp((Y / (H - 1) - 0.32) / 0.68, 0, 1), 2) * (1 + sin(X / 31 + Y / 23)),
-      G * (1 - 0.42 * pow(clamp((Y / (H - 1) - 0.15) / 0.68, 0, 1), 2)) + green(5 * pow(clamp((Y / (H - 1) - 0.10) / 0.68, 0, 1), 2) * sin(Y / 11), 0) * 0.42 * pow(clamp((Y / (H - 1) - 0.15) / 0.68, 0, 1), 2) + 10 * pow(clamp((Y / (H - 1) - 0.32) / 0.68, 0, 1), 2) * (1 + sin(X / 37 + Y / 19 + 2)),
-      B * (1 - 0.62 * pow(clamp((Y / (H - 1) - 0.5) / 0.68, 0, 1), 2)) + blue(-24 * pow(clamp((Y / (H - 1) - 0.10) / 0.68, 0, 1), 2) + 6 * pow(clamp((Y / (H - 1) - 0.10) / 0.68, 0, 1), 2) * cos(Y / 17), 0) * 0.62 * pow(clamp((Y / (H - 1) - 0.32) / 0.68, 0, 1), 2) + 20 * pow(clamp((Y / (H - 1) - 0.32) / 0.68, 0, 1), 2) * (1 + sin(X / 29 + Y / 21 + 4))
+      R * (1 - 0.62 * macro_mask_15) + red(24 * macro_mask_15 + 6 * macro_mask_20 * sin(Y / 13), 0) * 0.62 * macro_mask_32 + 18 * macro_mask_32 * (1 + sin(X / 31 + Y / 23)),
+      G * (1 - 0.42 * macro_mask_15) + green(5 * macro_mask_10 * sin(Y / 11), 0) * 0.42 * macro_mask_15 + 10 * macro_mask_32 * (1 + sin(X / 37 + Y / 19 + 2)),
+      B * (1 - 0.62 * macro_mask_50) + blue(-24 * macro_mask_10 + 6 * macro_mask_10 * cos(Y / 17), 0) * 0.62 * macro_mask_32 + 20 * macro_mask_32 * (1 + sin(X / 29 + Y / 21 + 4))
       )
   - name: orient formula coordinates toward the displayed bottom
     command: "mirror y"
   - name: bottom-weighted liquid wave
     command: >
       warp = (
-        X + 32 * pow(clamp((Y / (H - 1) - 0.32) / 0.68, 0, 1), 2) * sin(Y / 18 + X / 95),
-        Y + 8 * pow(clamp((Y / (H - 1) - 0.32) / 0.68, 0, 1), 2) * sin(X / 43)
+        X + 32 * macro_mask_32 * sin(Y / 18 + X / 95),
+        Y + 8 * macro_mask_32 * sin(X / 43)
       )
   - name: restore the original image orientation
     command: "mirror y"

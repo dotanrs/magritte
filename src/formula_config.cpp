@@ -11,6 +11,8 @@
 #include <utility>
 #include <vector>
 
+#include "magritte/macro.h"
+
 namespace fs = std::filesystem;
 
 namespace {
@@ -426,12 +428,13 @@ FormulaConfig parse_formula_config(
     const std::vector<Line> lines = read_lines(input, source_name);
     FormulaConfig config{};
     bool has_canvas = false;
+    bool has_macros = false;
     bool has_processors = false;
     bool has_file_name = false;
     bool has_width = false;
     bool has_height = false;
 
-    enum class Section { none, canvas, processors };
+    enum class Section { none, canvas, macros, processors };
     Section section = Section::none;
     std::optional<FormulaStepBuilder> step;
 
@@ -486,6 +489,19 @@ FormulaConfig parse_formula_config(
                 has_canvas = true;
                 config.canvas.emplace();
                 section = Section::canvas;
+            } else if (key == "macros") {
+                if (!value.empty()) {
+                    fail(
+                        source_name,
+                        line.number,
+                        "macros must contain indented macro definitions"
+                    );
+                }
+                if (has_macros) {
+                    fail(source_name, line.number, "duplicate macros section");
+                }
+                has_macros = true;
+                section = Section::macros;
             } else if (key == "processors") {
                 if (!value.empty()) {
                     fail(
@@ -501,6 +517,27 @@ FormulaConfig parse_formula_config(
                 section = Section::processors;
             } else {
                 fail(source_name, line.number, "unknown top-level field");
+            }
+            continue;
+        }
+
+        if (section == Section::macros) {
+            const std::string definition = parse_scalar(
+                line.text,
+                source_name,
+                line.number
+            );
+            try {
+                auto [name, value] = parse_macro_definition(
+                    definition
+                );
+                add_macro(
+                    config.macros,
+                    std::move(name),
+                    std::move(value)
+                );
+            } catch (const std::invalid_argument &error) {
+                fail(source_name, line.number, error.what());
             }
             continue;
         }
@@ -641,6 +678,7 @@ namespace {
     std::optional<CanvasConfig> expand_formula(
         const fs::path &path,
         std::vector<fs::path> &active_formulas,
+        MacroMap &macros,
         std::vector<ProcessorSpec> &processors
     ) {
         const fs::path normalized =
@@ -657,6 +695,7 @@ namespace {
 
         active_formulas.push_back(normalized);
         FormulaConfig config = load_formula_config(normalized);
+        merge_macros(macros, config.macros);
         std::optional<CanvasConfig> canvas = config.canvas;
         for (const PipelineStep &step: config.steps) {
             if (const ProcessorSpec *processor =
@@ -669,6 +708,7 @@ namespace {
             std::optional<CanvasConfig> nested_canvas = expand_formula(
                 reference.path,
                 active_formulas,
+                macros,
                 processors
             );
             if (!canvas && nested_canvas) {
@@ -682,7 +722,8 @@ namespace {
 
 ResolvedPipeline resolve_pipeline_steps(
     const std::vector<PipelineStep> &steps,
-    bool has_source
+    bool has_source,
+    const MacroMap &cli_macros
 ) {
     if (!has_source &&
         (steps.empty() ||
@@ -692,7 +733,11 @@ ResolvedPipeline resolve_pipeline_steps(
         );
     }
 
-    ResolvedPipeline resolved;
+    ResolvedPipeline resolved{
+        .canvas = std::nullopt,
+        .macros = cli_macros,
+        .processors = {},
+    };
     std::vector<fs::path> active_formulas;
     for (std::size_t index = 0; index < steps.size(); ++index) {
         if (const ProcessorSpec *processor =
@@ -705,6 +750,7 @@ ResolvedPipeline resolve_pipeline_steps(
         std::optional<CanvasConfig> canvas = expand_formula(
             reference.path,
             active_formulas,
+            resolved.macros,
             resolved.processors
         );
         if (!has_source && index == 0) {

@@ -9,6 +9,7 @@
 #include <variant>
 #include <vector>
 
+#include "magritte/macro.h"
 #include "magritte/processor.h"
 
 struct CanvasConfig {
@@ -25,11 +26,13 @@ using PipelineStep = std::variant<ProcessorSpec, FormulaReference>;
 
 struct FormulaConfig {
     std::optional<CanvasConfig> canvas;
+    MacroMap macros;
     std::vector<PipelineStep> steps;
 };
 
 struct ResolvedPipeline {
     std::optional<CanvasConfig> canvas;
+    MacroMap macros;
     std::vector<ProcessorSpec> processors;
 };
 
@@ -54,10 +57,12 @@ struct ResolvedPipeline {
 /// Recursively replaces formula references with their processors. When there
 /// is no source, the first top-level step must be a formula that includes a
 /// canvas, either directly or through a sub-formula.
-/// Cyclic formula references are rejected.
+/// CLI and file macros are collected before processing. Conflicting macros and
+/// cyclic formula references are rejected.
 [[nodiscard]] ResolvedPipeline resolve_pipeline_steps(
     const std::vector<PipelineStep> &steps,
-    bool has_source
+    bool has_source,
+    const MacroMap &cli_macros = {}
 );
 
 /// Expands and runs an ordered stream of processor and formula steps.
@@ -70,7 +75,8 @@ void process_pipeline(
     bool overwrite = false,
     bool debug = false,
     const std::optional<std::filesystem::path> &source = std::nullopt,
-    const std::optional<std::filesystem::path> &output_override = std::nullopt
+    const std::optional<std::filesystem::path> &output_override = std::nullopt,
+    const MacroMap &cli_macros = {}
 );
 
 #endif // MAGRITTE_FORMULA_H

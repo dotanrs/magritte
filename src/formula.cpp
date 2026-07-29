@@ -17,10 +17,11 @@ void process_pipeline(
     bool overwrite,
     bool debug,
     const std::optional<fs::path> &source,
-    const std::optional<fs::path> &output_override
+    const std::optional<fs::path> &output_override,
+    const MacroMap &cli_macros
 ) {
     ResolvedPipeline resolved =
-        resolve_pipeline_steps(steps, source.has_value());
+        resolve_pipeline_steps(steps, source.has_value(), cli_macros);
 
     if (source) {
         Options options{
@@ -29,6 +30,7 @@ void process_pipeline(
                 default_output_path(*source)
             ),
             .processors = std::move(resolved.processors),
+            .macros = std::move(resolved.macros),
             .overwrite = overwrite,
             .debug = debug,
         };
@@ -50,6 +52,7 @@ void process_pipeline(
         std::move(canvas),
         resolved.processors,
         overwrite,
-        debug
+        debug,
+        resolved.macros
     );
 }

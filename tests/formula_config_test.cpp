@@ -39,6 +39,8 @@ canvas:
   file_name: "output/field.jpg"
   width: 640
   height: 480
+macros:
+  macro_wave=60 * sin(D / 8)
 processors:
   - name: background
     command: 'rgb = (245, 241, 230)'
@@ -54,6 +56,10 @@ processors:
     );
     expect(config.canvas->width == 640, "formula canvas width");
     expect(config.canvas->height == 480, "formula canvas height");
+    expect(
+        config.macros.at("macro_wave") == "60 * sin(D / 8)",
+        "formula parses top-level macros"
+    );
     expect(config.steps.size() == 2, "formula processor count");
     expect(
         std::get<ProcessorSpec>(config.steps[1]).name == "blue field",
@@ -165,6 +171,19 @@ processors:
         "processors:\n",
         "formula rejects the obsolete source_image field"
     );
+    expect_invalid(
+        "macros:\n"
+        "  gain=2\n"
+        "processors:\n",
+        "formula requires the explicit macro_ prefix"
+    );
+    expect_invalid(
+        "macros:\n"
+        "  macro_gain=2\n"
+        "  macro_gain=3\n"
+        "processors:\n",
+        "formula rejects conflicting macros in one file"
+    );
 
     std::istringstream composed(R"YAML(
 processors:
@@ -207,6 +226,8 @@ processors:
     fs::create_directories(temp_directory);
     write_formula(
         temp_directory / "child.yml",
+        "macros:\n"
+        "  macro_child=2\n"
         "processors:\n"
         "  - name: second\n"
         "    command: \"blur 1\"\n"
@@ -217,6 +238,8 @@ processors:
         "  file_name: output.jpg\n"
         "  width: 4\n"
         "  height: 3\n"
+        "macros:\n"
+        "  macro_root=macro_cli + 1\n"
         "processors:\n"
         "  - name: first\n"
         "    command: \"rotate 1\"\n"
@@ -230,7 +253,8 @@ processors:
             FormulaReference{.path = temp_directory / "root.yml"},
             ProcessorSpec{.name = {}, .command = "mirror y"},
         },
-        false
+        false,
+        MacroMap{{"macro_cli", "3"}}
     );
     expect(
         resolved.canvas.has_value() &&
@@ -245,6 +269,13 @@ processors:
         resolved.processors[2].command == "contrast 1.1" &&
         resolved.processors[3].command == "mirror y",
         "nested formulas and CLI processors should resolve in exact order"
+    );
+    expect(
+        resolved.macros.size() == 3 &&
+        resolved.macros.at("macro_cli") == "3" &&
+        resolved.macros.at("macro_root") == "macro_cli + 1" &&
+        resolved.macros.at("macro_child") == "2",
+        "CLI and nested formula macros should be collected before processing"
     );
 
     write_formula(
@@ -264,6 +295,27 @@ processors:
         wrapped.processors.size() == 3,
         "a first formula may inherit its canvas from a sub-formula"
     );
+
+    write_formula(
+        temp_directory / "macro-conflict.yml",
+        "macros:\n"
+        "  macro_child=9\n"
+        "processors:\n"
+        "  - formula: child.yml\n"
+    );
+    try {
+        static_cast<void>(resolve_pipeline_steps(
+            {
+                FormulaReference{
+                    .path = temp_directory / "macro-conflict.yml",
+                },
+            },
+            true
+        ));
+        expect(false, "nested formulas should reject conflicting macros");
+    } catch (const std::invalid_argument &) {
+        expect(true, "nested formulas should reject conflicting macros");
+    }
 
     write_formula(
         temp_directory / "cycle-a.yml",

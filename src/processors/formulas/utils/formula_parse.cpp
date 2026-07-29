@@ -1,5 +1,6 @@
 #include "magritte/processors/utils/formula_parse.h"
 
+#include <algorithm>
 #include <cctype>
 #include <cmath>
 #include <cstdlib>
@@ -44,10 +45,17 @@ namespace {
         explicit FormulaParser(
             std::string_view formula,
             bool saturation_formula = false,
-            bool local_sampling = false
+            bool local_sampling = false,
+            const MacroMap *macros = nullptr,
+            std::vector<std::string> *active_macros = nullptr
         ) : formula_(formula),
             saturation_formula_(saturation_formula),
-            local_sampling_(local_sampling) {
+            local_sampling_(local_sampling),
+            macros_(macros),
+            active_macros_(active_macros) {
+            if (active_macros_ == nullptr) {
+                active_macros_ = &macro_stack_storage_;
+            }
         }
 
         [[nodiscard]] Formula parse() {
@@ -356,6 +364,10 @@ namespace {
         [[nodiscard]] Formula parse_variable_or_constant(
             const std::string &name
         ) {
+            if (name.starts_with("macro_")) {
+                return parse_macro(name);
+            }
+
             auto node = std::make_unique<FormulaNode>();
             if (name == "pi") {
                 node->kind = FormulaNodeKind::number;
@@ -395,6 +407,42 @@ namespace {
                 );
             }
             return node;
+        }
+
+        [[nodiscard]] Formula parse_macro(const std::string &name) {
+            if (macros_ == nullptr) {
+                auto placeholder = std::make_unique<FormulaNode>();
+                placeholder->kind = FormulaNodeKind::number;
+                return placeholder;
+            }
+
+            const auto definition = macros_->find(name);
+            if (definition == macros_->end()) {
+                fail("unknown macro '" + name + "'");
+            }
+            if (std::find(
+                    active_macros_->begin(),
+                    active_macros_->end(),
+                    name
+                ) != active_macros_->end()) {
+                fail("cyclic macro reference involving '" + name + "'");
+            }
+
+            active_macros_->push_back(name);
+            try {
+                Formula expansion = FormulaParser(
+                    definition->second,
+                    saturation_formula_,
+                    local_sampling_,
+                    macros_,
+                    active_macros_
+                ).parse();
+                active_macros_->pop_back();
+                return expansion;
+            } catch (...) {
+                active_macros_->pop_back();
+                throw;
+            }
         }
 
         [[nodiscard]] Formula parse_number() {
@@ -470,6 +518,9 @@ namespace {
         std::size_t position_ = 0;
         bool saturation_formula_;
         bool local_sampling_;
+        const MacroMap *macros_;
+        std::vector<std::string> macro_stack_storage_;
+        std::vector<std::string> *active_macros_;
     };
 
     std::vector<ColorChannel> parse_rgb_target(std::string_view target) {
@@ -559,6 +610,39 @@ RgbFormula parse_rgb_formula(const std::vector<std::string> &arguments) {
     );
 }
 
+RgbFormula parse_rgb_formula(
+    const std::vector<std::string> &arguments,
+    const MacroMap &macros
+) {
+    if (arguments.size() == 1) {
+        return FormulaParser(
+            arguments.front(),
+            false,
+            false,
+            &macros
+        ).parse_rgb(parse_rgb_target("rgb"));
+    }
+    if (arguments.size() == 2 || arguments.size() == 4) {
+        RgbFormula formula = FormulaParser(
+            arguments[1],
+            false,
+            false,
+            &macros
+        ).parse_rgb(parse_rgb_target(arguments[0]));
+        if (arguments.size() == 4) {
+            formula.polar_origin = FormulaPolarOrigin{
+                .x = parse_rgb_offset(arguments[2], "x"),
+                .y = parse_rgb_offset(arguments[3], "y"),
+            };
+        }
+        return formula;
+    }
+    throw std::invalid_argument(
+        "RGB formula processor expects a target and formula, optionally "
+        "followed by offset x and y"
+    );
+}
+
 RgbFormula parse_local_rgb_formula(
     const std::vector<std::string> &arguments
 ) {
@@ -572,6 +656,23 @@ RgbFormula parse_local_rgb_formula(
     );
 }
 
+RgbFormula parse_local_rgb_formula(
+    const std::vector<std::string> &arguments,
+    const MacroMap &macros
+) {
+    if (arguments.size() != 1) {
+        throw std::invalid_argument(
+            "local RGB formula processor expects one tuple"
+        );
+    }
+    return FormulaParser(
+        arguments.front(),
+        false,
+        true,
+        &macros
+    ).parse_rgb(parse_rgb_target("rgb"));
+}
+
 WarpFormula parse_warp_formula(const std::vector<std::string> &arguments) {
     if (arguments.size() != 1) {
         throw std::invalid_argument(
@@ -579,6 +680,23 @@ WarpFormula parse_warp_formula(const std::vector<std::string> &arguments) {
         );
     }
     return FormulaParser(arguments.front()).parse_warp();
+}
+
+WarpFormula parse_warp_formula(
+    const std::vector<std::string> &arguments,
+    const MacroMap &macros
+) {
+    if (arguments.size() != 1) {
+        throw std::invalid_argument(
+            "warp formula processor expects one coordinate pair"
+        );
+    }
+    return FormulaParser(
+        arguments.front(),
+        false,
+        false,
+        &macros
+    ).parse_warp();
 }
 
 VectorFormula parse_vector_formula(
@@ -592,6 +710,23 @@ VectorFormula parse_vector_formula(
     return FormulaParser(arguments.front()).parse_vector();
 }
 
+VectorFormula parse_vector_formula(
+    const std::vector<std::string> &arguments,
+    const MacroMap &macros
+) {
+    if (arguments.size() != 1) {
+        throw std::invalid_argument(
+            "flow field processor expects one vector pair"
+        );
+    }
+    return FormulaParser(
+        arguments.front(),
+        false,
+        false,
+        &macros
+    ).parse_vector();
+}
+
 WarpFormula parse_local_warp_formula(
     const std::vector<std::string> &arguments
 ) {
@@ -603,6 +738,23 @@ WarpFormula parse_local_warp_formula(
     return FormulaParser(arguments.front(), false, true).parse_warp();
 }
 
+WarpFormula parse_local_warp_formula(
+    const std::vector<std::string> &arguments,
+    const MacroMap &macros
+) {
+    if (arguments.size() != 1) {
+        throw std::invalid_argument(
+            "local warp formula processor expects one coordinate pair"
+        );
+    }
+    return FormulaParser(
+        arguments.front(),
+        false,
+        true,
+        &macros
+    ).parse_warp();
+}
+
 Formula parse_saturation_formula(const std::vector<std::string> &arguments) {
     if (arguments.size() != 1) {
         throw std::invalid_argument(
@@ -610,4 +762,21 @@ Formula parse_saturation_formula(const std::vector<std::string> &arguments) {
         );
     }
     return FormulaParser(arguments.front(), true).parse();
+}
+
+Formula parse_saturation_formula(
+    const std::vector<std::string> &arguments,
+    const MacroMap &macros
+) {
+    if (arguments.size() != 1) {
+        throw std::invalid_argument(
+            "saturation formula processor expects one formula"
+        );
+    }
+    return FormulaParser(
+        arguments.front(),
+        true,
+        false,
+        &macros
+    ).parse();
 }

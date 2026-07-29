@@ -30,9 +30,14 @@ namespace {
 
         [[nodiscard]] FileData apply(
             FileData data,
-            const std::vector<std::string> &arguments
+            const std::vector<std::string> &arguments,
+            const MacroMap *macros
         ) const override {
-            const WarpFormula formula = parse_warp_formula(arguments);
+            const MacroMap empty_macros;
+            const WarpFormula formula = parse_warp_formula(
+                arguments,
+                macros != nullptr ? *macros : empty_macros
+            );
             return apply_warp_formula(std::move(data), formula);
         }
     };

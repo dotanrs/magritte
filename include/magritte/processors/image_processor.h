@@ -6,6 +6,7 @@
 #include <string>
 #include <string_view>
 #include <vector>
+#include "magritte/macro.h"
 #include "magritte/processor.h"
 
 /// Interface for recognizing, validating, and applying one kind of image
@@ -29,10 +30,12 @@ public:
     virtual void validate(const std::vector<std::string> &arguments) const = 0;
 
     /// Returns the transformed image. Implementations may reuse the input
-    /// buffer because it is passed by value.
+    /// buffer because it is passed by value. Formula-aware processors may
+    /// resolve variables from the optional global macro map.
     [[nodiscard]] virtual FileData apply(
         FileData data,
-        const std::vector<std::string> &arguments
+        const std::vector<std::string> &arguments,
+        const MacroMap *macros = nullptr
     ) const = 0;
 
     /// Adds visual debugging hints for this processor to an already transformed

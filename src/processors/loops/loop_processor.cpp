@@ -64,7 +64,8 @@ void LoopProcessor::validate(
 
 FileData LoopProcessor::apply(
     FileData data,
-    const std::vector<std::string> &arguments
+    const std::vector<std::string> &arguments,
+    const MacroMap *macros
 ) const {
     const auto parsed = parse_loop_arguments(arguments);
     subprocessor_.get().validate(parsed.subprocessor_arguments);
@@ -74,7 +75,8 @@ FileData LoopProcessor::apply(
          ++iteration) {
         data = subprocessor_.get().apply(
             std::move(data),
-            parsed.subprocessor_arguments
+            parsed.subprocessor_arguments,
+            macros
         );
     }
     return data;
