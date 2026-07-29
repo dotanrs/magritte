@@ -67,7 +67,8 @@ public:
 
     [[nodiscard]] FileData apply(
         FileData data,
-        const std::vector<std::string>& arguments
+        const std::vector<std::string>& arguments,
+        const MacroMap *
     ) const override {
         if (parse_axis(arguments) == "x") {
             mirror_horizontal(data);

@@ -12,6 +12,7 @@ namespace {
         output << "Usage: " << program
                 << " [--source <source.jpg>]"
                    " [-p <processor> | -f <formula.yml>]..."
+                   " [--macro <macro_name=formula>]..."
                    " [-o <output.jpg>]"
                    " [--debug] [--overwrite]\n"
                 << "\n"
@@ -23,6 +24,7 @@ namespace {
                 << "  --source <path>      Source JPEG\n"
                 << "  -p <command>         Processor command; may be repeated\n"
                 << "  -f <path>            Formula YAML; may be repeated\n"
+                << "  --macro <definition> Add macro_<name>=<formula>; may repeat\n"
                 << "  -o <path>            Destination JPEG\n"
                 << "  --debug              Add visual processor hints to the output\n"
                 << "  --overwrite          Replace an existing output without prompting\n"
@@ -30,6 +32,7 @@ namespace {
         output << "\n"
                 << "Formula YAML:\n"
                 << "  canvas:              Initializes a source-less run\n"
+                << "  macros:              Global macro_<name>=<formula> definitions\n"
                 << "  processors:          Ordered commands or formula references\n"
                 << "  - formula: <path>    Include a formula relative to this file\n"
                 << "  -o <path>            Replaces the canvas file_name\n";
@@ -80,10 +83,11 @@ int main(int argc, char *argv[]) {
         process_pipeline(
             arguments.steps,
             arguments.overwrite,
-            arguments.debug,
-            arguments.source,
-            arguments.output
-        );
+                arguments.debug,
+                arguments.source,
+                arguments.output,
+                arguments.macros
+            );
         return 0;
     } catch (const std::invalid_argument &error) {
         log(LogLevel::error, error.what());

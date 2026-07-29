@@ -1,4 +1,5 @@
 #include "../common/test_support.h"
+#include "magritte/parser.h"
 #include "magritte/processors/rgb_formula.h"
 
 void test_red_formula_and_clamping() {
@@ -185,6 +186,70 @@ expect(
     clamped.pixels[0].red == 200,
     "formula clamp should accept bounds in either order"
 );
+}
+
+void test_formula_macros() {
+FileData image{
+    .width = 1,
+    .height = 1,
+    .pixels = {
+        Pixel{.red = 10, .green = 20, .blue = 30, .alpha = 40},
+    },
+};
+const MacroMap macros{
+    {"macro_gain", "2"},
+    {"macro_adjusted", "macro_gain + 1"},
+};
+const FileData processed = rgb_formula_processor().apply(
+    std::move(image),
+    {"rgb", "(R * macro_adjusted, G + macro_gain, B)"},
+    &macros
+);
+expect(
+    processed.pixels[0].red == 30 &&
+    processed.pixels[0].green == 22 &&
+    processed.pixels[0].blue == 30 &&
+    processed.pixels[0].alpha == 40,
+    "formula macros should expand expressions and nested macro references"
+);
+
+expect(
+    parse_processor_command(
+        "r = R * macro_gain"
+    ).has_value(),
+    "processor validation should allow explicitly prefixed macro variables"
+);
+
+try {
+    static_cast<void>(rgb_formula_processor().apply(
+        blank_image(1, 1),
+        {"r", "macro_missing"}
+    ));
+    expect(false, "formula application should reject an unknown macro");
+} catch (const std::invalid_argument &error) {
+    expect(
+        std::string(error.what()).find("unknown macro") != std::string::npos,
+        "formula application should describe an unknown macro"
+    );
+}
+
+const MacroMap cyclic{
+    {"macro_first", "macro_second"},
+    {"macro_second", "macro_first"},
+};
+try {
+    static_cast<void>(rgb_formula_processor().apply(
+        blank_image(1, 1),
+        {"r", "macro_first"},
+        &cyclic
+    ));
+    expect(false, "formula application should reject cyclic macros");
+} catch (const std::invalid_argument &error) {
+    expect(
+        std::string(error.what()).find("cyclic macro") != std::string::npos,
+        "formula application should describe cyclic macros"
+    );
+}
 }
 
 void test_simultaneous_rgb_formula() {

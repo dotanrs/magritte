@@ -4,6 +4,8 @@
 #include <string>
 #include <string_view>
 
+#include "magritte/macro.h"
+
 namespace fs = std::filesystem;
 
 namespace {
@@ -57,6 +59,18 @@ CommandLineArguments parse_command_line(int argc, char *argv[]) {
             arguments.steps.emplace_back(FormulaReference{
                 .path = option_path(index, argc, argv, argument),
             });
+        } else if (argument == "--macro") {
+            if (++index >= argc) {
+                throw std::invalid_argument(
+                    "missing definition after --macro"
+                );
+            }
+            auto [name, value] = parse_macro_definition(argv[index]);
+            add_macro(
+                arguments.macros,
+                std::move(name),
+                std::move(value)
+            );
         } else if (argument == "--overwrite") {
             arguments.overwrite = true;
         } else if (argument == "--debug") {

@@ -83,6 +83,8 @@ intentionally small:
 
 - A `canvas` requires `file_name`, a positive integer `width`, and a positive
   integer `height`.
+- An optional top-level `macros` section contains indented
+  `macro_<name>=<formula>` definitions.
 - A processor item requires `name` and `command`.
 - A formula-reference item contains only `formula`.
 - Plain, single-quoted, double-quoted, folded (`>`), and literal (`|`) scalars
@@ -122,6 +124,40 @@ processors:
 Relative sub-formula paths resolve beside the formula that references them.
 A sub-formula's processors are inserted at the location of its reference, and
 recursive reference cycles are rejected.
+
+## Formula macros
+
+Macros give repeated formula expressions explicit names. Every macro name must
+start with `macro_`, making collisions with built-in variables and constants
+visible and intentional:
+
+```yaml
+macros:
+  macro_lower=pow(clamp((V + 0.36) / 1.36, 0, 1), 2)
+  macro_wave=macro_lower * sin(Y / 18 + X / 95)
+processors:
+  - name: liquid wave
+    command: "warp = (X + 32 * macro_wave, Y)"
+```
+
+Macro values are formula expressions and may reference other macros. Names are
+case-insensitive when formulas use them. Unknown macros and cyclic references
+are errors.
+
+Add macros from the command line with a repeatable `--macro` option. Quote the
+definition when its expression contains spaces or shell-sensitive characters:
+
+```sh
+./build/magritte --source photo.jpg \
+  --macro "macro_gain=1.25 + 0.25 * V" \
+  -p "rgb = (R * macro_gain, G, B)" \
+  -o result.jpg
+```
+
+CLI macros and macros from every referenced formula are collected before the
+first processor runs. Repeating an identical definition is allowed. If the
+same name has different expressions, the run fails instead of selecting one
+definition implicitly.
 
 Without `--source`, the first processing argument must be a formula that
 provides a canvas, directly or through a sub-formula. If more formulas follow,
@@ -205,6 +241,8 @@ Exit statuses are:
 --source <path>  Source JPEG
 -f <path>        Formula YAML; may be repeated
 -p <command>     Processor command; may be repeated
+--macro <macro_<name>=<formula>>
+                 Global formula macro; may be repeated
 -o <path>        Destination JPEG
 --debug          Add supported visual processor guides to the output
 --overwrite      Replace an existing output without prompting

@@ -33,6 +33,8 @@ void test_cli_arguments() {
         "output.jpg",
         "-p",
         "blur 2",
+        "--macro",
+        "macro_gain=1.25",
         "--debug",
     });
     expect(
@@ -40,6 +42,7 @@ void test_cli_arguments() {
         source.output == "output.jpg" &&
         source.steps.size() == 1 &&
         std::get<ProcessorSpec>(source.steps[0]).command == "blur 2" &&
+        source.macros.at("macro_gain") == "1.25" &&
         source.debug,
         "source-only CLI should parse processing options"
     );
@@ -111,4 +114,46 @@ void test_cli_arguments() {
     } catch (const std::invalid_argument &) {
         expect(true, "CLI should reject the obsolete --file option");
     }
+
+    try {
+        static_cast<void>(parse({
+            "magritte",
+            "--source",
+            "input.jpg",
+            "--macro",
+            "gain=2",
+        }));
+        expect(false, "CLI should require the explicit macro_ prefix");
+    } catch (const std::invalid_argument &) {
+        expect(true, "CLI should require the explicit macro_ prefix");
+    }
+
+    try {
+        static_cast<void>(parse({
+            "magritte",
+            "--source",
+            "input.jpg",
+            "--macro",
+            "macro_gain=2",
+            "--macro",
+            "macro_gain=3",
+        }));
+        expect(false, "CLI should reject conflicting macro definitions");
+    } catch (const std::invalid_argument &) {
+        expect(true, "CLI should reject conflicting macro definitions");
+    }
+
+    const CommandLineArguments repeated_macro = parse({
+        "magritte",
+        "--source",
+        "input.jpg",
+        "--macro",
+        "macro_gain=2",
+        "--macro",
+        "macro_gain=2",
+    });
+    expect(
+        repeated_macro.macros.size() == 1,
+        "CLI should accept repeated identical macro definitions"
+    );
 }

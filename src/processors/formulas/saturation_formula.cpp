@@ -30,9 +30,14 @@ namespace {
 
         [[nodiscard]] FileData apply(
             FileData data,
-            const std::vector<std::string> &arguments
+            const std::vector<std::string> &arguments,
+            const MacroMap *macros
         ) const override {
-            const Formula formula = parse_saturation_formula(arguments);
+            const MacroMap empty_macros;
+            const Formula formula = parse_saturation_formula(
+                arguments,
+                macros != nullptr ? *macros : empty_macros
+            );
             return apply_saturation_formula(std::move(data), *formula);
         }
     };

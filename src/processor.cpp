@@ -147,7 +147,8 @@ namespace {
 FileData process_file(
     FileData data,
     const std::vector<ProcessorCommand> &commands,
-    bool debug
+    bool debug,
+    const MacroMap *macros
 ) {
     for (const ProcessorCommand &command: commands) {
         log(
@@ -156,7 +157,8 @@ FileData process_file(
         );
         data = command.processor.get().apply(
             std::move(data),
-            command.arguments
+            command.arguments,
+            macros
         );
         if (debug) {
             data = command.processor.get().add_debug_hints(
@@ -178,7 +180,12 @@ void process_image(const Options &options) {
 
     auto [commands, results] = parse_processors(options.processors);
 
-    const FileData data = process_file(read_file(input), commands, options.debug);
+    const FileData data = process_file(
+        read_file(input),
+        commands,
+        options.debug,
+        &options.macros
+    );
 
     save_file(output, data);
     log(
@@ -195,7 +202,8 @@ void process_created_image(
     FileData data,
     const std::vector<ProcessorSpec> &processors,
     bool overwrite,
-    bool debug
+    bool debug,
+    const MacroMap &macros
 ) {
     const fs::path normalized_output =
         fs::absolute(output).lexically_normal();
@@ -205,7 +213,7 @@ void process_created_image(
     }
 
     auto [commands, results] = parse_processors(processors);
-    data = process_file(std::move(data), commands, debug);
+    data = process_file(std::move(data), commands, debug, &macros);
     save_file(normalized_output, data);
     log(
         LogLevel::info,

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "common/file_data.h"
+#include "magritte/macro.h"
 
 namespace fs = std::filesystem;
 
@@ -22,6 +23,7 @@ struct Options {
     fs::path input;
     fs::path output;
     std::vector<ProcessorSpec> processors;
+    MacroMap macros;
     bool overwrite = false;
     bool debug = false;
 };
@@ -34,7 +36,8 @@ struct ProcessorCommand;
 FileData process_file(
     FileData data,
     const std::vector<ProcessorCommand> &commands,
-    bool debug = false
+    bool debug = false,
+    const MacroMap *macros = nullptr
 );
 
 /// Runs the complete CLI workflow: validates paths, parses commands, reads the
@@ -53,7 +56,8 @@ void process_created_image(
     FileData data,
     const std::vector<ProcessorSpec> &processors,
     bool overwrite = false,
-    bool debug = false
+    bool debug = false,
+    const MacroMap &macros = {}
 );
 
 #endif //MAGRITTE_PROCESSOR_H

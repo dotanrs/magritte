@@ -90,9 +90,14 @@ namespace {
 
         [[nodiscard]] FileData apply(
             FileData data,
-            const std::vector<std::string> &arguments
+            const std::vector<std::string> &arguments,
+            const MacroMap *macros
         ) const override {
-            const RgbFormula formula = parse_rgb_formula(arguments);
+            const MacroMap empty_macros;
+            const RgbFormula formula = parse_rgb_formula(
+                arguments,
+                macros != nullptr ? *macros : empty_macros
+            );
             return apply_rgb_formula(std::move(data), formula);
         }
     };

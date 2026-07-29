@@ -15,6 +15,7 @@ void test_blue_formula();
 void test_formula_coordinates_and_dimensions();
 void test_formula_normalized_and_polar_coordinates();
 void test_formula_math_functions();
+void test_formula_macros();
 void test_simultaneous_rgb_formula();
 void test_local_rgb_formula();
 void test_local_warp_formula();
@@ -48,6 +49,7 @@ int main() {
     test_formula_coordinates_and_dimensions();
     test_formula_normalized_and_polar_coordinates();
     test_formula_math_functions();
+    test_formula_macros();
     test_simultaneous_rgb_formula();
     test_local_rgb_formula();
     test_local_warp_formula();

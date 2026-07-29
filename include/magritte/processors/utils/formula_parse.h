@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 
+#include "magritte/macro.h"
+
 enum class FormulaNodeKind {
     number,
     red,
@@ -93,6 +95,10 @@ struct VectorFormula {
 [[nodiscard]] RgbFormula parse_rgb_formula(
     const std::vector<std::string> &arguments
 );
+[[nodiscard]] RgbFormula parse_rgb_formula(
+    const std::vector<std::string> &arguments,
+    const MacroMap &macros
+);
 
 /// Parses a parenthesized `(red, green, blue)` expression tuple in the local
 /// RGB dialect, which additionally supports `red(dx, dy)`, `green(dx, dy)`,
@@ -101,17 +107,29 @@ struct VectorFormula {
 [[nodiscard]] RgbFormula parse_local_rgb_formula(
     const std::vector<std::string> &arguments
 );
+[[nodiscard]] RgbFormula parse_local_rgb_formula(
+    const std::vector<std::string> &arguments,
+    const MacroMap &macros
+);
 
 /// Parses a parenthesized `(source_x, source_y)` expression pair.
 /// @throws std::invalid_argument for a missing argument or invalid pair.
 [[nodiscard]] WarpFormula parse_warp_formula(
     const std::vector<std::string> &arguments
 );
+[[nodiscard]] WarpFormula parse_warp_formula(
+    const std::vector<std::string> &arguments,
+    const MacroMap &macros
+);
 
 /// Parses a parenthesized `(horizontal, vertical)` vector-field equation.
 /// @throws std::invalid_argument for a missing argument or invalid pair.
 [[nodiscard]] VectorFormula parse_vector_formula(
     const std::vector<std::string> &arguments
+);
+[[nodiscard]] VectorFormula parse_vector_formula(
+    const std::vector<std::string> &arguments,
+    const MacroMap &macros
 );
 
 /// Parses a parenthesized `(source_x, source_y)` expression pair in the local
@@ -120,12 +138,20 @@ struct VectorFormula {
 [[nodiscard]] WarpFormula parse_local_warp_formula(
     const std::vector<std::string> &arguments
 );
+[[nodiscard]] WarpFormula parse_local_warp_formula(
+    const std::vector<std::string> &arguments,
+    const MacroMap &macros
+);
 
 /// Parses an expression in the saturation dialect, where `S` replaces the RGB
 /// channel variables.
 /// @throws std::invalid_argument for a missing argument or invalid expression.
 [[nodiscard]] Formula parse_saturation_formula(
     const std::vector<std::string> &arguments
+);
+[[nodiscard]] Formula parse_saturation_formula(
+    const std::vector<std::string> &arguments,
+    const MacroMap &macros
 );
 
 #endif //MAGRITTE_FORMULA_PARSE_H
