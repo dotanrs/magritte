@@ -59,7 +59,7 @@ example to view its formula.
 | :---: |:-------------------------------------------------------------------------------------:|:-------------------------------------------------------------------------------------:|
 | ![Original source image](formulas/examples/original.jpeg) |  [![Slenderman example](formulas/examples/slenderman.jpg)](formulas/slenderman.yml)   |        [![Hitchcock](formulas/examples/hitchcock.jpg)](formulas/hitchcock.yml)        |
 | Source image |                      [`slenderman.yml`](formulas/slenderman.yml)                      |                       [`hitchcock.yml`](formulas/hitchcock.yml)                       |
-| **Mass gain** |                                    **Iridescence**                                    |                                   **Starling lens**                                   |
+| **Mass gain** |                                    **Iridescence**                                    |                                    **Telekinesis**                                    |
 | [![Mass gain example](formulas/examples/mass-gain.jpg)](formulas/mass-gain.yml) | [![Iridescence example](formulas/examples/iridescence.jpg)](formulas/iridescence.yml) | [![Telekinesis example](formulas/examples/telekinesis.jpg)](formulas/telekinesis.yml) |
 | [`mass-gain.yml`](formulas/mass-gain.yml) |                     [`iridescence.yml`](formulas/iridescence.yml)                     |                     [`telekinesis.yml`](formulas/telekinesis.yml)                     |
 
