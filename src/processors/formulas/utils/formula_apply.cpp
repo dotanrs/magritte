@@ -176,12 +176,14 @@ namespace {
         double saturation = 0.0,
         std::optional<FormulaPolarOrigin> polar_origin = std::nullopt
     ) {
+        const double last_x = static_cast<double>(data.width) - 1.0;
+        const double last_y = static_cast<double>(data.height) - 1.0;
         const double origin_x = polar_origin
-            ? polar_origin->x * (data.width - 1.0)
-            : (data.width - 1.0) / 2.0;
+            ? polar_origin->x * last_x
+            : last_x / 2.0;
         const double origin_y = polar_origin
-            ? polar_origin->y * (data.height - 1.0)
-            : (data.height - 1.0) / 2.0;
+            ? polar_origin->y * last_y
+            : last_y / 2.0;
         return FormulaContext{
             .data = data,
             .red = static_cast<double>(pixel.red),
@@ -315,8 +317,8 @@ double evaluate_formula_at(
         .y = y,
         .width = static_cast<double>(data.width),
         .height = static_cast<double>(data.height),
-        .polar_origin_x = (data.width - 1.0) / 2.0,
-        .polar_origin_y = (data.height - 1.0) / 2.0,
+        .polar_origin_x = (static_cast<double>(data.width) - 1.0) / 2.0,
+        .polar_origin_y = (static_cast<double>(data.height) - 1.0) / 2.0,
     };
     return evaluate(formula, context);
 }

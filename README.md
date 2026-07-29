@@ -75,3 +75,15 @@ example to view its formula.
 ```sh
 ctest --test-dir build --output-on-failure
 ```
+
+## Lint
+
+Install `clang-tidy`, then configure a dedicated lint-enabled build:
+
+```sh
+cmake -S . -B build-lint -DMAGRITTE_ENABLE_CLANG_TIDY=ON
+cmake --build build-lint
+```
+
+The lint rules are defined in [`.clang-tidy`](.clang-tidy). Lint findings are
+treated as errors in lint-enabled builds.

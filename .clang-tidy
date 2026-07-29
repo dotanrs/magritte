@@ -1,0 +1,15 @@
+---
+Checks: >
+  -*,
+  bugprone-*,
+  clang-analyzer-*,
+  performance-*,
+  portability-*,
+  -bugprone-easily-swappable-parameters,
+  -bugprone-float-loop-counter,
+  -clang-analyzer-security.FloatLoopCounter,
+  -performance-enum-size
+WarningsAsErrors: '*'
+HeaderFilterRegex: '.*/(include/magritte|src)/.*'
+SystemHeaders: false
+...
