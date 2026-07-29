@@ -1,10 +1,17 @@
 # Create a wave and colors
+macros:
+  macro_center_x=0.52 * (W - 1)
+  macro_center_y=0.77 * (H - 1)
+  macro_radius=sqrt(pow(X - macro_center_x, 2) + pow(Y - macro_center_y, 2))
+  macro_angle=atan2(Y - macro_center_y, X - macro_center_x)
+  macro_radial_scale=0.992 + 0.006 * sin(5 * macro_angle)
+  macro_twist=0.003 * sin(macro_radius / (0.02018 * min(W, H)))
 processors:
   - name: waves
     command: >
       loop-warp 10 = (
-      0.52 * (W - 1) + sqrt(pow(X - 0.52 * (W - 1), 2) + pow(Y - 0.77 * (H - 1), 2)) * (0.992 + 0.006 * sin(5 * atan2(Y - 0.77 * (H - 1), X - 0.52 * (W - 1)))) * cos(atan2(Y - 0.77 * (H - 1), X - 0.52 * (W - 1)) + 0.003 * sin(sqrt(pow(X - 0.52 * (W - 1), 2) + pow(Y - 0.77 * (H - 1), 2)) / (0.02018 * min(W, H)))),
-      0.77 * (H - 1) + sqrt(pow(X - 0.52 * (W - 1), 2) + pow(Y - 0.77 * (H - 1), 2)) * (0.992 + 0.006 * sin(5 * atan2(Y - 0.77 * (H - 1), X - 0.52 * (W - 1)))) * sin(atan2(Y - 0.77 * (H - 1), X - 0.52 * (W - 1)) + 0.003 * sin(sqrt(pow(X - 0.52 * (W - 1), 2) + pow(Y - 0.77 * (H - 1), 2)) / (0.02018 * min(W, H))))
+      macro_center_x + macro_radius * macro_radial_scale * cos(macro_angle + macro_twist),
+      macro_center_y + macro_radius * macro_radial_scale * sin(macro_angle + macro_twist)
       )
   - name: colors
     command: >
