@@ -50,7 +50,7 @@ void test_spin_debug_hints() {
         .width = 101,
         .height = 101,
         .pixels = std::vector<Pixel>(
-            101 * 101,
+            std::size_t{101} * 101,
             Pixel{.red = 10, .green = 20, .blue = 30, .alpha = 120}
         ),
     };

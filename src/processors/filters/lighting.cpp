@@ -525,8 +525,9 @@ namespace {
             for (std::size_t x = 0; x < width; ++x) {
                 const std::size_t left = x > radius ? x - radius : 0;
                 right = std::min(width - 1, x + radius);
-                horizontal[row + x] =
-                    sum / static_cast<double>(right - left + 1);
+                horizontal[row + x] = static_cast<float>(
+                    sum / static_cast<double>(right - left + 1)
+                );
                 if (x >= radius) {
                     sum -= input[row + x - radius];
                 }
@@ -546,8 +547,9 @@ namespace {
             for (std::size_t y = 0; y < height; ++y) {
                 const std::size_t top = y > radius ? y - radius : 0;
                 bottom = std::min(height - 1, y + radius);
-                result[y * width + x] =
-                    sum / static_cast<double>(bottom - top + 1);
+                result[y * width + x] = static_cast<float>(
+                    sum / static_cast<double>(bottom - top + 1)
+                );
                 if (y >= radius) {
                     sum -= horizontal[(y - radius) * width + x];
                 }
@@ -672,10 +674,12 @@ namespace {
                 const double projection =
                     toward_source.x * (static_cast<double>(x) + 0.5) +
                     toward_source.y * (static_cast<double>(y) + 0.5);
-                result[y * width + x] = std::clamp(
-                    (projection - *minimum) / span,
-                    0.0,
-                    1.0
+                result[y * width + x] = static_cast<float>(
+                    std::clamp(
+                        (projection - *minimum) / span,
+                        0.0,
+                        1.0
+                    )
                 );
             }
         }

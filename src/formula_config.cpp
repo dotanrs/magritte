@@ -407,7 +407,7 @@ namespace {
         }
     }
 
-    std::string lowercase_extension(fs::path path) {
+    std::string lowercase_extension(const fs::path &path) {
         std::string extension = path.extension().string();
         std::transform(
             extension.begin(),

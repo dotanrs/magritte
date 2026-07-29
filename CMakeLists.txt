@@ -1,6 +1,36 @@
 cmake_minimum_required(VERSION 3.20)
 project(magritte VERSION 0.1.0 LANGUAGES CXX)
 
+option(MAGRITTE_ENABLE_CLANG_TIDY
+        "Run clang-tidy while compiling magritte targets" OFF)
+
+if (MAGRITTE_ENABLE_CLANG_TIDY)
+    find_program(MAGRITTE_CLANG_TIDY_EXECUTABLE
+            NAMES clang-tidy
+            REQUIRED)
+    set(MAGRITTE_CLANG_TIDY_COMMAND
+            "${MAGRITTE_CLANG_TIDY_EXECUTABLE}"
+            "--config-file=${CMAKE_CURRENT_SOURCE_DIR}/.clang-tidy")
+
+    if (APPLE)
+        execute_process(
+                COMMAND xcrun --show-sdk-path
+                OUTPUT_VARIABLE MAGRITTE_MACOS_SDK_PATH
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+                COMMAND_ERROR_IS_FATAL ANY)
+        list(APPEND MAGRITTE_CLANG_TIDY_COMMAND
+                "--extra-arg-before=-isysroot"
+                "--extra-arg-before=${MAGRITTE_MACOS_SDK_PATH}")
+    endif ()
+endif ()
+
+function(magritte_enable_clang_tidy target)
+    if (MAGRITTE_ENABLE_CLANG_TIDY)
+        set_property(TARGET "${target}" PROPERTY CXX_CLANG_TIDY
+                "${MAGRITTE_CLANG_TIDY_COMMAND}")
+    endif ()
+endfunction ()
+
 add_executable(magritte main.cpp
         src/cli.cpp
         include/magritte/cli.h
@@ -74,6 +104,7 @@ target_include_directories(magritte PRIVATE
 )
 
 target_compile_features(magritte PRIVATE cxx_std_20)
+magritte_enable_clang_tidy(magritte)
 
 if (APPLE)
     find_library(CORE_FOUNDATION_FRAMEWORK CoreFoundation REQUIRED)
@@ -150,6 +181,7 @@ if (BUILD_TESTING)
     target_include_directories(magritte_processor_tests PRIVATE
             "${CMAKE_CURRENT_SOURCE_DIR}/include")
     target_compile_features(magritte_processor_tests PRIVATE cxx_std_20)
+    magritte_enable_clang_tidy(magritte_processor_tests)
 
     if (MSVC)
         target_compile_options(magritte_processor_tests PRIVATE /W4 /permissive-)

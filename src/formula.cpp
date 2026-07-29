@@ -1,5 +1,6 @@
 #include "magritte/formula.h"
 
+#include <stdexcept>
 #include <utility>
 #include <vector>
 
@@ -38,6 +39,11 @@ void process_pipeline(
         return;
     }
 
+    if (!resolved.canvas) {
+        throw std::logic_error(
+            "a pipeline without a source must resolve to a canvas"
+        );
+    }
     const CanvasConfig &canvas_config = *resolved.canvas;
     FileData canvas{
         .width = canvas_config.width,

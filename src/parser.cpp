@@ -35,26 +35,32 @@ namespace {
         return std::nullopt;
     }
 
-    const std::array<std::reference_wrapper<const ImageProcessor>, 17>
-    processors{
-        rotate_processor(),
-        mirror_processor(),
-        blur_processor(),
-        black_and_white_processor(),
-        contrast_processor(),
-        fisheye_processor(),
-        twist_processor(),
-        spin_processor(),
-        flow_lines_processor(),
-        lighting_processor(),
-        rgb_formula_processor(),
-        local_rgb_processor(),
-        local_warp_processor(),
-        saturation_formula_processor(),
-        loop_rgb_processor(),
-        loop_warp_processor(),
-        warp_formula_processor(),
-    };
+    const std::array<std::reference_wrapper<const ImageProcessor>, 17> &
+    registered_processors() {
+        static const std::array<
+            std::reference_wrapper<const ImageProcessor>,
+            17
+        > processors{
+            rotate_processor(),
+            mirror_processor(),
+            blur_processor(),
+            black_and_white_processor(),
+            contrast_processor(),
+            fisheye_processor(),
+            twist_processor(),
+            spin_processor(),
+            flow_lines_processor(),
+            lighting_processor(),
+            rgb_formula_processor(),
+            local_rgb_processor(),
+            local_warp_processor(),
+            saturation_formula_processor(),
+            loop_rgb_processor(),
+            loop_warp_processor(),
+            warp_formula_processor(),
+        };
+        return processors;
+    }
 } // namespace
 
 std::optional<ProcessorCommand> parse_processor_command(
@@ -66,7 +72,7 @@ std::optional<ProcessorCommand> parse_processor_command(
         return invalid("command is empty", error_message);
     }
 
-    for (const ImageProcessor &processor: processors) {
+    for (const ImageProcessor &processor: registered_processors()) {
         try {
             if (auto arguments = processor.parse_arguments(value)) {
                 return ProcessorCommand{

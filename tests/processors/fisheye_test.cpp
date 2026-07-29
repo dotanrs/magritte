@@ -23,6 +23,7 @@ const auto image = [] {
 };
 const auto middle_red = [](const FileData &data) {
     std::vector<std::uint8_t> values;
+    values.reserve(data.width);
     for (std::size_t x = 0; x < data.width; ++x) {
         values.push_back(data.pixels[2 * data.width + x].red);
     }

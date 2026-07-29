@@ -194,7 +194,7 @@ void process_image(const Options &options) {
         " processors applied)"
     );
     print_processor_results(results);
-    std::clog << "\nFile saved to " + output.filename().string() << std::endl;
+    std::clog << "\nFile saved to " + output.filename().string() << '\n';
 }
 
 void process_created_image(

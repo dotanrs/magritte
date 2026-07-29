@@ -1,4 +1,5 @@
 .idea
 build
+build-lint
 /examples
 .DS_Store

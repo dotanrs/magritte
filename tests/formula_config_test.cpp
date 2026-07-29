@@ -50,6 +50,9 @@ processors:
 
     const FormulaConfig config = parse_formula_config(input, "formula.yml");
     expect(config.canvas.has_value(), "formula has canvas");
+    if (!config.canvas) {
+        return;
+    }
     expect(
         config.canvas->file_name == "output/field.jpg",
         "formula output path"
