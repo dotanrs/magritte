@@ -11,7 +11,7 @@ processors:
   - name: broaden the right pec
     command: "fisheye 62 51 1.1 14"
   - name: enlarge the left shoulder
-    command: "fisheye 32 58 1.8 10"
+    command: "fisheye 32 58 1 10"
   - name: enlarge the right shoulder
     command: "fisheye 72 58 1.8 10"
   - name: Narrow waist
@@ -22,4 +22,6 @@ processors:
     command: "fisheye 52 75 -0.5 4"
   - name: square chin
     command: "fisheye 53 68 1.6 5"
+  - name: thick neck
+    command: "fisheye 53 62 1 10"
 

@@ -1,8 +1,10 @@
-// Processor: `<channels> = <formula-or-tuple>`.
+// Processor: `<channels> [offset <x> <y>] = <formula-or-tuple>`.
 // Recomputes a non-repeating target made from `r`, `g`, and `b` while
 // preserving untargeted channels and alpha. `channels` gives the destination
 // order; a one-channel target takes one formula, while a multi-channel target
 // takes an equally sized tuple whose expressions all read the original pixel.
+// The optional normalized offset replaces the image-center origin used by the
+// polar variables A and D.
 
 #include "magritte/processors/rgb_formula.h"
 
@@ -13,6 +15,7 @@
 #include <string_view>
 #include <utility>
 #include <vector>
+#include "magritte/processors/utils/argument_parse.h"
 #include "magritte/processors/utils/formula_apply.h"
 #include "magritte/processors/utils/formula_parse.h"
 
@@ -57,15 +60,26 @@ namespace {
                 return std::nullopt;
             }
 
-            const std::string_view target = trim(value.substr(0, equals));
-            if (!is_rgb_target(target)) {
+            const auto left_words = processor_argument_parse::split_words(
+                trim(value.substr(0, equals))
+            );
+            if (left_words.empty() || !is_rgb_target(left_words.front())) {
                 return std::nullopt;
             }
 
             std::vector<std::string> arguments{
-                std::string(target),
+                left_words.front(),
                 std::string(trim(value.substr(equals + 1))),
             };
+            if (left_words.size() != 1) {
+                if (left_words.size() != 4 || left_words[1] != "offset") {
+                    throw std::invalid_argument(
+                        "RGB formula offset expects two numbers: x y"
+                    );
+                }
+                arguments.push_back(left_words[2]);
+                arguments.push_back(left_words[3]);
+            }
             validate(arguments);
             return arguments;
         }

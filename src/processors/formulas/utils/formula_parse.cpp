@@ -515,6 +515,21 @@ namespace {
         }
         return channels;
     }
+
+    double parse_rgb_offset(
+        const std::string &text,
+        std::string_view coordinate
+    ) {
+        char *end = nullptr;
+        const double value = std::strtod(text.c_str(), &end);
+        if (end != text.c_str() + text.size() || !std::isfinite(value)) {
+            throw std::invalid_argument(
+                "RGB formula offset " + std::string(coordinate) +
+                " must be a finite number"
+            );
+        }
+        return value;
+    }
 } // namespace
 
 RgbFormula parse_rgb_formula(const std::vector<std::string> &arguments) {
@@ -528,8 +543,19 @@ RgbFormula parse_rgb_formula(const std::vector<std::string> &arguments) {
             parse_rgb_target(arguments[0])
         );
     }
+    if (arguments.size() == 4) {
+        RgbFormula formula = FormulaParser(arguments[1]).parse_rgb(
+            parse_rgb_target(arguments[0])
+        );
+        formula.polar_origin = FormulaPolarOrigin{
+            .x = parse_rgb_offset(arguments[2], "x"),
+            .y = parse_rgb_offset(arguments[3], "y"),
+        };
+        return formula;
+    }
     throw std::invalid_argument(
-        "RGB formula processor expects a target and formula"
+        "RGB formula processor expects a target and formula, optionally "
+        "followed by offset x and y"
     );
 }
 

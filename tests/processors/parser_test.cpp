@@ -64,6 +64,17 @@ expect(
     },
     "RGB processor should parse its assignment"
 );
+const auto offset_rgb_arguments =
+    rgb_formula_processor().parse_arguments(
+        "rgb offset 0.25 0.70 = (R + A, G + D, B)"
+    );
+expect(
+    offset_rgb_arguments ==
+    std::optional<std::vector<std::string>>{
+        {"rgb", "(R + A, G + D, B)", "0.25", "0.70"}
+    },
+    "RGB processor should parse a normalized polar offset"
+);
 const auto subset_rgb_arguments =
     rgb_formula_processor().parse_arguments("bgr = (R, G, B)");
 expect(
@@ -320,6 +331,12 @@ expect(
         "rgb = (G, B, R)"
     ).has_value(),
     "parser should accept a simultaneous RGB formula"
+);
+expect(
+    parse_processor_command(
+        "rgb offset 0.25 0.70 = (R + A, G + D, B)"
+    ).has_value(),
+    "parser should accept an RGB formula with a polar offset"
 );
 expect(
     parse_processor_command(
@@ -617,6 +634,30 @@ expect(
 expect(
     error_message.find("unknown function") != std::string::npos,
     "parser should describe an unknown mathematical function"
+);
+error_message.clear();
+expect(
+    !parse_processor_command(
+        "rgb offset 0.25 = (R, G, B)",
+        &error_message
+    ).has_value(),
+    "parser should require both RGB offset coordinates"
+);
+expect(
+    error_message == "RGB formula offset expects two numbers: x y",
+    "parser should describe a missing RGB offset coordinate"
+);
+error_message.clear();
+expect(
+    !parse_processor_command(
+        "rgb offset left 0.70 = (R, G, B)",
+        &error_message
+    ).has_value(),
+    "parser should reject a nonnumeric RGB offset"
+);
+expect(
+    error_message == "RGB formula offset x must be a finite number",
+    "parser should describe a nonnumeric RGB offset"
 );
 error_message.clear();
 expect(
