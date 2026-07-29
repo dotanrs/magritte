@@ -4,6 +4,7 @@
 #include <cctype>
 #include <cmath>
 #include <cstdlib>
+#include <iostream>
 #include <numbers>
 #include <stdexcept>
 #include <string>
@@ -411,6 +412,7 @@ namespace {
 
         [[nodiscard]] Formula parse_macro(const std::string &name) {
             if (macros_ == nullptr) {
+                // in the resolution phase, macros are not available but assumed correct.
                 auto placeholder = std::make_unique<FormulaNode>();
                 placeholder->kind = FormulaNodeKind::number;
                 return placeholder;
@@ -420,6 +422,8 @@ namespace {
             if (definition == macros_->end()) {
                 fail("unknown macro '" + name + "'");
             }
+
+            // Check for cyclic macro usage
             if (std::find(
                     active_macros_->begin(),
                     active_macros_->end(),
@@ -430,6 +434,7 @@ namespace {
 
             active_macros_->push_back(name);
             try {
+                // Parse the macro definition formula (now that we know it's not cyclic)
                 Formula expansion = FormulaParser(
                     definition->second,
                     saturation_formula_,
@@ -437,6 +442,7 @@ namespace {
                     macros_,
                     active_macros_
                 ).parse();
+                // Macro is resolved, so it's no longer "active"
                 active_macros_->pop_back();
                 return expansion;
             } catch (...) {
@@ -520,6 +526,7 @@ namespace {
         bool local_sampling_;
         const MacroMap *macros_;
         std::vector<std::string> macro_stack_storage_;
+        // Saves the macros currently being expanded (they might reference each other)
         std::vector<std::string> *active_macros_;
     };
 
