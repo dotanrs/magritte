@@ -6,6 +6,15 @@ from a blank canvas.
 
 JPEG decoding and encoding currently use the macOS ImageIO framework.
 
+## Quick Usage
+
+Download and unzip [magritte.zip](https://github.com/dotanrs/magritte/blob/main/magritte.zip).
+
+It contains the executable `magritte` and the relevant `.md` files and examples.
+
+Run it manually (`magritte --help`) or use your favorite AI to run it for you. See the recommended workflow below for working with
+fast and easy iterations on your designs.
+
 ## Build
 
 ```sh
