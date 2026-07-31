@@ -3,7 +3,7 @@ canvas:
   file_name: "hitchcock.jpg"
   width: 480
   height: 320
-processors:
+steps:
   - name: twist around the center
     command: "twist 50 50 0.25"
   - name: radial color bands

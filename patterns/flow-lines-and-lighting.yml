@@ -5,7 +5,7 @@ canvas:
   height: 480
 macros:
   macro_vertical_gradient=1 + V
-processors:
+steps:
   - name: midnight background
     command: "rgb = (10 + 12 * macro_vertical_gradient, 18 + 18 * macro_vertical_gradient, 42 + 30 * macro_vertical_gradient)"
   - name: circular streamlines

@@ -45,17 +45,17 @@ CommandLineArguments parse_command_line(int argc, char *argv[]) {
             }
             arguments.output =
                 option_path(index, argc, argv, argument);
-        } else if (argument == "-p") {
+        } else if (argument == "-s" || argument == "--step") {
             if (++index >= argc) {
                 throw std::invalid_argument(
                     "missing command after " + std::string(argument)
                 );
             }
-            arguments.steps.emplace_back(ProcessorSpec{
+            arguments.steps.emplace_back(StepSpec{
                 .name = {},
                 .command = argv[index],
             });
-        } else if (argument == "-P" || argument == "--pattern") {
+        } else if (argument == "-p" || argument == "--pattern") {
             arguments.steps.emplace_back(PatternReference{
                 .path = option_path(index, argc, argv, argument),
             });
@@ -91,7 +91,7 @@ CommandLineArguments parse_command_line(int argc, char *argv[]) {
         !std::holds_alternative<PatternReference>(arguments.steps.front())) {
         throw std::invalid_argument(
             "without --source, the first processing argument must be "
-            "-P or --pattern"
+            "-p or --pattern"
         );
     }
 

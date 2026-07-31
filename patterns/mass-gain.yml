@@ -3,9 +3,9 @@
 #
 # Run:
 #   ./build/magritte --source patterns/examples/original.jpeg \
-#     -P patterns/mass-gain.yml \
+#     -p patterns/mass-gain.yml \
 #     -o patterns/examples/muscular-man.jpg --overwrite
-processors:
+steps:
   - name: broaden the left pec
     command: "fisheye 42 51 1.1 14"
   - name: broaden the right pec
@@ -24,4 +24,3 @@ processors:
     command: "fisheye 53 68 1.6 5"
   - name: thick neck
     command: "fisheye 53 62 1 10"
-

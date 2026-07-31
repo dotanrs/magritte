@@ -41,7 +41,7 @@ canvas:
   height: 480
 macros:
   macro_wave=60 * sin(D / 8)
-processors:
+steps:
   - name: background
     command: 'rgb = (245, 241, 230)'
   - name: blue field
@@ -63,19 +63,19 @@ processors:
         config.macros.at("macro_wave") == "60 * sin(D / 8)",
         "pattern parses top-level macros"
     );
-    expect(config.steps.size() == 2, "pattern processor count");
+    expect(config.steps.size() == 2, "pattern step count");
     expect(
-        std::get<ProcessorSpec>(config.steps[1]).name == "blue field",
-        "pattern processor name"
+        std::get<StepSpec>(config.steps[1]).name == "blue field",
+        "pattern step name"
     );
     expect(
-        std::get<ProcessorSpec>(config.steps[1]).command ==
+        std::get<StepSpec>(config.steps[1]).command ==
             "rgb = (R, 80 + 60 * sin(D / 8), 180)",
-        "pattern processor command"
+        "pattern step command"
     );
 
     std::istringstream block_scalars(R"YAML(
-processors:
+steps:
   - name: folded command
     command: > # Fold physical lines into spaces.
       local-rgb =
@@ -100,39 +100,39 @@ processors:
         "pattern accepts folded and literal block scalars"
     );
     expect(
-        std::get<ProcessorSpec>(block_scalar_config.steps[0]).command ==
+        std::get<StepSpec>(block_scalar_config.steps[0]).command ==
             "local-rgb = ( R, G, B )\n",
         "folded block scalar replaces ordinary line breaks with spaces"
     );
     expect(
-        std::get<ProcessorSpec>(block_scalar_config.steps[1]).command ==
+        std::get<StepSpec>(block_scalar_config.steps[1]).command ==
             "rgb =\n(\nR,\nG,\nB\n)\n",
         "literal block scalar preserves line breaks"
     );
     expect(
-        parse_processor_command(
-            std::get<ProcessorSpec>(
+        parse_step_command(
+            std::get<StepSpec>(
                 block_scalar_config.steps[0]
             ).command
         ).has_value(),
-        "folded block scalar produces a valid processor command"
+        "folded block scalar produces a valid step command"
     );
     expect(
-        parse_processor_command(
-            std::get<ProcessorSpec>(
+        parse_step_command(
+            std::get<StepSpec>(
                 block_scalar_config.steps[1]
             ).command
         ).has_value(),
-        "literal block scalar produces a valid processor command"
+        "literal block scalar produces a valid step command"
     );
     expect_invalid(
-        "processors:\n"
+        "steps:\n"
         "  - name: empty block\n"
         "    command: >\n",
         "pattern rejects an empty block scalar"
     );
     expect_invalid(
-        "processors:\n"
+        "steps:\n"
         "  - name: inconsistent indentation\n"
         "    command: >\n"
         "      rgb =\n"
@@ -142,54 +142,58 @@ processors:
 
     expect_invalid(
         "canvas:\n  file_name: x.jpg\n  width: 0\n  height: 5\n"
-        "processors:\n",
+        "steps:\n",
         "pattern rejects zero dimensions"
     );
     expect_invalid(
         "canvas:\n  file_name: x.png\n  width: 5\n  height: 5\n"
-        "processors:\n",
+        "steps:\n",
         "pattern rejects non-JPEG output"
     );
     expect_invalid(
         "canvas:\n  file_name: x.jpg\n  width: 5\n  height: 5\n"
-        "processors:\n  - name: incomplete\n",
-        "pattern requires each processor command"
+        "steps:\n  - name: incomplete\n",
+        "pattern requires each step command"
     );
 
-    std::istringstream processors_only(R"YAML(
-processors:
+    std::istringstream steps_only(R"YAML(
+steps:
   - name: soften
     command: "blur 2"
 )YAML");
-    const PatternConfig processors_config =
-        parse_pattern_config(processors_only, "processors.yml");
+    const PatternConfig steps_config =
+        parse_pattern_config(steps_only, "steps.yml");
     expect(
-        !processors_config.canvas &&
-        processors_config.steps.size() == 1,
+        !steps_config.canvas &&
+        steps_config.steps.size() == 1,
         "pattern without canvas is valid when CLI source can supply the image"
     );
 
     expect_invalid(
         "source_image: input.jpg\n"
-        "processors:\n",
+        "steps:\n",
         "pattern rejects the obsolete source_image field"
+    );
+    expect_invalid(
+        "processors:\n",
+        "pattern rejects the obsolete processors section"
     );
     expect_invalid(
         "macros:\n"
         "  gain=2\n"
-        "processors:\n",
+        "steps:\n",
         "pattern requires the explicit macro_ prefix"
     );
     expect_invalid(
         "macros:\n"
         "  macro_gain=2\n"
         "  macro_gain=3\n"
-        "processors:\n",
+        "steps:\n",
         "pattern rejects conflicting macros in one file"
     );
 
     std::istringstream composed(R"YAML(
-processors:
+steps:
   - name: before
     command: "rotate 1"
   - pattern: "soften.yml"
@@ -200,23 +204,23 @@ processors:
         parse_pattern_config(composed, "composed.yml");
     expect(
         composed_config.steps.size() == 3 &&
-        std::get<ProcessorSpec>(composed_config.steps[0]).command ==
+        std::get<StepSpec>(composed_config.steps[0]).command ==
             "rotate 1" &&
         std::get<PatternReference>(composed_config.steps[1]).path ==
             "soften.yml" &&
-        std::get<ProcessorSpec>(composed_config.steps[2]).command ==
+        std::get<StepSpec>(composed_config.steps[2]).command ==
             "contrast 1.2",
-        "sub-patterns should retain their position between processors"
+        "sub-patterns should retain their position between steps"
     );
 
     expect_invalid(
-        "processors:\n"
+        "steps:\n"
         "  - name: invalid\n"
         "    pattern: nested.yml\n",
-        "pattern references cannot also define a processor name"
+        "pattern references cannot also define a step name"
     );
     expect_invalid(
-        "processors:\n"
+        "steps:\n"
         "  - formula: legacy.yml\n",
         "patterns reject the obsolete formula reference field"
     );
@@ -236,7 +240,7 @@ processors:
         temp_directory / "child.yml",
         "macros:\n"
         "  macro_child=2\n"
-        "processors:\n"
+        "steps:\n"
         "  - name: second\n"
         "    command: \"blur 1\"\n"
     );
@@ -248,7 +252,7 @@ processors:
         "  height: 3\n"
         "macros:\n"
         "  macro_root=macro_cli + 1\n"
-        "processors:\n"
+        "steps:\n"
         "  - name: first\n"
         "    command: \"rotate 1\"\n"
         "  - pattern: child.yml\n"
@@ -259,7 +263,7 @@ processors:
     const ResolvedPipeline resolved = resolve_pipeline_steps(
         {
             PatternReference{.path = temp_directory / "root.yml"},
-            ProcessorSpec{.name = {}, .command = "mirror y"},
+            StepSpec{.name = {}, .command = "mirror y"},
         },
         false,
         MacroMap{{"macro_cli", "3"}}
@@ -271,12 +275,12 @@ processors:
         "first pattern canvas should initialize a source-less pipeline"
     );
     expect(
-        resolved.processors.size() == 4 &&
-        resolved.processors[0].command == "rotate 1" &&
-        resolved.processors[1].command == "blur 1" &&
-        resolved.processors[2].command == "contrast 1.1" &&
-        resolved.processors[3].command == "mirror y",
-        "nested patterns and CLI processors should resolve in exact order"
+        resolved.steps.size() == 4 &&
+        resolved.steps[0].command == "rotate 1" &&
+        resolved.steps[1].command == "blur 1" &&
+        resolved.steps[2].command == "contrast 1.1" &&
+        resolved.steps[3].command == "mirror y",
+        "nested patterns and CLI steps should resolve in exact order"
     );
     expect(
         resolved.macros.size() == 3 &&
@@ -288,7 +292,7 @@ processors:
 
     write_pattern(
         temp_directory / "wrapper.yml",
-        "processors:\n"
+        "steps:\n"
         "  - pattern: root.yml\n"
     );
     const ResolvedPipeline wrapped = resolve_pipeline_steps(
@@ -300,7 +304,7 @@ processors:
     expect(
         wrapped.canvas.has_value() &&
         wrapped.canvas->width == 4 &&
-        wrapped.processors.size() == 3,
+        wrapped.steps.size() == 3,
         "a first pattern may inherit its canvas from a sub-pattern"
     );
 
@@ -308,7 +312,7 @@ processors:
         temp_directory / "macro-conflict.yml",
         "macros:\n"
         "  macro_child=9\n"
-        "processors:\n"
+        "steps:\n"
         "  - pattern: child.yml\n"
     );
     try {
@@ -327,12 +331,12 @@ processors:
 
     write_pattern(
         temp_directory / "cycle-a.yml",
-        "processors:\n"
+        "steps:\n"
         "  - pattern: cycle-b.yml\n"
     );
     write_pattern(
         temp_directory / "cycle-b.yml",
-        "processors:\n"
+        "steps:\n"
         "  - pattern: cycle-a.yml\n"
     );
     try {

@@ -2,7 +2,7 @@
 macros:
   macro_saturation=1.5
 
-processors:
+steps:
   - name: face spin
     command: "spin 53 60 -28 30"
   - name: darken

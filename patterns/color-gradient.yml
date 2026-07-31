@@ -1,4 +1,4 @@
 # One step: paint a coordinate-based gradient on the current image or canvas.
-processors:
+steps:
   - name: warm gradient
     command: "rgb = (35 + 190 * X / W, 45 + 150 * Y / H, 150 + 55 * sin((X + Y) / 24))"

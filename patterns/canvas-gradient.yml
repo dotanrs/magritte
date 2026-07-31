@@ -3,5 +3,5 @@ canvas:
   file_name: "canvas-gradient.jpg"
   width: 480
   height: 320
-processors:
+steps:
   - pattern: "color-gradient.yml"

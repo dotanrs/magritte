@@ -6,7 +6,7 @@ macros:
   macro_angle=atan2(Y - macro_center_y, X - macro_center_x)
   macro_radial_scale=0.992 + 0.006 * sin(5 * macro_angle)
   macro_twist=0.003 * sin(macro_radius / (0.02018 * min(W, H)))
-processors:
+steps:
   - name: waves
     command: >
       loop-warp 10 = (

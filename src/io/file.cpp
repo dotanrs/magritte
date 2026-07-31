@@ -214,7 +214,7 @@ void validate_file_data(const FileData &data) {
     if (data.width == 0 || data.height == 0 ||
         data.width > std::numeric_limits<std::size_t>::max() / data.height ||
         data.pixels.size() != data.width * data.height) {
-        throw std::runtime_error("processor returned invalid pixel data");
+        throw std::runtime_error("step returned invalid pixel data");
     }
 }
 

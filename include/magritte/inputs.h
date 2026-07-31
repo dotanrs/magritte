@@ -8,7 +8,7 @@
 #include <string>
 #include <filesystem>
 
-struct ProcessorSpec {
+struct StepSpec {
     std::string name;
     std::string command;
 };

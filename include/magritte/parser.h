@@ -4,13 +4,13 @@
 #include <optional>
 #include <string>
 #include <string_view>
-#include "magritte/processors/image_processor.h"
+#include "magritte/steps/image_step.h"
 
-/// Parses and validates one processor command.
+/// Parses and validates one step command.
 ///
 /// Returns `std::nullopt` for an empty, unknown, or malformed command. When
 /// provided, `error_message` receives a user-facing explanation on failure.
-[[nodiscard]] std::optional<ProcessorCommand> parse_processor_command(
+[[nodiscard]] std::optional<StepCommand> parse_step_command(
     std::string_view command,
     std::string *error_message = nullptr
 );
