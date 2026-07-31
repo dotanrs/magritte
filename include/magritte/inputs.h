@@ -19,7 +19,7 @@ struct CanvasConfig {
     std::size_t height;
 };
 
-struct FormulaReference {
+struct PatternReference {
     std::filesystem::path path;
 };
 

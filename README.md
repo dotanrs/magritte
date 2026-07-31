@@ -22,9 +22,9 @@ cmake -S . -B build
 cmake --build build
 ```
 
-## Recommended workflow: create a formula file
+## Recommended workflow: create a pattern file
 
-The recommended way to create an image is to describe it in a `.yml` formula
+The recommended way to create an image is to describe it in a `.yml` pattern
 file. This keeps the complete recipe readable, repeatable, and easy to adjust.
 
 Create a file such as `my-image.yml`:
@@ -44,37 +44,37 @@ processors:
 Then run it:
 
 ```sh
-./build/magritte -f my-image.yml
+./build/magritte -P my-image.yml
 ```
 
-To transform an existing JPEG, create a formula without the `canvas` section
+To transform an existing JPEG, create a pattern without the `canvas` section
 and provide a source:
 
 ```sh
-./build/magritte --source photo.jpg -f photo-edit.yml -o edited.jpg
+./build/magritte --source photo.jpg -P photo-edit.yml -o edited.jpg
 ```
 
-See [`formulas/`](formulas) for runnable examples, including generated
-canvases, formulas that transform source images, and formulas that compose
-other formulas.
+See [`patterns/`](patterns) for runnable examples, including generated
+canvases, patterns that transform source images, and patterns that compose
+other patterns.
 
 ## Examples
 
 The examples below transform the shared
-[`original.jpeg`](formulas/examples/original.jpeg) source image. Select an
-example to view its formula.
+[`original.jpeg`](patterns/examples/original.jpeg) source image. Select an
+example to view its pattern.
 
 | Original |                                      Slenderman                                       |                                       Hitchcock                                       |
 | :---: |:-------------------------------------------------------------------------------------:|:-------------------------------------------------------------------------------------:|
-| ![Original source image](formulas/examples/original.jpeg) |  [![Slenderman example](formulas/examples/slenderman.jpg)](formulas/slenderman.yml)   |        [![Hitchcock](formulas/examples/hitchcock.jpg)](formulas/hitchcock.yml)        |
-| Source image |                      [`slenderman.yml`](formulas/slenderman.yml)                      |                       [`hitchcock.yml`](formulas/hitchcock.yml)                       |
+| ![Original source image](patterns/examples/original.jpeg) |  [![Slenderman example](patterns/examples/slenderman.jpg)](patterns/slenderman.yml)   |        [![Hitchcock](patterns/examples/hitchcock.jpg)](patterns/hitchcock.yml)        |
+| Source image |                      [`slenderman.yml`](patterns/slenderman.yml)                      |                       [`hitchcock.yml`](patterns/hitchcock.yml)                       |
 | **Mass gain** |                                    **Iridescence**                                    |                                    **Telekinesis**                                    |
-| [![Mass gain example](formulas/examples/mass-gain.jpg)](formulas/mass-gain.yml) | [![Iridescence example](formulas/examples/iridescence.jpg)](formulas/iridescence.yml) | [![Telekinesis example](formulas/examples/telekinesis.jpg)](formulas/telekinesis.yml) |
-| [`mass-gain.yml`](formulas/mass-gain.yml) |                     [`iridescence.yml`](formulas/iridescence.yml)                     |                     [`telekinesis.yml`](formulas/telekinesis.yml)                     |
+| [![Mass gain example](patterns/examples/mass-gain.jpg)](patterns/mass-gain.yml) | [![Iridescence example](patterns/examples/iridescence.jpg)](patterns/iridescence.yml) | [![Telekinesis example](patterns/examples/telekinesis.jpg)](patterns/telekinesis.yml) |
+| [`mass-gain.yml`](patterns/mass-gain.yml) |                     [`iridescence.yml`](patterns/iridescence.yml)                     |                     [`telekinesis.yml`](patterns/telekinesis.yml)                     |
 
 ## Documentation
 
-- [Usage guide](USAGE.md) — formula files, source images, output options,
+- [Usage guide](USAGE.md) — pattern files, source images, output options,
   command ordering, and debug mode.
 - [Processor reference](PROCESSORS.md) — every processor and the expression
   language used by formula processors.
@@ -82,7 +82,7 @@ example to view its formula.
   — how expression nodes, identifiers, functions, and macros form an AST.
 - [Processor selection and image flow](src/PROCESSING.md) — how commands select
   processors and pass image ownership through the pipeline.
-- [JPEG and in-memory image I/O](src/IO.md) — how JPEG data is decoded into
+- [JPEG and in-memory image I/O](src/io/IO.md) — how JPEG data is decoded into
   `FileData` and encoded again.
 
 ## Tests

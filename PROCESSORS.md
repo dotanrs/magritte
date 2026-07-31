@@ -1,8 +1,8 @@
 # Processor reference
 
-Processors run sequentially from left to right. In a formula file, put each
+Processors run sequentially from left to right. In a pattern file, put each
 command in the ordered `processors` list. See the [usage guide](USAGE.md) for
-the recommended YAML workflow, and see [`formulas/`](formulas) for runnable
+the recommended YAML workflow, and see [`patterns/`](patterns) for runnable
 examples.
 
 ## Processor commands
@@ -85,7 +85,7 @@ Trigonometric functions use radians. Color and saturation results are rounded
 and clamped to `[0, 255]`. Undefined results, such as the square root of a
 negative number, become `0`.
 
-Formula expressions may also use macros declared by `--macro` or a formula
+Formula expressions may also use macros declared by `--macro` or a pattern
 file's top-level `macros` section. Macro names must explicitly start with
 `macro_`; their values are formula expressions and can reference other macros.
 All CLI and file macros are collected before processing starts. Different
@@ -460,7 +460,7 @@ leaves the image unchanged.
 
 ## More examples
 
-The [`formulas/`](formulas) directory is the best place to start. Its YAML
+The [`patterns/`](patterns) directory is the best place to start. Its YAML
 files are complete, runnable image recipes rather than isolated command
 snippets.
 

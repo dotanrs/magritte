@@ -28,10 +28,10 @@ namespace {
         std::string text;
     };
 
-    struct FormulaStepBuilder {
+    struct PatternStepBuilder {
         std::string name;
         std::string command;
-        std::optional<fs::path> formula;
+        std::optional<fs::path> pattern;
     };
 
     [[noreturn]] void fail(
@@ -288,7 +288,7 @@ namespace {
         }
         if (!input.eof() && input.fail()) {
             throw std::invalid_argument(
-                "could not read formula file: " + std::string(source)
+                "could not read pattern file: " + std::string(source)
             );
         }
 
@@ -381,7 +381,7 @@ namespace {
     }
 
     void set_step_field(
-        FormulaStepBuilder &step,
+        PatternStepBuilder &step,
         const Line &line,
         std::string_view key,
         std::string_view value,
@@ -397,11 +397,11 @@ namespace {
                 fail(source, line.number, "duplicate processor command");
             }
             step.command = parse_line_scalar(line, value, source);
-        } else if (key == "formula") {
-            if (step.formula) {
-                fail(source, line.number, "duplicate formula reference");
+        } else if (key == "pattern") {
+            if (step.pattern) {
+                fail(source, line.number, "duplicate pattern reference");
             }
-            step.formula = parse_line_scalar(line, value, source);
+            step.pattern = parse_line_scalar(line, value, source);
         } else {
             fail(source, line.number, "unknown processor field");
         }
@@ -421,12 +421,12 @@ namespace {
     }
 } // namespace
 
-FormulaConfig parse_formula_config(
+PatternConfig parse_pattern_config(
     std::istream &input,
     std::string_view source_name
 ) {
     const std::vector<Line> lines = read_lines(input, source_name);
-    FormulaConfig config{};
+    PatternConfig config{};
     bool has_canvas = false;
     bool has_macros = false;
     bool has_processors = false;
@@ -436,21 +436,21 @@ FormulaConfig parse_formula_config(
 
     enum class Section { none, canvas, macros, processors };
     Section section = Section::none;
-    std::optional<FormulaStepBuilder> step;
+    std::optional<PatternStepBuilder> step;
 
     const auto finish_step = [&]() {
         if (!step) {
             return;
         }
-        if (step->formula) {
+        if (step->pattern) {
             if (!step->name.empty() || !step->command.empty()) {
                 throw std::invalid_argument(
                     std::string(source_name) +
-                    ": a formula reference cannot also define name or command"
+                    ": a pattern reference cannot also define name or command"
                 );
             }
-            config.steps.emplace_back(FormulaReference{
-                .path = std::move(*step->formula),
+            config.steps.emplace_back(PatternReference{
+                .path = std::move(*step->pattern),
             });
             step.reset();
             return;
@@ -644,14 +644,14 @@ FormulaConfig parse_formula_config(
     return config;
 }
 
-FormulaConfig load_formula_config(const fs::path &path) {
+PatternConfig load_pattern_config(const fs::path &path) {
     std::ifstream input(path);
     if (!input) {
         throw std::runtime_error(
-            "could not open formula file: " + path.string()
+            "could not open pattern file: " + path.string()
         );
     }
-    FormulaConfig config = parse_formula_config(input, path.string());
+    PatternConfig config = parse_pattern_config(input, path.string());
     if (config.canvas) {
         if (config.canvas->file_name.is_relative()) {
             config.canvas->file_name =
@@ -662,7 +662,7 @@ FormulaConfig load_formula_config(const fs::path &path) {
         ).lexically_normal();
     }
     for (PipelineStep &step: config.steps) {
-        FormulaReference *reference = std::get_if<FormulaReference>(&step);
+        PatternReference *reference = std::get_if<PatternReference>(&step);
         if (reference == nullptr) {
             continue;
         }
@@ -675,26 +675,26 @@ FormulaConfig load_formula_config(const fs::path &path) {
 }
 
 namespace {
-    std::optional<CanvasConfig> expand_formula(
+    std::optional<CanvasConfig> expand_pattern(
         const fs::path &path,
-        std::vector<fs::path> &active_formulas,
+        std::vector<fs::path> &active_patterns,
         MacroMap &macros,
         std::vector<ProcessorSpec> &processors
     ) {
         const fs::path normalized =
             fs::absolute(path).lexically_normal();
         if (std::find(
-                active_formulas.begin(),
-                active_formulas.end(),
+                active_patterns.begin(),
+                active_patterns.end(),
                 normalized
-            ) != active_formulas.end()) {
+            ) != active_patterns.end()) {
             throw std::invalid_argument(
-                "cyclic formula reference: " + normalized.string()
+                "cyclic pattern reference: " + normalized.string()
             );
         }
 
-        active_formulas.push_back(normalized);
-        FormulaConfig config = load_formula_config(normalized);
+        active_patterns.push_back(normalized);
+        PatternConfig config = load_pattern_config(normalized);
         merge_macros(macros, config.macros);
         std::optional<CanvasConfig> canvas = config.canvas;
         for (const PipelineStep &step: config.steps) {
@@ -703,11 +703,11 @@ namespace {
                 processors.push_back(*processor);
                 continue;
             }
-            const FormulaReference &reference =
-                std::get<FormulaReference>(step);
-            std::optional<CanvasConfig> nested_canvas = expand_formula(
+            const PatternReference &reference =
+                std::get<PatternReference>(step);
+            std::optional<CanvasConfig> nested_canvas = expand_pattern(
                 reference.path,
-                active_formulas,
+                active_patterns,
                 macros,
                 processors
             );
@@ -715,7 +715,7 @@ namespace {
                 canvas = std::move(nested_canvas);
             }
         }
-        active_formulas.pop_back();
+        active_patterns.pop_back();
         return canvas;
     }
 }
@@ -727,9 +727,10 @@ ResolvedPipeline resolve_pipeline_steps(
 ) {
     if (!has_source &&
         (steps.empty() ||
-         !std::holds_alternative<FormulaReference>(steps.front()))) {
+        !std::holds_alternative<PatternReference>(steps.front()))) {
         throw std::invalid_argument(
-            "without --source, the first processing argument must be -f"
+            "without --source, the first processing argument must be "
+            "-P or --pattern"
         );
     }
 
@@ -738,18 +739,18 @@ ResolvedPipeline resolve_pipeline_steps(
         .macros = cli_macros,
         .processors = {},
     };
-    std::vector<fs::path> active_formulas;
+    std::vector<fs::path> active_patterns;
     for (std::size_t index = 0; index < steps.size(); ++index) {
         if (const ProcessorSpec *processor =
                 std::get_if<ProcessorSpec>(&steps[index])) {
             resolved.processors.push_back(*processor);
             continue;
         }
-        const FormulaReference &reference =
-            std::get<FormulaReference>(steps[index]);
-        std::optional<CanvasConfig> canvas = expand_formula(
+        const PatternReference &reference =
+            std::get<PatternReference>(steps[index]);
+        std::optional<CanvasConfig> canvas = expand_pattern(
             reference.path,
-            active_formulas,
+            active_patterns,
             resolved.macros,
             resolved.processors
         );
@@ -760,7 +761,8 @@ ResolvedPipeline resolve_pipeline_steps(
 
     if (!has_source && !resolved.canvas) {
         throw std::invalid_argument(
-            "the first formula must include a canvas when --source is not provided"
+            "the first pattern must include a canvas when --source is not "
+            "provided"
         );
     }
     return resolved;

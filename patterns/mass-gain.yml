@@ -2,9 +2,9 @@
 # fisheye lenses.
 #
 # Run:
-#   ./build/magritte --source formulas/examples/original.jpeg \
-#     -f formulas/mass-gain.yml \
-#     -o formulas/examples/muscular-man.jpg --overwrite
+#   ./build/magritte --source patterns/examples/original.jpeg \
+#     -P patterns/mass-gain.yml \
+#     -o patterns/examples/muscular-man.jpg --overwrite
 processors:
   - name: broaden the left pec
     command: "fisheye 42 51 1.1 14"

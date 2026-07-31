@@ -2,16 +2,16 @@
 
 `magritte` can create an image from a blank canvas or transform an existing JPEG.
 Although individual commands can be passed with `-p`, the recommended workflow
-is to put the complete image recipe in a `.yml` formula and run it with `-f`.
+is to put the complete image recipe in a `.yml` pattern and run it with `-P`.
 
 See the [processor reference](PROCESSORS.md) for the available commands.
 
-## Recommended formula workflow
+## Recommended pattern workflow
 
-### 1. Create a YAML formula
+### 1. Create a YAML pattern
 
-A formula contains an ordered list of processors. Include a `canvas` when the
-formula creates a new image:
+A pattern contains an ordered list of processors. Include a `canvas` when the
+pattern creates a new image:
 
 ```yaml
 canvas:
@@ -25,10 +25,10 @@ processors:
     command: "contrast 1.15"
 ```
 
-The canvas starts black. Its `file_name` is resolved relative to the formula
+The canvas starts black. Its `file_name` is resolved relative to the pattern
 file.
 
-When transforming an existing image, the formula only needs its processors:
+When transforming an existing image, the pattern only needs its processors:
 
 ```yaml
 processors:
@@ -41,44 +41,44 @@ processors:
 Processors run from top to bottom, and each processor receives the result of
 the previous one.
 
-### 2. Run the formula
+### 2. Run the pattern
 
-Create the image declared by a formula:
+Create the image declared by a pattern:
 
 ```sh
-./build/magritte -f path/to/formula.yml
+./build/magritte -P path/to/pattern.yml
 ```
 
-Or apply a formula to a source JPEG:
+Or apply a pattern to a source JPEG:
 
 ```sh
 ./build/magritte \
   --source photos/input.jpg \
-  -f path/to/formula.yml \
+  -P path/to/pattern.yml \
   -o results/edited.jpg
 ```
 
-When `--source` is present, canvases in formula files are ignored. If `-o` is
+When `--source` is present, canvases in pattern files are ignored. If `-o` is
 omitted, the default destination is the source name with `_copy` appended.
 For example, `photos/input.jpg` becomes `photos/input_copy.jpg`.
 
-Pass `-o` to override either the formula canvas's `file_name` or the default
+Pass `-o` to override either the pattern canvas's `file_name` or the default
 source-image destination:
 
 ```sh
-./build/magritte -f formulas/canvas-gradient.yml -o results/gradient.jpg
+./build/magritte -P patterns/canvas-gradient.yml -o results/gradient.jpg
 ```
 
 ### 3. Start from the examples
 
-Runnable examples live in [`formulas/`](formulas). They demonstrate small
+Runnable examples live in [`patterns/`](patterns). They demonstrate small
 processor pipelines, source-image transformations, generated canvases, and
-formula composition. Copy the closest example, change its processor commands,
+pattern composition. Copy the closest example, change its processor commands,
 and rerun it while developing an image.
 
-## Formula file format
+## Pattern file format
 
-Formula files use the `.yml` or `.yaml` extension. The supported YAML subset is
+Pattern files use the `.yml` or `.yaml` extension. The supported YAML subset is
 intentionally small:
 
 - A `canvas` requires `file_name`, a positive integer `width`, and a positive
@@ -86,7 +86,7 @@ intentionally small:
 - An optional top-level `macros` section contains indented
   `macro_<name>=<formula>` definitions.
 - A processor item requires `name` and `command`.
-- A formula-reference item contains only `formula`.
+- A pattern-reference item contains only `pattern`.
 - Plain, single-quoted, double-quoted, folded (`>`), and literal (`|`) scalars
   are accepted.
 - Use a folded block to split a long processor command across readable lines.
@@ -105,7 +105,7 @@ intentionally small:
 - A literal block preserves its line breaks. Both block styles require content
   to be indented farther than the field containing `>` or `|`.
 
-Formula files can include other formulas in the same ordered `processors`
+Pattern files can include other patterns in the same ordered `processors`
 list:
 
 ```yaml
@@ -114,18 +114,18 @@ canvas:
   width: 480
   height: 320
 processors:
-  - formula: "color-gradient.yml"
+  - pattern: "color-gradient.yml"
   - name: rotate clockwise
     command: "rotate 1"
   - name: increase contrast
     command: "contrast 1.15"
 ```
 
-Relative sub-formula paths resolve beside the formula that references them.
-A sub-formula's processors are inserted at the location of its reference, and
+Relative nested-pattern paths resolve beside the pattern that references them.
+A nested pattern's processors are inserted at the location of its reference, and
 recursive reference cycles are rejected.
 
-## Formula macros
+## Expression macros
 
 Macros give repeated formula expressions explicit names. Every macro name must
 start with `macro_`, making collisions with built-in variables and constants
@@ -154,17 +154,17 @@ definition when its expression contains spaces or shell-sensitive characters:
   -o result.jpg
 ```
 
-CLI macros and macros from every referenced formula are collected before the
+CLI macros and macros from every referenced pattern are collected before the
 first processor runs. Repeating an identical definition is allowed. If the
 same name has different expressions, the run fails instead of selecting one
 definition implicitly.
 
-Without `--source`, the first processing argument must be a formula that
-provides a canvas, directly or through a sub-formula. If more formulas follow,
-their canvases are ignored; the first formula's canvas remains the pipeline
+Without `--source`, the first processing argument must be a pattern that
+provides a canvas, directly or through a nested pattern. If more patterns follow,
+their canvases are ignored; the first pattern's canvas remains the pipeline
 input.
 
-## Combining formulas and processor arguments
+## Combining patterns and processor arguments
 
 Use `-p` for a quick, one-off processor:
 
@@ -173,17 +173,17 @@ Use `-p` for a quick, one-off processor:
   -p "rotate 1"
 ```
 
-Both `-p` and `-f` can be repeated. They form one pipeline and run from left to
+Both `-p` and `-P` can be repeated. They form one pipeline and run from left to
 right in exactly the order supplied:
 
 ```sh
 ./build/magritte --source photos/input.jpg \
   -p "rotate 1" \
-  -f formulas/mirror-and-soften.yml \
+  -P patterns/mirror-and-soften.yml \
   -p "contrast 1.2"
 ```
 
-In this example, rotation runs first, the formula's processors are inserted
+In this example, rotation runs first, the pattern's processors are inserted
 next, and contrast runs last.
 
 ## Debug mode
@@ -193,7 +193,7 @@ Add `--debug` to draw visual guides for processors that support them:
 ```sh
 ./build/magritte \
   --source photo.jpg \
-  -f formulas/puffy.yml \
+  -P patterns/puffy.yml \
   -o results/puffy-debug.jpg \
   --debug
 ```
@@ -221,7 +221,7 @@ If the output already exists, `magritte` asks before replacing it. Use
 `--overwrite` to replace it without prompting:
 
 ```sh
-./build/magritte -f formulas/canvas-gradient.yml --overwrite
+./build/magritte -P patterns/canvas-gradient.yml --overwrite
 ```
 
 The command writes timestamped progress logs to standard error. Invalid
@@ -239,10 +239,11 @@ Exit statuses are:
 
 ```text
 --source <path>  Source JPEG
--f <path>        Formula YAML; may be repeated
+-P, --pattern <path>
+                 Pattern YAML; may be repeated
 -p <command>     Processor command; may be repeated
 --macro <macro_<name>=<formula>>
-                 Global formula macro; may be repeated
+                 Global expression macro; may be repeated
 -o <path>        Destination JPEG
 --debug          Add supported visual processor guides to the output
 --overwrite      Replace an existing output without prompting

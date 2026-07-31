@@ -16,14 +16,14 @@ namespace {
     void expect_invalid(std::string_view yaml, std::string_view message) {
         std::istringstream input{std::string(yaml)};
         try {
-            static_cast<void>(parse_formula_config(input, "test.yml"));
+            static_cast<void>(parse_pattern_config(input, "test.yml"));
             expect(false, std::string(message));
         } catch (const std::invalid_argument &) {
             expect(true, std::string(message));
         }
     }
 
-    void write_formula(
+    void write_pattern(
         const fs::path &path,
         std::string_view contents
     ) {
@@ -32,9 +32,9 @@ namespace {
     }
 }
 
-void test_formula_config() {
+void test_pattern_config() {
     std::istringstream input(R"YAML(
-# An original generative formula
+# An original generative pattern
 canvas:
   file_name: "output/field.jpg"
   width: 640
@@ -48,30 +48,30 @@ processors:
     command: "rgb = (R, 80 + 60 * sin(D / 8), 180)"
 )YAML");
 
-    const FormulaConfig config = parse_formula_config(input, "formula.yml");
-    expect(config.canvas.has_value(), "formula has canvas");
+    const PatternConfig config = parse_pattern_config(input, "pattern.yml");
+    expect(config.canvas.has_value(), "pattern has canvas");
     if (!config.canvas) {
         return;
     }
     expect(
         config.canvas->file_name == "output/field.jpg",
-        "formula output path"
+        "pattern output path"
     );
-    expect(config.canvas->width == 640, "formula canvas width");
-    expect(config.canvas->height == 480, "formula canvas height");
+    expect(config.canvas->width == 640, "pattern canvas width");
+    expect(config.canvas->height == 480, "pattern canvas height");
     expect(
         config.macros.at("macro_wave") == "60 * sin(D / 8)",
-        "formula parses top-level macros"
+        "pattern parses top-level macros"
     );
-    expect(config.steps.size() == 2, "formula processor count");
+    expect(config.steps.size() == 2, "pattern processor count");
     expect(
         std::get<ProcessorSpec>(config.steps[1]).name == "blue field",
-        "formula processor name"
+        "pattern processor name"
     );
     expect(
         std::get<ProcessorSpec>(config.steps[1]).command ==
             "rgb = (R, 80 + 60 * sin(D / 8), 180)",
-        "formula processor command"
+        "pattern processor command"
     );
 
     std::istringstream block_scalars(R"YAML(
@@ -93,11 +93,11 @@ processors:
       B
       )
 )YAML");
-    const FormulaConfig block_scalar_config =
-        parse_formula_config(block_scalars, "blocks.yml");
+    const PatternConfig block_scalar_config =
+        parse_pattern_config(block_scalars, "blocks.yml");
     expect(
         block_scalar_config.steps.size() == 2,
-        "formula accepts folded and literal block scalars"
+        "pattern accepts folded and literal block scalars"
     );
     expect(
         std::get<ProcessorSpec>(block_scalar_config.steps[0]).command ==
@@ -129,7 +129,7 @@ processors:
         "processors:\n"
         "  - name: empty block\n"
         "    command: >\n",
-        "formula rejects an empty block scalar"
+        "pattern rejects an empty block scalar"
     );
     expect_invalid(
         "processors:\n"
@@ -137,23 +137,23 @@ processors:
         "    command: >\n"
         "      rgb =\n"
         "     (R, G, B)\n",
-        "formula rejects inconsistent block scalar indentation"
+        "pattern rejects inconsistent block scalar indentation"
     );
 
     expect_invalid(
         "canvas:\n  file_name: x.jpg\n  width: 0\n  height: 5\n"
         "processors:\n",
-        "formula rejects zero dimensions"
+        "pattern rejects zero dimensions"
     );
     expect_invalid(
         "canvas:\n  file_name: x.png\n  width: 5\n  height: 5\n"
         "processors:\n",
-        "formula rejects non-JPEG output"
+        "pattern rejects non-JPEG output"
     );
     expect_invalid(
         "canvas:\n  file_name: x.jpg\n  width: 5\n  height: 5\n"
         "processors:\n  - name: incomplete\n",
-        "formula requires each processor command"
+        "pattern requires each processor command"
     );
 
     std::istringstream processors_only(R"YAML(
@@ -161,65 +161,70 @@ processors:
   - name: soften
     command: "blur 2"
 )YAML");
-    const FormulaConfig processors_config =
-        parse_formula_config(processors_only, "processors.yml");
+    const PatternConfig processors_config =
+        parse_pattern_config(processors_only, "processors.yml");
     expect(
         !processors_config.canvas &&
         processors_config.steps.size() == 1,
-        "formula without canvas is valid when CLI source can supply the image"
+        "pattern without canvas is valid when CLI source can supply the image"
     );
 
     expect_invalid(
         "source_image: input.jpg\n"
         "processors:\n",
-        "formula rejects the obsolete source_image field"
+        "pattern rejects the obsolete source_image field"
     );
     expect_invalid(
         "macros:\n"
         "  gain=2\n"
         "processors:\n",
-        "formula requires the explicit macro_ prefix"
+        "pattern requires the explicit macro_ prefix"
     );
     expect_invalid(
         "macros:\n"
         "  macro_gain=2\n"
         "  macro_gain=3\n"
         "processors:\n",
-        "formula rejects conflicting macros in one file"
+        "pattern rejects conflicting macros in one file"
     );
 
     std::istringstream composed(R"YAML(
 processors:
   - name: before
     command: "rotate 1"
-  - formula: "soften.yml"
+  - pattern: "soften.yml"
   - name: after
     command: "contrast 1.2"
 )YAML");
-    const FormulaConfig composed_config =
-        parse_formula_config(composed, "composed.yml");
+    const PatternConfig composed_config =
+        parse_pattern_config(composed, "composed.yml");
     expect(
         composed_config.steps.size() == 3 &&
         std::get<ProcessorSpec>(composed_config.steps[0]).command ==
             "rotate 1" &&
-        std::get<FormulaReference>(composed_config.steps[1]).path ==
+        std::get<PatternReference>(composed_config.steps[1]).path ==
             "soften.yml" &&
         std::get<ProcessorSpec>(composed_config.steps[2]).command ==
             "contrast 1.2",
-        "sub-formulas should retain their position between processors"
+        "sub-patterns should retain their position between processors"
     );
 
     expect_invalid(
         "processors:\n"
         "  - name: invalid\n"
-        "    formula: nested.yml\n",
-        "formula references cannot also define a processor name"
+        "    pattern: nested.yml\n",
+        "pattern references cannot also define a processor name"
+    );
+    expect_invalid(
+        "processors:\n"
+        "  - formula: legacy.yml\n",
+        "patterns reject the obsolete formula reference field"
     );
 
     const fs::path temp_directory =
         fs::temp_directory_path() /
         (
-            "magritte-formula-test-" +
+            "magritte-pattern-test-" +
             std::to_string(
                 std::chrono::steady_clock::now()
                     .time_since_epoch()
@@ -227,7 +232,7 @@ processors:
             )
         );
     fs::create_directories(temp_directory);
-    write_formula(
+    write_pattern(
         temp_directory / "child.yml",
         "macros:\n"
         "  macro_child=2\n"
@@ -235,7 +240,7 @@ processors:
         "  - name: second\n"
         "    command: \"blur 1\"\n"
     );
-    write_formula(
+    write_pattern(
         temp_directory / "root.yml",
         "canvas:\n"
         "  file_name: output.jpg\n"
@@ -246,14 +251,14 @@ processors:
         "processors:\n"
         "  - name: first\n"
         "    command: \"rotate 1\"\n"
-        "  - formula: child.yml\n"
+        "  - pattern: child.yml\n"
         "  - name: third\n"
         "    command: \"contrast 1.1\"\n"
     );
 
     const ResolvedPipeline resolved = resolve_pipeline_steps(
         {
-            FormulaReference{.path = temp_directory / "root.yml"},
+            PatternReference{.path = temp_directory / "root.yml"},
             ProcessorSpec{.name = {}, .command = "mirror y"},
         },
         false,
@@ -263,7 +268,7 @@ processors:
         resolved.canvas.has_value() &&
         resolved.canvas->width == 4 &&
         resolved.canvas->height == 3,
-        "first formula canvas should initialize a source-less pipeline"
+        "first pattern canvas should initialize a source-less pipeline"
     );
     expect(
         resolved.processors.size() == 4 &&
@@ -271,24 +276,24 @@ processors:
         resolved.processors[1].command == "blur 1" &&
         resolved.processors[2].command == "contrast 1.1" &&
         resolved.processors[3].command == "mirror y",
-        "nested formulas and CLI processors should resolve in exact order"
+        "nested patterns and CLI processors should resolve in exact order"
     );
     expect(
         resolved.macros.size() == 3 &&
         resolved.macros.at("macro_cli") == "3" &&
         resolved.macros.at("macro_root") == "macro_cli + 1" &&
         resolved.macros.at("macro_child") == "2",
-        "CLI and nested formula macros should be collected before processing"
+        "CLI and nested pattern macros should be collected before processing"
     );
 
-    write_formula(
+    write_pattern(
         temp_directory / "wrapper.yml",
         "processors:\n"
-        "  - formula: root.yml\n"
+        "  - pattern: root.yml\n"
     );
     const ResolvedPipeline wrapped = resolve_pipeline_steps(
         {
-            FormulaReference{.path = temp_directory / "wrapper.yml"},
+            PatternReference{.path = temp_directory / "wrapper.yml"},
         },
         false
     );
@@ -296,52 +301,52 @@ processors:
         wrapped.canvas.has_value() &&
         wrapped.canvas->width == 4 &&
         wrapped.processors.size() == 3,
-        "a first formula may inherit its canvas from a sub-formula"
+        "a first pattern may inherit its canvas from a sub-pattern"
     );
 
-    write_formula(
+    write_pattern(
         temp_directory / "macro-conflict.yml",
         "macros:\n"
         "  macro_child=9\n"
         "processors:\n"
-        "  - formula: child.yml\n"
+        "  - pattern: child.yml\n"
     );
     try {
         static_cast<void>(resolve_pipeline_steps(
             {
-                FormulaReference{
+                PatternReference{
                     .path = temp_directory / "macro-conflict.yml",
                 },
             },
             true
         ));
-        expect(false, "nested formulas should reject conflicting macros");
+        expect(false, "nested patterns should reject conflicting macros");
     } catch (const std::invalid_argument &) {
-        expect(true, "nested formulas should reject conflicting macros");
+        expect(true, "nested patterns should reject conflicting macros");
     }
 
-    write_formula(
+    write_pattern(
         temp_directory / "cycle-a.yml",
         "processors:\n"
-        "  - formula: cycle-b.yml\n"
+        "  - pattern: cycle-b.yml\n"
     );
-    write_formula(
+    write_pattern(
         temp_directory / "cycle-b.yml",
         "processors:\n"
-        "  - formula: cycle-a.yml\n"
+        "  - pattern: cycle-a.yml\n"
     );
     try {
         static_cast<void>(resolve_pipeline_steps(
             {
-                FormulaReference{
+                PatternReference{
                     .path = temp_directory / "cycle-a.yml",
                 },
             },
             true
         ));
-        expect(false, "cyclic sub-formulas should be rejected");
+        expect(false, "cyclic sub-patterns should be rejected");
     } catch (const std::invalid_argument &) {
-        expect(true, "cyclic sub-formulas should be rejected");
+        expect(true, "cyclic sub-patterns should be rejected");
     }
     fs::remove_all(temp_directory);
 }

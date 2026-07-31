@@ -1,5 +1,5 @@
-#ifndef MAGRITTE_FORMULA_H
-#define MAGRITTE_FORMULA_H
+#ifndef MAGRITTE_PIPELINE_H
+#define MAGRITTE_PIPELINE_H
 
 #include <filesystem>
 #include <istream>
@@ -14,9 +14,9 @@
 
 
 
-using PipelineStep = std::variant<ProcessorSpec, FormulaReference>;
+using PipelineStep = std::variant<ProcessorSpec, PatternReference>;
 
-struct FormulaConfig {
+struct PatternConfig {
     std::optional<CanvasConfig> canvas;
     MacroMap macros;
     std::vector<PipelineStep> steps;
@@ -28,39 +28,39 @@ struct ResolvedPipeline {
     std::vector<ProcessorSpec> processors;
 };
 
-/// Parses magritte's YAML formula schema from a stream.
+/// Parses magritte's YAML pattern schema from a stream.
 ///
-/// This intentionally supports the small YAML subset used by formula files:
-/// mappings, processor sequence items, sub-formula references, comments, and
+/// This intentionally supports the small YAML subset used by pattern files:
+/// mappings, processor sequence items, nested pattern references, comments, and
 /// plain, quoted, folded (`>`), or literal (`|`) scalars.
 /// A canvas is optional at parse time because `--source` can supply the image.
 /// @throws std::invalid_argument for malformed or incomplete input.
-[[nodiscard]] FormulaConfig parse_formula_config(
+[[nodiscard]] PatternConfig parse_pattern_config(
     std::istream &input,
-    std::string_view source_name = "<formula>"
+    std::string_view source_name = "<pattern>"
 );
 
-/// Loads a formula YAML file. Relative canvas filenames and sub-formula
-/// references are resolved beside the formula file.
-[[nodiscard]] FormulaConfig load_formula_config(
+/// Loads a pattern YAML file. Relative canvas filenames and nested pattern
+/// references are resolved beside the pattern file.
+[[nodiscard]] PatternConfig load_pattern_config(
     const std::filesystem::path &path
 );
 
-/// Recursively replaces formula references with their processors. When there
-/// is no source, the first top-level step must be a formula that includes a
-/// canvas, either directly or through a sub-formula.
+/// Recursively replaces pattern references with their processors. When there
+/// is no source, the first top-level step must be a pattern that includes a
+/// canvas, either directly or through a nested pattern.
 /// CLI and file macros are collected before processing. Conflicting macros and
-/// cyclic formula references are rejected.
+/// cyclic pattern references are rejected.
 [[nodiscard]] ResolvedPipeline resolve_pipeline_steps(
     const std::vector<PipelineStep> &steps,
     bool has_source,
     const MacroMap &cli_macros = {}
 );
 
-/// Expands and runs an ordered stream of processor and formula steps.
+/// Expands and runs an ordered stream of processor and pattern steps.
 ///
-/// Without `source`, the first step must be a formula that includes a canvas.
-/// Later formula canvases are ignored. `output_override`
+/// Without `source`, the first step must be a pattern that includes a canvas.
+/// Later pattern canvases are ignored. `output_override`
 /// replaces the canvas filename or the source image's default output.
 void process_pipeline(
     const std::vector<PipelineStep> &steps,
@@ -71,4 +71,4 @@ void process_pipeline(
     const MacroMap &cli_macros = {}
 );
 
-#endif // MAGRITTE_FORMULA_H
+#endif // MAGRITTE_PIPELINE_H

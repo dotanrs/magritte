@@ -11,12 +11,12 @@ The main implementation points are
 ## Preparing a pipeline
 
 The CLI accepts processor commands directly with `-p` and indirectly through
-YAML formula files. Before image processing starts,
-[`process_pipeline()`](formula.cpp) resolves formula references, preserves the
+YAML pattern files. Before image processing starts,
+[`process_pipeline()`](pipeline.cpp) resolves pattern references, preserves the
 declared command order, combines macros, and chooses the initial image:
 
 - With `--source`, the initial `FileData` is decoded from the input JPEG.
-- Without `--source`, a formula-provided canvas becomes a black, opaque
+- Without `--source`, a pattern-provided canvas becomes a black, opaque
   `FileData` buffer.
 
 Both paths eventually produce an ordered `std::vector<ProcessorSpec>`. A
@@ -25,8 +25,8 @@ Both paths eventually produce an ordered `std::vector<ProcessorSpec>`. A
 ```mermaid
 flowchart LR
     cli["CLI -p commands"]
-    yaml["YAML formula steps"]
-    resolve["Resolve pipeline order,<br/>formula references, and macros"]
+    yaml["YAML pattern steps"]
+    resolve["Resolve pipeline order,<br/>pattern references, and macros"]
     source["Decode source JPEG"]
     canvas["Create black RGBA canvas"]
     specs["Ordered ProcessorSpec list"]
@@ -215,4 +215,3 @@ After the last processor:
 
 Output overwrite checks happen before decoding or processing. The file is only
 encoded after all selected processors finish successfully.
-

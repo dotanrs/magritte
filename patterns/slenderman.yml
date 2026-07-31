@@ -2,9 +2,9 @@
 # the bottom of the image and smoothly decay to no effect near the top.
 #
 # Run:
-#   ./build/magritte --source formulas/examples/original.jpeg \
-#     -f formulas/slenderman.yml \
-#     -o formulas/examples/slenderman.jpg --overwrite
+#   ./build/magritte --source patterns/examples/original.jpeg \
+#     -P patterns/slenderman.yml \
+#     -o patterns/examples/slenderman.jpg --overwrite
 macros:
   macro_desaturate=pow(clamp(V + 0.8, 0, 1), 1.5)
   macro_mask_10=pow(clamp((V + 0.80) / 1.36, 0, 1), 2)

@@ -13,8 +13,8 @@
 #include <utility>
 #include <vector>
 
-#include "../include/magritte/utils/file.h"
-#include "../include/magritte/utils/input_validation.h"
+#include "magritte/io/file.h"
+#include "magritte/io/input_validation.h"
 #include "magritte/parser.h"
 #include "magritte/processors/image_processor.h"
 #include "magritte/utils/logging.h"

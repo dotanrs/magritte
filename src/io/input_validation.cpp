@@ -2,7 +2,7 @@
 // Created by Dotan Reis on 26/07/2026.
 //
 
-#include "../../include/magritte/utils/input_validation.h"
+#include "magritte/io/input_validation.h"
 #include <array>
 #include <filesystem>
 #include <fstream>

@@ -4,4 +4,4 @@ canvas:
   width: 480
   height: 320
 processors:
-  - formula: "color-gradient.yml"
+  - pattern: "color-gradient.yml"
