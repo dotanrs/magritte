@@ -15,7 +15,7 @@ processors:
       )
   - name: colors
     command: >
-      rgb offset 0.52 0.77 = (
+      rgb offset 52 77 = (
       0.9 * R + 0.1 * B,
       G + 16 * sin(D / (0.01298 * min(W, H))),
       B + 24 * cos(5 * A)

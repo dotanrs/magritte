@@ -58,6 +58,8 @@ namespace {
                 << "  <channels> = <formula-or-tuple>\n"
                 << "                       Replace any ordered subset of r, g, b\n"
                 << "                       e.g. r = G, rg = (G, R), bgr = (R, G, B)\n"
+                << "  <channels> offset <x> <y> [radius] = <formula-or-tuple>\n"
+                << "                       Use a percent origin and optional circle\n"
                 << "  loop-rgb <n> = (<r>, <g>, <b>)\n"
                 << "                       Apply an RGB formula repeatedly\n"
                 << "  local-rgb = (<r>, <g>, <b>)\n"

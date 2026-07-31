@@ -179,10 +179,10 @@ namespace {
         const double last_x = static_cast<double>(data.width) - 1.0;
         const double last_y = static_cast<double>(data.height) - 1.0;
         const double origin_x = polar_origin
-            ? polar_origin->x * last_x
+            ? polar_origin->x_percent * last_x / 100.0
             : last_x / 2.0;
         const double origin_y = polar_origin
-            ? polar_origin->y * last_y
+            ? polar_origin->y_percent * last_y / 100.0
             : last_y / 2.0;
         return FormulaContext{
             .data = data,
@@ -327,6 +327,16 @@ FileData apply_rgb_formula(
     FileData data,
     const RgbFormula &formula
 ) {
+    const double radius = formula.polar_origin &&
+                          formula.polar_origin->radius_percent
+        ? static_cast<double>(std::min(data.width, data.height)) *
+          *formula.polar_origin->radius_percent / 100.0
+        : 0.0;
+    if (formula.polar_origin && formula.polar_origin->radius_percent &&
+        !std::isfinite(radius)) {
+        throw std::invalid_argument("RGB formula offset radius is too large");
+    }
+
     for (std::size_t y = 0; y < data.height; ++y) {
         for (std::size_t x = 0; x < data.width; ++x) {
             Pixel &pixel = data.pixels[y * data.width + x];
@@ -338,6 +348,13 @@ FileData apply_rgb_formula(
                 0.0,
                 formula.polar_origin
             );
+            if (formula.polar_origin && formula.polar_origin->radius_percent &&
+                std::hypot(
+                    static_cast<double>(x) - context.polar_origin_x,
+                    static_cast<double>(y) - context.polar_origin_y
+                ) >= radius) {
+                continue;
+            }
 
             std::array<std::uint8_t, 3> values{};
             for (std::size_t index = 0;

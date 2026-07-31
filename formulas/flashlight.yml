@@ -1,13 +1,6 @@
 # Rotate a portion of the image and make it stand out
 macros:
-  macro_center_x=(W - 1) * 0.53
-  macro_center_y=(H - 1) * 0.6
-  macro_distance=sqrt(pow(X - macro_center_x, 2) + pow(Y - macro_center_y, 2))
-  macro_radius=min(W, H) * 0.3
-  macro_mask=clamp(macro_radius - macro_distance, 0, 1)
-
   macro_saturation=1.5
-  macro_lightness=(max(R, max(G, B)) + min(R, min(G, B))) / 2
 
 processors:
   - name: face spin
@@ -15,5 +8,4 @@ processors:
   - name: darken
     command: "rgb = (r/macro_saturation, g/macro_saturation, b/macro_saturation)"
   - name: lighten
-    command: "rgb = (macro_mask * (r * macro_saturation - r) + r, macro_mask * (g * macro_saturation - g) + g, macro_mask * (b * macro_saturation - b) + b)"
-
+    command: "rgb offset 53 60 30 = (r * macro_saturation, g * macro_saturation, b * macro_saturation)"
