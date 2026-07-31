@@ -5,7 +5,7 @@
 #include <utility>
 #include <vector>
 
-#include "magritte/processor.h"
+#include "magritte/step.h"
 #include "magritte/common/file_data.h"
 
 namespace fs = std::filesystem;
@@ -34,7 +34,7 @@ void process_pipeline(
             .output = output_override.value_or(
                 default_output_path(*source)
             ),
-            .processors = std::move(resolved.processors),
+            .steps = std::move(resolved.steps),
             .macros = std::move(resolved.macros),
             .overwrite = overwrite,
             .debug = debug,
@@ -60,7 +60,7 @@ void process_pipeline(
     process_created_image(
         output_override.value_or(canvas_config.file_name),
         std::move(canvas),
-        resolved.processors,
+        resolved.steps,
         overwrite,
         debug,
         resolved.macros

@@ -46,10 +46,10 @@ y * width + x
 
 A valid image has nonzero dimensions, a non-overflowing `width * height`, and
 exactly that many pixels. `validate_file_data()` enforces this invariant after
-every processor and before encoding.
+every step and before encoding.
 
 JPEG does not contain an alpha channel. Decoded JPEG pixels are effectively
-opaque, but alpha remains part of `FileData` so processors and tests have a
+opaque, but alpha remains part of `FileData` so steps and tests have a
 uniform RGBA representation. Encoding to JPEG cannot preserve transparency.
 
 ## Input validation
@@ -116,14 +116,14 @@ encoder accounts for it before creating the output image.
 flowchart TD
     encodedTop["JPEG visual top"]
     decodedTop["FileData row 0"]
-    processing["Processors use y=0 as the top row"]
+    processing["Steps use y=0 as the top row"]
     reversed["Rows reversed for Core Graphics output buffer"]
     outputTop["Output JPEG visual top"]
 
     encodedTop --> decodedTop --> processing --> reversed --> outputTop
 ```
 
-Orientation metadata is applied during decode. Processors therefore operate on
+Orientation metadata is applied during decode. Steps therefore operate on
 the visually oriented pixels rather than needing to interpret EXIF orientation
 themselves.
 

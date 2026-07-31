@@ -1,9 +1,9 @@
-# Three steps: include a nested pattern, then apply two processors.
+# Three steps: include a nested pattern, then apply two steps.
 canvas:
   file_name: "basic-composition.jpg"
   width: 480
   height: 320
-processors:
+steps:
   - pattern: "color-gradient.yml"
   - name: rotate clockwise
     command: "rotate 1"

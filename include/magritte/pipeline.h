@@ -14,7 +14,7 @@
 
 
 
-using PipelineStep = std::variant<ProcessorSpec, PatternReference>;
+using PipelineStep = std::variant<StepSpec, PatternReference>;
 
 struct PatternConfig {
     std::optional<CanvasConfig> canvas;
@@ -25,13 +25,13 @@ struct PatternConfig {
 struct ResolvedPipeline {
     std::optional<CanvasConfig> canvas;
     MacroMap macros;
-    std::vector<ProcessorSpec> processors;
+    std::vector<StepSpec> steps;
 };
 
 /// Parses magritte's YAML pattern schema from a stream.
 ///
 /// This intentionally supports the small YAML subset used by pattern files:
-/// mappings, processor sequence items, nested pattern references, comments, and
+/// mappings, step sequence items, nested pattern references, comments, and
 /// plain, quoted, folded (`>`), or literal (`|`) scalars.
 /// A canvas is optional at parse time because `--source` can supply the image.
 /// @throws std::invalid_argument for malformed or incomplete input.
@@ -46,7 +46,7 @@ struct ResolvedPipeline {
     const std::filesystem::path &path
 );
 
-/// Recursively replaces pattern references with their processors. When there
+/// Recursively replaces pattern references with their steps. When there
 /// is no source, the first top-level step must be a pattern that includes a
 /// canvas, either directly or through a nested pattern.
 /// CLI and file macros are collected before processing. Conflicting macros and
@@ -57,7 +57,7 @@ struct ResolvedPipeline {
     const MacroMap &cli_macros = {}
 );
 
-/// Expands and runs an ordered stream of processor and pattern steps.
+/// Expands and runs an ordered stream of inline steps and patterns.
 ///
 /// Without `source`, the first step must be a pattern that includes a canvas.
 /// Later pattern canvases are ignored. `output_override`

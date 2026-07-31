@@ -6,7 +6,7 @@
 #define MAGRITTE_INPUTVALIDATION_H
 
 #include <tuple>
-#include "magritte/processor.h"
+#include "magritte/step.h"
 
 /// Resolves the input and output to normalized absolute paths and verifies that
 /// the input is a distinct regular file with JPEG boundary markers.

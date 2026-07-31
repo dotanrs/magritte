@@ -1,6 +1,6 @@
 # Magritte
 
-`magritte` is a C++20 command-line JPEG processor. It applies processor
+`magritte` is a C++20 command-line JPEG processing tool. It applies step
 commands from left to right to transform a source image or generate an image
 from a blank canvas.
 
@@ -34,7 +34,7 @@ canvas:
   file_name: "my-image.jpg"
   width: 480
   height: 320
-processors:
+steps:
   - name: warm gradient
     command: "rgb = (35 + 190 * X / W, 45 + 150 * Y / H, 170)"
   - name: increase contrast
@@ -44,14 +44,14 @@ processors:
 Then run it:
 
 ```sh
-./build/magritte -P my-image.yml
+./build/magritte -p my-image.yml
 ```
 
 To transform an existing JPEG, create a pattern without the `canvas` section
 and provide a source:
 
 ```sh
-./build/magritte --source photo.jpg -P photo-edit.yml -o edited.jpg
+./build/magritte --source photo.jpg -p photo-edit.yml -o edited.jpg
 ```
 
 See [`patterns/`](patterns) for runnable examples, including generated
@@ -76,12 +76,12 @@ example to view its pattern.
 
 - [Usage guide](USAGE.md) — pattern files, source images, output options,
   command ordering, and debug mode.
-- [Processor reference](PROCESSORS.md) — every processor and the expression
-  language used by formula processors.
-- [Formula tree construction](src/processors/formulas/utils/FORMULA_PARSER.md)
+- [Step reference](STEPS.md) — every step and the expression
+  language used by formula steps.
+- [Formula tree construction](src/steps/formulas/utils/FORMULA_PARSER.md)
   — how expression nodes, identifiers, functions, and macros form an AST.
-- [Processor selection and image flow](src/PROCESSING.md) — how commands select
-  processors and pass image ownership through the pipeline.
+- [Step selection and image flow](src/PROCESSING.md) — how commands select
+  steps and pass image ownership through the pipeline.
 - [JPEG and in-memory image I/O](src/io/IO.md) — how JPEG data is decoded into
   `FileData` and encoded again.
 

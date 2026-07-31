@@ -6,26 +6,26 @@
 #include <stdexcept>
 #include <string>
 #include "magritte/utils/string.h"
-#include "magritte/processors/black_and_white.h"
-#include "magritte/processors/blur.h"
-#include "magritte/processors/contrast.h"
-#include "magritte/processors/fisheye.h"
-#include "magritte/processors/flow_lines.h"
-#include "magritte/processors/lighting.h"
-#include "magritte/processors/local_rgb.h"
-#include "magritte/processors/local_warp.h"
-#include "magritte/processors/loop_rgb.h"
-#include "magritte/processors/loop_warp.h"
-#include "magritte/processors/mirror.h"
-#include "magritte/processors/rgb_formula.h"
-#include "magritte/processors/rotate.h"
-#include "magritte/processors/saturation_formula.h"
-#include "magritte/processors/spin.h"
-#include "magritte/processors/twist.h"
-#include "magritte/processors/warp_formula.h"
+#include "magritte/steps/black_and_white.h"
+#include "magritte/steps/blur.h"
+#include "magritte/steps/contrast.h"
+#include "magritte/steps/fisheye.h"
+#include "magritte/steps/flow_lines.h"
+#include "magritte/steps/lighting.h"
+#include "magritte/steps/local_rgb.h"
+#include "magritte/steps/local_warp.h"
+#include "magritte/steps/loop_rgb.h"
+#include "magritte/steps/loop_warp.h"
+#include "magritte/steps/mirror.h"
+#include "magritte/steps/rgb_formula.h"
+#include "magritte/steps/rotate.h"
+#include "magritte/steps/saturation_formula.h"
+#include "magritte/steps/spin.h"
+#include "magritte/steps/twist.h"
+#include "magritte/steps/warp_formula.h"
 
 namespace {
-    std::optional<ProcessorCommand> invalid(
+    std::optional<StepCommand> invalid(
         std::string_view reason,
         std::string *error_message
     ) {
@@ -35,35 +35,35 @@ namespace {
         return std::nullopt;
     }
 
-    const std::array<std::reference_wrapper<const ImageProcessor>, 17> &
-    registered_processors() {
+    const std::array<std::reference_wrapper<const ImageStep>, 17> &
+    registered_steps() {
         static const std::array<
-            std::reference_wrapper<const ImageProcessor>,
+            std::reference_wrapper<const ImageStep>,
             17
-        > processors{
-            rotate_processor(),
-            mirror_processor(),
-            blur_processor(),
-            black_and_white_processor(),
-            contrast_processor(),
-            fisheye_processor(),
-            twist_processor(),
-            spin_processor(),
-            flow_lines_processor(),
-            lighting_processor(),
-            rgb_formula_processor(),
-            local_rgb_processor(),
-            local_warp_processor(),
-            saturation_formula_processor(),
-            loop_rgb_processor(),
-            loop_warp_processor(),
-            warp_formula_processor(),
+        > steps{
+            rotate_step(),
+            mirror_step(),
+            blur_step(),
+            black_and_white_step(),
+            contrast_step(),
+            fisheye_step(),
+            twist_step(),
+            spin_step(),
+            flow_lines_step(),
+            lighting_step(),
+            rgb_formula_step(),
+            local_rgb_step(),
+            local_warp_step(),
+            saturation_formula_step(),
+            loop_rgb_step(),
+            loop_warp_step(),
+            warp_formula_step(),
         };
-        return processors;
+        return steps;
     }
 } // namespace
 
-std::optional<ProcessorCommand> parse_processor_command(
+std::optional<StepCommand> parse_step_command(
     std::string_view command,
     std::string *error_message
 ) {
@@ -72,11 +72,11 @@ std::optional<ProcessorCommand> parse_processor_command(
         return invalid("command is empty", error_message);
     }
 
-    for (const ImageProcessor &processor: registered_processors()) {
+    for (const ImageStep &step: registered_steps()) {
         try {
-            if (auto arguments = processor.parse_arguments(value)) {
-                return ProcessorCommand{
-                    std::cref(processor),
+            if (auto arguments = step.parse_arguments(value)) {
+                return StepCommand{
+                    std::cref(step),
                     std::move(*arguments),
                     std::string(command),
                 };
@@ -86,5 +86,5 @@ std::optional<ProcessorCommand> parse_processor_command(
         }
     }
 
-    return invalid("unknown processor", error_message);
+    return invalid("unknown step", error_message);
 }

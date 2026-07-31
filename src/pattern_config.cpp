@@ -389,12 +389,12 @@ namespace {
     ) {
         if (key == "name") {
             if (!step.name.empty()) {
-                fail(source, line.number, "duplicate processor name");
+                fail(source, line.number, "duplicate step name");
             }
             step.name = parse_line_scalar(line, value, source);
         } else if (key == "command") {
             if (!step.command.empty()) {
-                fail(source, line.number, "duplicate processor command");
+                fail(source, line.number, "duplicate step command");
             }
             step.command = parse_line_scalar(line, value, source);
         } else if (key == "pattern") {
@@ -403,7 +403,7 @@ namespace {
             }
             step.pattern = parse_line_scalar(line, value, source);
         } else {
-            fail(source, line.number, "unknown processor field");
+            fail(source, line.number, "unknown step field");
         }
     }
 
@@ -429,12 +429,12 @@ PatternConfig parse_pattern_config(
     PatternConfig config{};
     bool has_canvas = false;
     bool has_macros = false;
-    bool has_processors = false;
+    bool has_steps = false;
     bool has_file_name = false;
     bool has_width = false;
     bool has_height = false;
 
-    enum class Section { none, canvas, macros, processors };
+    enum class Section { none, canvas, macros, steps };
     Section section = Section::none;
     std::optional<PatternStepBuilder> step;
 
@@ -458,10 +458,10 @@ PatternConfig parse_pattern_config(
         if (step->name.empty() || step->command.empty()) {
             throw std::invalid_argument(
                 std::string(source_name) +
-                ": every processor requires name and command"
+                ": every step requires name and command"
             );
         }
-        config.steps.emplace_back(ProcessorSpec{
+        config.steps.emplace_back(StepSpec{
             .name = std::move(step->name),
             .command = std::move(step->command),
         });
@@ -470,7 +470,7 @@ PatternConfig parse_pattern_config(
 
     for (const Line &line: lines) {
         if (line.indent == 0) {
-            if (section == Section::processors) {
+            if (section == Section::steps) {
                 finish_step();
             }
             const auto [key, value] =
@@ -502,19 +502,19 @@ PatternConfig parse_pattern_config(
                 }
                 has_macros = true;
                 section = Section::macros;
-            } else if (key == "processors") {
+            } else if (key == "steps") {
                 if (!value.empty()) {
                     fail(
                         source_name,
                         line.number,
-                        "processors must be a sequence"
+                        "steps must be a sequence"
                     );
                 }
-                if (has_processors) {
-                    fail(source_name, line.number, "duplicate processors section");
+                if (has_steps) {
+                    fail(source_name, line.number, "duplicate steps section");
                 }
-                has_processors = true;
-                section = Section::processors;
+                has_steps = true;
+                section = Section::steps;
             } else {
                 fail(source_name, line.number, "unknown top-level field");
             }
@@ -581,7 +581,7 @@ PatternConfig parse_pattern_config(
             continue;
         }
 
-        if (section != Section::processors) {
+        if (section != Section::steps) {
             fail(source_name, line.number, "field appears before a section");
         }
 
@@ -594,7 +594,7 @@ PatternConfig parse_pattern_config(
                 continue;
             }
         } else if (!step) {
-            fail(source_name, line.number, "processor must start with '-'");
+            fail(source_name, line.number, "step must start with '-'");
         }
 
         const auto [key, value] =
@@ -607,7 +607,7 @@ PatternConfig parse_pattern_config(
             source_name
         );
     }
-    if (section == Section::processors) {
+    if (section == Section::steps) {
         finish_step();
     }
 
@@ -617,9 +617,9 @@ PatternConfig parse_pattern_config(
             ": canvas requires file_name, width, and height"
         );
     }
-    if (!has_processors) {
+    if (!has_steps) {
         throw std::invalid_argument(
-            std::string(source_name) + ": missing processors section"
+            std::string(source_name) + ": missing steps section"
         );
     }
     if (config.canvas &&
@@ -679,7 +679,7 @@ namespace {
         const fs::path &path,
         std::vector<fs::path> &active_patterns,
         MacroMap &macros,
-        std::vector<ProcessorSpec> &processors
+        std::vector<StepSpec> &steps
     ) {
         const fs::path normalized =
             fs::absolute(path).lexically_normal();
@@ -697,19 +697,19 @@ namespace {
         PatternConfig config = load_pattern_config(normalized);
         merge_macros(macros, config.macros);
         std::optional<CanvasConfig> canvas = config.canvas;
-        for (const PipelineStep &step: config.steps) {
-            if (const ProcessorSpec *processor =
-                    std::get_if<ProcessorSpec>(&step)) {
-                processors.push_back(*processor);
+        for (const PipelineStep &entry: config.steps) {
+            if (const StepSpec *step_spec =
+                    std::get_if<StepSpec>(&entry)) {
+                steps.push_back(*step_spec);
                 continue;
             }
             const PatternReference &reference =
-                std::get<PatternReference>(step);
+                std::get<PatternReference>(entry);
             std::optional<CanvasConfig> nested_canvas = expand_pattern(
                 reference.path,
                 active_patterns,
                 macros,
-                processors
+                steps
             );
             if (!canvas && nested_canvas) {
                 canvas = std::move(nested_canvas);
@@ -730,20 +730,20 @@ ResolvedPipeline resolve_pipeline_steps(
         !std::holds_alternative<PatternReference>(steps.front()))) {
         throw std::invalid_argument(
             "without --source, the first processing argument must be "
-            "-P or --pattern"
+            "-p or --pattern"
         );
     }
 
     ResolvedPipeline resolved{
         .canvas = std::nullopt,
         .macros = cli_macros,
-        .processors = {},
+        .steps = {},
     };
     std::vector<fs::path> active_patterns;
     for (std::size_t index = 0; index < steps.size(); ++index) {
-        if (const ProcessorSpec *processor =
-                std::get_if<ProcessorSpec>(&steps[index])) {
-            resolved.processors.push_back(*processor);
+        if (const StepSpec *step_spec =
+                std::get_if<StepSpec>(&steps[index])) {
+            resolved.steps.push_back(*step_spec);
             continue;
         }
         const PatternReference &reference =
@@ -752,7 +752,7 @@ ResolvedPipeline resolve_pipeline_steps(
             reference.path,
             active_patterns,
             resolved.macros,
-            resolved.processors
+            resolved.steps
         );
         if (!has_source && index == 0) {
             resolved.canvas = std::move(canvas);

@@ -3,7 +3,7 @@
 #
 # Run:
 #   ./build/magritte --source patterns/examples/original.jpeg \
-#     -P patterns/slenderman.yml \
+#     -p patterns/slenderman.yml \
 #     -o patterns/examples/slenderman.jpg --overwrite
 macros:
   macro_desaturate=pow(clamp(V + 0.8, 0, 1), 1.5)
@@ -12,7 +12,7 @@ macros:
   macro_mask_20=pow(clamp((V + 0.60) / 1.36, 0, 1), 2)
   macro_mask_32=pow(clamp((V + 0.36) / 1.36, 0, 1), 2)
   macro_mask_50=pow(clamp(V / 1.36, 0, 1), 2)
-processors:
+steps:
   - name: black and white
     command: "s = S * macro_desaturate"
   - name: overlapping cyan magenta and gold color echoes

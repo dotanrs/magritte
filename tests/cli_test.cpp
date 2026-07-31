@@ -31,7 +31,7 @@ void test_cli_arguments() {
         "input.jpg",
         "-o",
         "output.jpg",
-        "-p",
+        "-s",
         "blur 2",
         "--macro",
         "macro_gain=1.25",
@@ -41,7 +41,7 @@ void test_cli_arguments() {
         source.source == "input.jpg" &&
         source.output == "output.jpg" &&
         source.steps.size() == 1 &&
-        std::get<ProcessorSpec>(source.steps[0]).command == "blur 2" &&
+        std::get<StepSpec>(source.steps[0]).command == "blur 2" &&
         source.macros.at("macro_gain") == "1.25" &&
         source.debug,
         "source-only CLI should parse processing options"
@@ -49,7 +49,7 @@ void test_cli_arguments() {
 
     const CommandLineArguments pattern = parse({
         "magritte",
-        "-P",
+        "-p",
         "patterns/canvas.yml",
     });
     expect(
@@ -64,31 +64,31 @@ void test_cli_arguments() {
         "magritte",
         "--source",
         "source.jpg",
-        "-p",
+        "--step",
         "rotate 1",
         "--pattern",
         "patterns/soften.yml",
-        "-p",
+        "-s",
         "blur 1",
-        "-P",
+        "-p",
         "patterns/color.yml",
         "--overwrite",
     });
     expect(
         combined.source == "source.jpg" &&
         combined.steps.size() == 4 &&
-        std::get<ProcessorSpec>(combined.steps[0]).command == "rotate 1" &&
+        std::get<StepSpec>(combined.steps[0]).command == "rotate 1" &&
         std::get<PatternReference>(combined.steps[1]).path ==
             "patterns/soften.yml" &&
-        std::get<ProcessorSpec>(combined.steps[2]).command == "blur 1" &&
+        std::get<StepSpec>(combined.steps[2]).command == "blur 1" &&
         std::get<PatternReference>(combined.steps[3]).path ==
             "patterns/color.yml" &&
         combined.overwrite,
-        "processors and patterns should retain CLI order"
+        "steps and patterns should retain CLI order"
     );
 
     try {
-        static_cast<void>(parse({"magritte", "-p", "blur 1"}));
+        static_cast<void>(parse({"magritte", "-s", "blur 1"}));
         expect(false, "CLI should require a pattern first without a source");
     } catch (const std::invalid_argument &) {
         expect(true, "CLI should require a pattern first without a source");
@@ -120,6 +120,13 @@ void test_cli_arguments() {
         expect(false, "CLI should reject the obsolete formula flag");
     } catch (const std::invalid_argument &) {
         expect(true, "CLI should reject the obsolete formula flag");
+    }
+
+    try {
+        static_cast<void>(parse({"magritte", "-P", "legacy.yml"}));
+        expect(false, "CLI should reject the obsolete pattern flag");
+    } catch (const std::invalid_argument &) {
+        expect(true, "CLI should reject the obsolete pattern flag");
     }
 
     try {
