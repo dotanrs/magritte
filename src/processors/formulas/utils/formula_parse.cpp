@@ -44,18 +44,18 @@ namespace {
     class FormulaParser {
     public:
         explicit FormulaParser(
-            std::string_view formula,
-            bool saturation_formula = false,
-            bool local_sampling = false,
+            const std::string_view formula,
+            const bool allow_saturation_variables = false,
+            const bool allow_other_cell_references = false,
             const MacroMap *macros = nullptr,
-            std::vector<std::string> *active_macros = nullptr
+            std::vector<std::string> *macros_currently_unpacking = nullptr
         ) : formula_(formula),
-            saturation_formula_(saturation_formula),
-            local_sampling_(local_sampling),
+            allow_saturation_variables_(allow_saturation_variables),
+            allow_other_cell_references_(allow_other_cell_references),
             macros_(macros),
-            active_macros_(active_macros) {
-            if (active_macros_ == nullptr) {
-                active_macros_ = &macro_stack_storage_;
+            macros_currently_unpacking_(macros_currently_unpacking) {
+            if (macros_currently_unpacking_ == nullptr) {
+                macros_currently_unpacking_ = &macro_stack_storage_;
             }
         }
 
@@ -317,7 +317,7 @@ namespace {
             if (definition == nullptr) {
                 fail("unknown function '" + name + "'");
             }
-            if (!local_sampling_ &&
+            if (!allow_other_cell_references_ &&
                 (definition->kind == FormulaNodeKind::sample_red ||
                  definition->kind == FormulaNodeKind::sample_green ||
                  definition->kind == FormulaNodeKind::sample_blue)) {
@@ -392,17 +392,17 @@ namespace {
                 node->kind = FormulaNodeKind::distance;
             } else if (name == "a") {
                 node->kind = FormulaNodeKind::angle;
-            } else if (saturation_formula_ && name == "s") {
+            } else if (allow_saturation_variables_ && name == "s") {
                 node->kind = FormulaNodeKind::saturation;
-            } else if (!saturation_formula_ && name == "r") {
+            } else if (!allow_saturation_variables_ && name == "r") {
                 node->kind = FormulaNodeKind::red;
-            } else if (!saturation_formula_ && name == "g") {
+            } else if (!allow_saturation_variables_ && name == "g") {
                 node->kind = FormulaNodeKind::green;
-            } else if (!saturation_formula_ && name == "b") {
+            } else if (!allow_saturation_variables_ && name == "b") {
                 node->kind = FormulaNodeKind::blue;
             } else {
                 fail(
-                    saturation_formula_
+                    allow_saturation_variables_
                         ? "unknown identifier; use S, coordinates, or a constant"
                         : "unknown identifier; use R, G, B, coordinates, or a constant"
                 );
@@ -425,28 +425,27 @@ namespace {
 
             // Check for cyclic macro usage
             if (std::find(
-                    active_macros_->begin(),
-                    active_macros_->end(),
+                    macros_currently_unpacking_->begin(),
+                    macros_currently_unpacking_->end(),
                     name
-                ) != active_macros_->end()) {
+                ) != macros_currently_unpacking_->end()) {
                 fail("cyclic macro reference involving '" + name + "'");
             }
 
-            active_macros_->push_back(name);
+            macros_currently_unpacking_->push_back(name);
             try {
                 // Parse the macro definition formula (now that we know it's not cyclic)
                 Formula expansion = FormulaParser(
                     definition->second,
-                    saturation_formula_,
-                    local_sampling_,
+                    allow_saturation_variables_,
+                    allow_other_cell_references_,
                     macros_,
-                    active_macros_
+                    macros_currently_unpacking_
                 ).parse();
-                // Macro is resolved, so it's no longer "active"
-                active_macros_->pop_back();
+                macros_currently_unpacking_->pop_back();
                 return expansion;
             } catch (...) {
-                active_macros_->pop_back();
+                macros_currently_unpacking_->pop_back();
                 throw;
             }
         }
@@ -522,12 +521,12 @@ namespace {
 
         std::string_view formula_;
         std::size_t position_ = 0;
-        bool saturation_formula_;
-        bool local_sampling_;
+        bool allow_saturation_variables_;
+        bool allow_other_cell_references_;
         const MacroMap *macros_;
         std::vector<std::string> macro_stack_storage_;
         // Saves the macros currently being expanded (they might reference each other)
-        std::vector<std::string> *active_macros_;
+        std::vector<std::string> *macros_currently_unpacking_;
     };
 
     std::vector<ColorChannel> parse_rgb_target(std::string_view target) {
