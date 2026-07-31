@@ -1,4 +1,4 @@
-#include "../../include/magritte/utils/file.h"
+#include "magritte/io/file.h"
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <CoreGraphics/CoreGraphics.h>
@@ -189,7 +189,7 @@ namespace {
             CGContextRelease
         );
         if (!context) {
-            throw std::runtime_error("could not create JPEG formulas buffer");
+            throw std::runtime_error("could not create JPEG pixel buffer");
         }
 
         CGContextSetBlendMode(context.get(), kCGBlendModeCopy);
@@ -214,7 +214,7 @@ void validate_file_data(const FileData &data) {
     if (data.width == 0 || data.height == 0 ||
         data.width > std::numeric_limits<std::size_t>::max() / data.height ||
         data.pixels.size() != data.width * data.height) {
-        throw std::runtime_error("processor returned invalid formulas data");
+        throw std::runtime_error("processor returned invalid pixel data");
     }
 }
 
@@ -278,7 +278,7 @@ void save_file(const fs::path &output, const FileData &data) {
         CGContextRelease
     );
     if (!context) {
-        throw std::runtime_error("could not create output formulas buffer");
+        throw std::runtime_error("could not create output pixel buffer");
     }
 
     ScopedPointer<CGImageRef> image(

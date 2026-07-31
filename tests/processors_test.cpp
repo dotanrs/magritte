@@ -33,7 +33,7 @@ void test_saturation_formula();
 void test_rgb_formula_target_order();
 void test_processor_argument_parsing();
 void test_command_parser();
-void test_formula_config();
+void test_pattern_config();
 
 int main() {
     test_cli_arguments();
@@ -67,7 +67,7 @@ int main() {
     test_rgb_formula_target_order();
     test_processor_argument_parsing();
     test_command_parser();
-    test_formula_config();
+    test_pattern_config();
 
     if (failures == 0) {
         std::cout << "All processor tests passed\n";

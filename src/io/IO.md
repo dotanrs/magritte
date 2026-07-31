@@ -2,12 +2,12 @@
 
 Magritte uses JPEG for files on disk and a simple RGBA raster for processing in
 memory. The conversion code is implemented in
-[`utils/file.cpp`](utils/file.cpp), with path and JPEG boundary checks in
-[`utils/input_validation.cpp`](utils/input_validation.cpp).
+[`file.cpp`](file.cpp), with path and JPEG boundary checks in
+[`input_validation.cpp`](input_validation.cpp).
 
 ## The in-memory format
 
-[`FileData`](../include/magritte/common/file_data.h) contains:
+[`FileData`](../../include/magritte/common/file_data.h) contains:
 
 ```cpp
 struct Pixel {
@@ -166,7 +166,7 @@ truncation.
 ## Resource ownership and failures
 
 Core Foundation and Core Graphics objects require explicit release functions.
-`utils/file.cpp` wraps them in a `ScopedPointer` alias based on
+`file.cpp` wraps them in a `ScopedPointer` alias based on
 `std::unique_ptr`, pairing each object with `CFRelease`, `CGImageRelease`,
 `CGContextRelease`, or the appropriate color-space release function. This
 keeps every early error path from leaking native resources.
@@ -175,4 +175,3 @@ I/O and conversion failures throw `std::runtime_error` with context for the
 failed stage, including file opening, byte reading, decoder creation,
 orientation normalization, buffer creation, JPEG finalization, and output
 writing.
-

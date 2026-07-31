@@ -17,9 +17,9 @@ struct CommandLineArguments {
     bool debug = false;
 };
 
-/// Parses the flag-only CLI. `-p`, `-f`, and `--macro` may be repeated; the
+/// Parses the flag-only CLI. `-p`, `-P`, and `--macro` may be repeated; the
 /// processing steps retain their original order. Without `--source`, the first
-/// processing argument must be `-f`; its canvas is validated when loaded.
+/// processing argument must be `-P`; its canvas is validated when loaded.
 /// @throws std::invalid_argument when arguments are missing or unsupported.
 [[nodiscard]] CommandLineArguments parse_command_line(
     int argc,

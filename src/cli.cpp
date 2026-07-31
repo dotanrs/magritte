@@ -55,8 +55,8 @@ CommandLineArguments parse_command_line(int argc, char *argv[]) {
                 .name = {},
                 .command = argv[index],
             });
-        } else if (argument == "-f") {
-            arguments.steps.emplace_back(FormulaReference{
+        } else if (argument == "-P" || argument == "--pattern") {
+            arguments.steps.emplace_back(PatternReference{
                 .path = option_path(index, argc, argv, argument),
             });
         } else if (argument == "--macro") {
@@ -84,13 +84,14 @@ CommandLineArguments parse_command_line(int argc, char *argv[]) {
 
     if (!arguments.source && arguments.steps.empty()) {
         throw std::invalid_argument(
-            "an input image or formula is required"
+            "an input image or pattern is required"
         );
     }
     if (!arguments.source &&
-        !std::holds_alternative<FormulaReference>(arguments.steps.front())) {
+        !std::holds_alternative<PatternReference>(arguments.steps.front())) {
         throw std::invalid_argument(
-            "without --source, the first processing argument must be -f"
+            "without --source, the first processing argument must be "
+            "-P or --pattern"
         );
     }
 

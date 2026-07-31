@@ -35,18 +35,18 @@ add_executable(magritte main.cpp
         src/cli.cpp
         include/magritte/cli.h
         src/pipeline.cpp
-        src/formula_config.cpp
+        src/pattern_config.cpp
         include/magritte/pipeline.h
         src/macro.cpp
         include/magritte/macro.h
         src/utils/logging.cpp
         include/magritte/utils/logging.h
-        src/utils/input_validation.cpp
-        include/magritte/utils/input_validation.h
+        src/io/input_validation.cpp
+        include/magritte/io/input_validation.h
         src/processor.cpp
         include/magritte/processor.h
-        src/utils/file.cpp
-        include/magritte/utils/file.h
+        src/io/file.cpp
+        include/magritte/io/file.h
         include/magritte/common/file_data.h
         src/parser.cpp
         include/magritte/parser.h
@@ -147,14 +147,14 @@ if (BUILD_TESTING)
             tests/processors/loop_warp_test.cpp
             tests/processors/mirror_test.cpp
             tests/processors/parser_test.cpp
-            tests/formula_config_test.cpp
+            tests/pattern_config_test.cpp
             tests/processors/rgb_formula_test.cpp
             tests/processors/rotate_test.cpp
             tests/processors/saturation_formula_test.cpp
             tests/processors/warp_formula_test.cpp
             src/cli.cpp
             src/parser.cpp
-            src/formula_config.cpp
+            src/pattern_config.cpp
             src/macro.cpp
             src/processors/layout/rotate.cpp
             src/processors/layout/mirror.cpp

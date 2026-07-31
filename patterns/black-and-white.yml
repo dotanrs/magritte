@@ -1,7 +1,7 @@
 # Convert examples/original.jpg to a slightly brighter grayscale image.
 # Run:
 #   ./build/magritte --source examples/original.jpg \
-#     -f formulas/black-and-white.yml \
+#     -P patterns/black-and-white.yml \
 #     -o examples/black-and-white.jpg --overwrite
 processors:
   - name: bright black-and-white conversion

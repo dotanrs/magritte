@@ -8,10 +8,12 @@ from left to right and applied sequentially to a `FileData` image.
 - `main.cpp` is the CLI entry point.
 - `include/magritte/` contains the headers shared by the application and tests.
   Processor declarations live in `include/magritte/processors/`, while
-  `common/` contains the image data types and `utils/` contains general
-  helpers.
-- `src/` contains the CLI workflow, formula-file support, validation, file I/O,
-  and the processor registry in `src/parser.cpp`.
+  `common/` contains the image data types, `io/` exposes file I/O, and `utils/`
+  contains general helpers.
+- `src/` contains the CLI workflow, pattern-file support, and the processor
+  registry in `src/parser.cpp`.
+- `src/io/` contains JPEG input/output formatting, path and input validation,
+  and its implementation notes.
 - `src/processors/` contains processor implementations, grouped by behavior:
   - `layout/` changes image orientation or dimensions, such as rotate and
     mirror.
@@ -31,7 +33,7 @@ from left to right and applied sequentially to a `FileData` image.
 - `tests/processors/` contains focused processor tests. Shared assertions and
   image helpers live in `tests/common/`; `tests/processors_test.cpp` is the test
   runner.
-- `formulas/` contains runnable YAML formulas that demonstrate supported processor
+- `patterns/` contains runnable YAML patterns that demonstrate supported processor
   commands.
 - `CMakeLists.txt` declares both the CLI and processor-test targets.
 
@@ -78,10 +80,10 @@ For every new processor:
 4. Add a focused test in `tests/processors/`, then declare and invoke that test
    from `tests/processors_test.cpp`. Cover command recognition and invalid
    arguments as well as the transformation when applicable.
-5. Add a runnable example to an appropriate YAML formula in `formulas/` (or create a
-   focused formula there) and document the command in `README.md`.
+5. Add a runnable example to an appropriate YAML pattern in `patterns/` (or create a
+   focused pattern there) and document the command in `README.md`.
 
-A new processor is not complete without both its test and its `formulas/` example.
+A new processor is not complete without both its test and its `patterns/` example.
 
 Build and run the suite with:
 
