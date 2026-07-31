@@ -11,6 +11,6 @@
 /// Resolves the input and output to normalized absolute paths and verifies that
 /// the input is a distinct regular file with JPEG boundary markers.
 /// @throws std::runtime_error if a path or input-file check fails.
-std::tuple<fs::path, fs::path> validate_input(const Options &options);
+std::tuple<fs::path, fs::path> validate_input(const MagritteRunOptions &options);
 
 #endif //MAGRITTE_INPUTVALIDATION_H

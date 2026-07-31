@@ -14,7 +14,7 @@
 #include <vector>
 
 #include "../include/magritte/utils/file.h"
-#include "magritte/input_validation.h"
+#include "../include/magritte/utils/input_validation.h"
 #include "magritte/parser.h"
 #include "magritte/processors/image_processor.h"
 #include "magritte/utils/logging.h"
@@ -22,7 +22,7 @@
 namespace {
     bool confirm_overwrite(const fs::path &output) {
         std::cerr << "Output file already exists: " << output.string() << '\n'
-                  << "Continue and overwrite it? [y/N] " << std::flush;
+                << "Continue and overwrite it? [y/N] " << std::flush;
 
         std::string response;
         if (!std::getline(std::cin, response)) {
@@ -72,14 +72,14 @@ namespace {
         return !output_exists || overwrite || confirm_overwrite(output);
     }
 
-    struct ProcessorError {
+    struct ProcessorErrorError {
         std::string command;
         std::string message;
     };
 
-    struct ProcessorResults {
+    struct ProcessorParseResults {
         std::vector<std::string> successful;
-        std::vector<ProcessorError> errors;
+        std::vector<ProcessorErrorError> errors;
     };
 
     std::string processor_description(const ProcessorSpec &processor) {
@@ -89,18 +89,18 @@ namespace {
         return processor.name + " (" + processor.command + ")";
     }
 
-    std::pair<std::vector<ProcessorCommand>, ProcessorResults> parse_processors(
+    std::pair<std::vector<ProcessorCommand>, ProcessorParseResults> parse_processors(
         const std::vector<ProcessorSpec> &processors
     ) {
-        ProcessorResults results;
+        ProcessorParseResults results;
         std::vector<ProcessorCommand> commands;
         commands.reserve(processors.size());
         for (const ProcessorSpec &processor: processors) {
             std::string error_message;
             if (auto command = parse_processor_command(
-                    processor.command,
-                    &error_message
-                )) {
+                processor.command,
+                &error_message
+            )) {
                 results.successful.push_back(
                     processor_description(processor)
                 );
@@ -115,7 +115,7 @@ namespace {
         return {std::move(commands), std::move(results)};
     }
 
-    void print_processor_results(const ProcessorResults &results) {
+    void print_processor_results(const ProcessorParseResults &results) {
         if (results.successful.empty() && results.errors.empty()) {
             return;
         }
@@ -136,42 +136,43 @@ namespace {
 
         if (!results.errors.empty()) {
             std::clog << yellow << "Processor errors:\n";
-            for (const ProcessorError &error: results.errors) {
+            for (const ProcessorErrorError &error: results.errors) {
                 std::clog << "  ! " << error.command << ": " << error.message << '\n';
             }
             std::clog << reset;
         }
     }
+
+    FileData run_processors(
+        FileData data,
+        const std::vector<ProcessorCommand> &commands,
+        bool debug,
+        const MacroMap *macros
+    ) {
+        for (const ProcessorCommand &command: commands) {
+            log(
+                LogLevel::info,
+                "Applying processor: " + std::string(command.processor.get().name())
+            );
+            data = command.processor.get().apply(
+                std::move(data),
+                command.arguments,
+                macros
+            );
+            if (debug) {
+                data = command.processor.get().add_debug_hints(
+                    std::move(data),
+                    command.arguments
+                );
+            }
+            validate_file_data(data);
+        }
+        return data;
+    }
 } // namespace
 
-FileData process_file(
-    FileData data,
-    const std::vector<ProcessorCommand> &commands,
-    bool debug,
-    const MacroMap *macros
-) {
-    for (const ProcessorCommand &command: commands) {
-        log(
-            LogLevel::info,
-            "Applying processor: " + std::string(command.processor.get().name())
-        );
-        data = command.processor.get().apply(
-            std::move(data),
-            command.arguments,
-            macros
-        );
-        if (debug) {
-            data = command.processor.get().add_debug_hints(
-                std::move(data),
-                command.arguments
-            );
-        }
-        validate_file_data(data);
-    }
-    return data;
-}
 
-void process_image(const Options &options) {
+void process_image(const MagritteRunOptions &options) {
     auto [input, output] = validate_input(options);
     if (!should_write_output(output, options.overwrite)) {
         log(LogLevel::info, "Output file was not overwritten");
@@ -180,7 +181,7 @@ void process_image(const Options &options) {
 
     auto [commands, results] = parse_processors(options.processors);
 
-    const FileData data = process_file(
+    const FileData data = run_processors(
         read_file(input),
         commands,
         options.debug,
@@ -206,14 +207,14 @@ void process_created_image(
     const MacroMap &macros
 ) {
     const fs::path normalized_output =
-        fs::absolute(output).lexically_normal();
+            fs::absolute(output).lexically_normal();
     if (!should_write_output(normalized_output, overwrite)) {
         log(LogLevel::info, "Output file was not overwritten");
         return;
     }
 
     auto [commands, results] = parse_processors(processors);
-    data = process_file(std::move(data), commands, debug, &macros);
+    data = run_processors(std::move(data), commands, debug, &macros);
     save_file(normalized_output, data);
     log(
         LogLevel::info,

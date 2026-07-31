@@ -1,8 +1,12 @@
-#include "magritte/formula.h"
+#include "magritte/inputs.h"
+#include "magritte/pipeline.h"
 
 #include <stdexcept>
 #include <utility>
 #include <vector>
+
+#include "magritte/processor.h"
+#include "magritte/common/file_data.h"
 
 namespace fs = std::filesystem;
 
@@ -25,7 +29,7 @@ void process_pipeline(
         resolve_pipeline_steps(steps, source.has_value(), cli_macros);
 
     if (source) {
-        Options options{
+        MagritteRunOptions options{
             .input = *source,
             .output = output_override.value_or(
                 default_output_path(*source)

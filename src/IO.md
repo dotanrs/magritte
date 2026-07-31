@@ -3,7 +3,7 @@
 Magritte uses JPEG for files on disk and a simple RGBA raster for processing in
 memory. The conversion code is implemented in
 [`utils/file.cpp`](utils/file.cpp), with path and JPEG boundary checks in
-[`input_validation.cpp`](input_validation.cpp).
+[`utils/input_validation.cpp`](utils/input_validation.cpp).
 
 ## The in-memory format
 

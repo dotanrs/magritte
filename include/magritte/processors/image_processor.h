@@ -51,7 +51,7 @@ public:
 struct ProcessorCommand {
     std::reference_wrapper<const ImageProcessor> processor;
     std::vector<std::string> arguments;
-    std::string source;
+    std::string original_command;
 };
 
 #endif //MAGRITTE_IMAGE_PROCESSOR_H

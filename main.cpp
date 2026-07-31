@@ -4,7 +4,7 @@
 #include <string_view>
 
 #include "magritte/cli.h"
-#include "magritte/formula.h"
+#include "magritte/pipeline.h"
 #include "magritte/utils/logging.h"
 
 namespace {

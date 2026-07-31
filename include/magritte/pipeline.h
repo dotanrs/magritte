@@ -10,17 +10,9 @@
 #include <vector>
 
 #include "magritte/macro.h"
-#include "magritte/processor.h"
+#include "magritte/inputs.h"
 
-struct CanvasConfig {
-    std::filesystem::path file_name;
-    std::size_t width;
-    std::size_t height;
-};
 
-struct FormulaReference {
-    std::filesystem::path path;
-};
 
 using PipelineStep = std::variant<ProcessorSpec, FormulaReference>;
 

@@ -11,15 +11,11 @@
 
 #include "common/file_data.h"
 #include "magritte/macro.h"
+#include "magritte/inputs.h"
 
 namespace fs = std::filesystem;
 
-struct ProcessorSpec {
-    std::string name;
-    std::string command;
-};
-
-struct Options {
+struct MagritteRunOptions {
     fs::path input;
     fs::path output;
     std::vector<ProcessorSpec> processors;
@@ -30,22 +26,12 @@ struct Options {
 
 struct ProcessorCommand;
 
-/// Applies validated processor commands in order, optionally adding each
-/// processor's visual debug hints, and checks the image invariant after every
-/// transformation.
-FileData process_file(
-    FileData data,
-    const std::vector<ProcessorCommand> &commands,
-    bool debug = false,
-    const MacroMap *macros = nullptr
-);
-
 /// Runs the complete CLI workflow: validates paths, parses commands, reads the
 /// input, applies valid processors, and writes the output JPEG.
 ///
 /// Invalid processor command strings are reported and skipped. If the output
 /// exists and overwrite is disabled, this function prompts before replacing it.
-void process_image(const Options &options);
+void process_image(const MagritteRunOptions &options);
 
 /// Processes a newly created in-memory canvas and writes it as a JPEG.
 ///
