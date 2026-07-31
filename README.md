@@ -1,4 +1,4 @@
-# magritte
+# Magritte
 
 `magritte` is a C++20 command-line JPEG processor. It applies processor
 commands from left to right to transform a source image or generate an image
@@ -78,6 +78,12 @@ example to view its formula.
   command ordering, and debug mode.
 - [Processor reference](PROCESSORS.md) — every processor and the expression
   language used by formula processors.
+- [Formula tree construction](src/processors/formulas/utils/FORMULA_PARSER.md)
+  — how expression nodes, identifiers, functions, and macros form an AST.
+- [Processor selection and image flow](src/PROCESSING.md) — how commands select
+  processors and pass image ownership through the pipeline.
+- [JPEG and in-memory image I/O](src/IO.md) — how JPEG data is decoded into
+  `FileData` and encoded again.
 
 ## Tests
 
