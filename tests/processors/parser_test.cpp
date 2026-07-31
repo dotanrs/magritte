@@ -66,14 +66,14 @@ expect(
 );
 const auto offset_rgb_arguments =
     rgb_formula_processor().parse_arguments(
-        "rgb offset 0.25 0.70 = (R + A, G + D, B)"
+        "rgb offset 25 70 30 = (R + A, G + D, B)"
     );
 expect(
     offset_rgb_arguments ==
     std::optional<std::vector<std::string>>{
-        {"rgb", "(R + A, G + D, B)", "0.25", "0.70"}
+        {"rgb", "(R + A, G + D, B)", "25", "70", "30"}
     },
-    "RGB processor should parse a normalized polar offset"
+    "RGB processor should parse a percentage origin and radius"
 );
 const auto subset_rgb_arguments =
     rgb_formula_processor().parse_arguments("bgr = (R, G, B)");
@@ -334,9 +334,9 @@ expect(
 );
 expect(
     parse_processor_command(
-        "rgb offset 0.25 0.70 = (R + A, G + D, B)"
+        "rgb offset 25 70 30 = (R + A, G + D, B)"
     ).has_value(),
-    "parser should accept an RGB formula with a polar offset"
+    "parser should accept a localized RGB formula"
 );
 expect(
     parse_processor_command(
@@ -638,19 +638,20 @@ expect(
 error_message.clear();
 expect(
     !parse_processor_command(
-        "rgb offset 0.25 = (R, G, B)",
+        "rgb offset 25 = (R, G, B)",
         &error_message
     ).has_value(),
     "parser should require both RGB offset coordinates"
 );
 expect(
-    error_message == "RGB formula offset expects two numbers: x y",
+    error_message ==
+        "RGB formula offset expects two or three numbers: x y [radius]",
     "parser should describe a missing RGB offset coordinate"
 );
 error_message.clear();
 expect(
     !parse_processor_command(
-        "rgb offset left 0.70 = (R, G, B)",
+        "rgb offset left 70 = (R, G, B)",
         &error_message
     ).has_value(),
     "parser should reject a nonnumeric RGB offset"
@@ -658,6 +659,31 @@ expect(
 expect(
     error_message == "RGB formula offset x must be a finite number",
     "parser should describe a nonnumeric RGB offset"
+);
+error_message.clear();
+expect(
+    !parse_processor_command(
+        "rgb offset 101 70 = (R, G, B)",
+        &error_message
+    ).has_value(),
+    "parser should reject an out-of-range RGB offset"
+);
+expect(
+    error_message ==
+        "RGB formula offset x and y must be percentages from 0 to 100",
+    "parser should describe invalid RGB offset percentages"
+);
+error_message.clear();
+expect(
+    !parse_processor_command(
+        "rgb offset 25 70 0 = (R, G, B)",
+        &error_message
+    ).has_value(),
+    "parser should reject a nonpositive RGB radius"
+);
+expect(
+    error_message == "RGB formula offset radius must be greater than 0",
+    "parser should describe an invalid RGB radius"
 );
 error_message.clear();
 expect(

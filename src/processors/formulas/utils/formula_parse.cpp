@@ -573,19 +573,45 @@ namespace {
         return channels;
     }
 
-    double parse_rgb_offset(
+    double parse_rgb_offset_number(
         const std::string &text,
-        std::string_view coordinate
+        std::string_view name
     ) {
         char *end = nullptr;
         const double value = std::strtod(text.c_str(), &end);
         if (end != text.c_str() + text.size() || !std::isfinite(value)) {
             throw std::invalid_argument(
-                "RGB formula offset " + std::string(coordinate) +
+                "RGB formula offset " + std::string(name) +
                 " must be a finite number"
             );
         }
         return value;
+    }
+
+    FormulaPolarOrigin parse_rgb_offset(
+        const std::vector<std::string> &arguments
+    ) {
+        FormulaPolarOrigin origin{
+            .x_percent = parse_rgb_offset_number(arguments[2], "x"),
+            .y_percent = parse_rgb_offset_number(arguments[3], "y"),
+            .radius_percent = arguments.size() == 5
+                ? std::optional<double>(
+                    parse_rgb_offset_number(arguments[4], "radius")
+                )
+                : std::nullopt,
+        };
+        if (origin.x_percent < 0.0 || origin.x_percent > 100.0 ||
+            origin.y_percent < 0.0 || origin.y_percent > 100.0) {
+            throw std::invalid_argument(
+                "RGB formula offset x and y must be percentages from 0 to 100"
+            );
+        }
+        if (origin.radius_percent && *origin.radius_percent <= 0.0) {
+            throw std::invalid_argument(
+                "RGB formula offset radius must be greater than 0"
+            );
+        }
+        return origin;
     }
 } // namespace
 
@@ -600,19 +626,16 @@ RgbFormula parse_rgb_formula(const std::vector<std::string> &arguments) {
             parse_rgb_target(arguments[0])
         );
     }
-    if (arguments.size() == 4) {
+    if (arguments.size() == 4 || arguments.size() == 5) {
         RgbFormula formula = FormulaParser(arguments[1]).parse_rgb(
             parse_rgb_target(arguments[0])
         );
-        formula.polar_origin = FormulaPolarOrigin{
-            .x = parse_rgb_offset(arguments[2], "x"),
-            .y = parse_rgb_offset(arguments[3], "y"),
-        };
+        formula.polar_origin = parse_rgb_offset(arguments);
         return formula;
     }
     throw std::invalid_argument(
         "RGB formula processor expects a target and formula, optionally "
-        "followed by offset x and y"
+        "followed by offset x, y, and radius"
     );
 }
 
@@ -628,24 +651,22 @@ RgbFormula parse_rgb_formula(
             &macros
         ).parse_rgb(parse_rgb_target("rgb"));
     }
-    if (arguments.size() == 2 || arguments.size() == 4) {
+    if (arguments.size() == 2 || arguments.size() == 4 ||
+        arguments.size() == 5) {
         RgbFormula formula = FormulaParser(
             arguments[1],
             false,
             false,
             &macros
         ).parse_rgb(parse_rgb_target(arguments[0]));
-        if (arguments.size() == 4) {
-            formula.polar_origin = FormulaPolarOrigin{
-                .x = parse_rgb_offset(arguments[2], "x"),
-                .y = parse_rgb_offset(arguments[3], "y"),
-            };
+        if (arguments.size() >= 4) {
+            formula.polar_origin = parse_rgb_offset(arguments);
         }
         return formula;
     }
     throw std::invalid_argument(
         "RGB formula processor expects a target and formula, optionally "
-        "followed by offset x and y"
+        "followed by offset x, y, and radius"
     );
 }
 

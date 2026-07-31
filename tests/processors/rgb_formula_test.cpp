@@ -152,6 +152,40 @@ expect(
     offset_polar.pixels[8].green == 28,
     "RGB offset should move the distance origin with the angle origin"
 );
+
+const FileData percentage_origin = rgb_formula_processor().apply(
+    blank_image(5, 5),
+    {"r", "D * 10", "25", "75"}
+);
+expect(
+    percentage_origin.pixels[3 * percentage_origin.width + 1].red == 0 &&
+    percentage_origin.pixels[3 * percentage_origin.width + 2].red == 10,
+    "RGB offset coordinates should use percentages from 0 to 100"
+);
+
+FileData localized_source = blank_image(5, 5);
+for (Pixel &pixel: localized_source.pixels) {
+    pixel.red = 10;
+    pixel.alpha = 40;
+}
+const FileData localized = rgb_formula_processor().apply(
+    std::move(localized_source),
+    {"r", "R * 2", "50", "50", "40"}
+);
+expect(
+    localized.pixels[2 * localized.width + 2].red == 20 &&
+    localized.pixels[2 * localized.width + 3].red == 20,
+    "RGB offset radius should apply the formula inside its circle"
+);
+expect(
+    localized.pixels[2 * localized.width].red == 10 &&
+    localized.pixels.front().red == 10,
+    "RGB offset radius should preserve pixels on and outside its boundary"
+);
+expect(
+    localized.pixels[2 * localized.width + 2].alpha == 40,
+    "localized RGB formulas should preserve alpha"
+);
 }
 
 void test_formula_math_functions() {
