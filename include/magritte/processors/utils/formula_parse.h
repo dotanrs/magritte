@@ -64,11 +64,13 @@ enum class ColorChannel {
     blue,
 };
 
-/// Normalized image coordinates for the origin used by polar variables.
-/// `(0, 0)` is the top-left pixel and `(1, 1)` is the bottom-right pixel.
+/// Percentage image coordinates for the origin used by polar variables, plus
+/// an optional circular application radius measured against the shorter image
+/// dimension.
 struct FormulaPolarOrigin {
-    double x;
-    double y;
+    double x_percent;
+    double y_percent;
+    std::optional<double> radius_percent;
 };
 
 struct RgbFormula {
@@ -89,8 +91,9 @@ struct VectorFormula {
 
 /// Parses either a fixed RGB tuple from one argument, a channel target and its
 /// matching expression(s) from two arguments, or those two arguments followed
-/// by normalized polar-origin x and y values. Multi-channel formulas use a
-/// parenthesized tuple; a single-channel formula is one expression.
+/// by polar-origin x and y percentages and an optional radius percentage.
+/// Multi-channel formulas use a parenthesized tuple; a single-channel formula
+/// is one expression.
 /// @throws std::invalid_argument for an invalid target or formula.
 [[nodiscard]] RgbFormula parse_rgb_formula(
     const std::vector<std::string> &arguments
