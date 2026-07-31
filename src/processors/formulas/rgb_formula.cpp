@@ -1,10 +1,11 @@
-// Processor: `<channels> [offset <x> <y>] = <formula-or-tuple>`.
+// Processor: `<channels> [offset <x> <y> [radius]] = <formula-or-tuple>`.
 // Recomputes a non-repeating target made from `r`, `g`, and `b` while
 // preserving untargeted channels and alpha. `channels` gives the destination
 // order; a one-channel target takes one formula, while a multi-channel target
 // takes an equally sized tuple whose expressions all read the original pixel.
-// The optional normalized offset replaces the image-center origin used by the
-// polar variables A and D.
+// The optional percentage offset replaces the image-center origin used by the
+// polar variables A and D. When a radius percentage is supplied, the formula
+// only changes pixels inside that circle.
 
 #include "magritte/processors/rgb_formula.h"
 
@@ -72,13 +73,18 @@ namespace {
                 std::string(trim(value.substr(equals + 1))),
             };
             if (left_words.size() != 1) {
-                if (left_words.size() != 4 || left_words[1] != "offset") {
+                if ((left_words.size() != 4 && left_words.size() != 5) ||
+                    left_words[1] != "offset") {
                     throw std::invalid_argument(
-                        "RGB formula offset expects two numbers: x y"
+                        "RGB formula offset expects two or three numbers: "
+                        "x y [radius]"
                     );
                 }
                 arguments.push_back(left_words[2]);
                 arguments.push_back(left_words[3]);
+                if (left_words.size() == 5) {
+                    arguments.push_back(left_words[4]);
+                }
             }
             validate(arguments);
             return arguments;
