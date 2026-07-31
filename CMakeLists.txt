@@ -34,15 +34,15 @@ endfunction ()
 add_executable(magritte main.cpp
         src/cli.cpp
         include/magritte/cli.h
-        src/formula.cpp
+        src/pipeline.cpp
         src/formula_config.cpp
-        include/magritte/formula.h
+        include/magritte/pipeline.h
         src/macro.cpp
         include/magritte/macro.h
         src/utils/logging.cpp
         include/magritte/utils/logging.h
-        src/input_validation.cpp
-        include/magritte/input_validation.h
+        src/utils/input_validation.cpp
+        include/magritte/utils/input_validation.h
         src/processor.cpp
         include/magritte/processor.h
         src/utils/file.cpp
@@ -97,7 +97,9 @@ add_executable(magritte main.cpp
         include/magritte/processors/utils/argument_parse.h
         include/magritte/processors/image_processor.h
         src/utils/string.cpp
-        include/magritte/utils/string.h)
+        include/magritte/utils/string.h
+        include/magritte/inputs.h
+        src/pipeline.cpp)
 
 target_include_directories(magritte PRIVATE
         "${CMAKE_CURRENT_SOURCE_DIR}/include"

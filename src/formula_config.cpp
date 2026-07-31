@@ -1,4 +1,4 @@
-#include "magritte/formula.h"
+#include "magritte/pipeline.h"
 
 #include <algorithm>
 #include <charconv>

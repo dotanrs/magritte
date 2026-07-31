@@ -2,7 +2,7 @@
 // Created by Dotan Reis on 26/07/2026.
 //
 
-#include "../include/magritte/input_validation.h"
+#include "../../include/magritte/utils/input_validation.h"
 #include <array>
 #include <filesystem>
 #include <fstream>
@@ -39,7 +39,7 @@ namespace {
     }
 }
 
-std::tuple<fs::path, fs::path> validate_input(const Options &options) {
+std::tuple<fs::path, fs::path> validate_input(const MagritteRunOptions &options) {
     const fs::path input = fs::absolute(options.input).lexically_normal();
     const fs::path output = fs::absolute(options.output).lexically_normal();
 

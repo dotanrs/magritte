@@ -5,7 +5,7 @@
 #include <optional>
 #include <vector>
 
-#include "magritte/formula.h"
+#include "magritte/pipeline.h"
 #include "magritte/macro.h"
 
 struct CommandLineArguments {

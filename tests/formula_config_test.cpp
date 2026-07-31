@@ -7,7 +7,7 @@
 #include <variant>
 
 #include "common/test_support.h"
-#include "magritte/formula.h"
+#include "magritte/pipeline.h"
 #include "magritte/parser.h"
 
 namespace {
