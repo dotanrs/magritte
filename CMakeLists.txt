@@ -35,10 +35,10 @@ add_executable(magritte main.cpp
         src/cli.cpp
         include/magritte/cli.h
         src/pipeline.cpp
-        src/pattern_config.cpp
+        src/input_parsing/pattern_parser.cpp
         include/magritte/pipeline.h
-        src/macro.cpp
-        include/magritte/macro.h
+        src/input_parsing/macro_parser.cpp
+        include/magritte/input_parsing/macro_parser.h
         src/utils/logging.cpp
         include/magritte/utils/logging.h
         src/io/input_validation.cpp
@@ -48,8 +48,8 @@ add_executable(magritte main.cpp
         src/io/file.cpp
         include/magritte/io/file.h
         include/magritte/common/file_data.h
-        src/parser.cpp
-        include/magritte/parser.h
+        src/input_parsing/step_command_parser.cpp
+        include/magritte/input_parsing/step_command_parser.h
         src/steps/layout/rotate.cpp
         include/magritte/steps/rotate.h
         src/steps/layout/mirror.cpp
@@ -98,7 +98,7 @@ add_executable(magritte main.cpp
         include/magritte/steps/image_step.h
         src/utils/string.cpp
         include/magritte/utils/string.h
-        include/magritte/inputs.h
+        include/magritte/input_parsing/inputs.h
         src/pipeline.cpp
         src/io/output_file_validation.cpp
         include/magritte/io/output_file_validation.h)
@@ -133,7 +133,7 @@ install(TARGETS magritte RUNTIME DESTINATION bin)
 include(CTest)
 if (BUILD_TESTING)
     add_executable(magritte_step_tests
-            tests/steps_test.cpp
+            tests/main.cpp
             tests/cli_test.cpp
             tests/steps/blur_test.cpp
             tests/steps/black_and_white_test.cpp
@@ -155,9 +155,9 @@ if (BUILD_TESTING)
             tests/steps/saturation_formula_test.cpp
             tests/steps/warp_formula_test.cpp
             src/cli.cpp
-            src/parser.cpp
-            src/pattern_config.cpp
-            src/macro.cpp
+            src/input_parsing/step_command_parser.cpp
+            src/input_parsing/pattern_parser.cpp
+            src/input_parsing/macro_parser.cpp
             src/steps/layout/rotate.cpp
             src/steps/layout/mirror.cpp
             src/steps/filters/blur.cpp

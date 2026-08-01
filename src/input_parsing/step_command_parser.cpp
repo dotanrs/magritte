@@ -1,4 +1,4 @@
-#include "magritte/parser.h"
+#include "../../include/magritte/input_parsing/step_comman_parser.h"
 
 #include <array>
 #include <cctype>

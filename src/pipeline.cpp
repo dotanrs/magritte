@@ -1,4 +1,4 @@
-#include "magritte/inputs.h"
+#include "../include/magritte/input_parsing/inputs.h"
 #include "magritte/pipeline.h"
 
 #include <stdexcept>

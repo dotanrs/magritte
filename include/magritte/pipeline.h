@@ -9,8 +9,8 @@
 #include <variant>
 #include <vector>
 
-#include "magritte/macro.h"
-#include "magritte/inputs.h"
+#include "magritte/input_parsing/macro_parser.h"
+#include "input_parsing/inputs.h"
 
 
 

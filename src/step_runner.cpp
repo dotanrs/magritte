@@ -15,7 +15,7 @@
 
 #include "magritte/io/file.h"
 #include "magritte/io/input_validation.h"
-#include "magritte/parser.h"
+#include "../include/magritte/input_parsing/step_comman_parser.h"
 #include "magritte/steps/image_step.h"
 #include "magritte/utils/logging.h"
 
