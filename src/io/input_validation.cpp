@@ -39,9 +39,9 @@ namespace {
     }
 }
 
-std::tuple<fs::path, fs::path> validate_input(const MagritteRunOptions &options) {
-    const fs::path input = fs::absolute(options.input).lexically_normal();
-    const fs::path output = fs::absolute(options.output).lexically_normal();
+std::tuple<fs::path, fs::path> validate_io_paths(const fs::path &input_path, const fs::path &output_path) {
+    const fs::path input = fs::absolute(input_path).lexically_normal();
+    const fs::path output = fs::absolute(output_path).lexically_normal();
 
     if (input == output) {
         throw std::runtime_error("input and output paths must be different");

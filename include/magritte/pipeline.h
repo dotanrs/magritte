@@ -14,12 +14,12 @@
 
 
 
-using PipelineStep = std::variant<StepSpec, PatternReference>;
+using PipelineStage = std::variant<StepSpec, PatternReference>;
 
 struct PatternConfig {
     std::optional<CanvasConfig> canvas;
     MacroMap macros;
-    std::vector<PipelineStep> steps;
+    std::vector<PipelineStage> steps;
 };
 
 struct ResolvedPipeline {
@@ -52,7 +52,7 @@ struct ResolvedPipeline {
 /// CLI and file macros are collected before processing. Conflicting macros and
 /// cyclic pattern references are rejected.
 [[nodiscard]] ResolvedPipeline resolve_pipeline_steps(
-    const std::vector<PipelineStep> &steps,
+    const std::vector<PipelineStage> &steps,
     bool has_source,
     const MacroMap &cli_macros = {}
 );
@@ -63,7 +63,7 @@ struct ResolvedPipeline {
 /// Later pattern canvases are ignored. `output_override`
 /// replaces the canvas filename or the source image's default output.
 void process_pipeline(
-    const std::vector<PipelineStep> &steps,
+    const std::vector<PipelineStage> &steps,
     bool overwrite = false,
     bool debug = false,
     const std::optional<std::filesystem::path> &source = std::nullopt,

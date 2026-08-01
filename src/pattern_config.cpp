@@ -661,7 +661,7 @@ PatternConfig load_pattern_config(const fs::path &path) {
             config.canvas->file_name
         ).lexically_normal();
     }
-    for (PipelineStep &step: config.steps) {
+    for (PipelineStage &step: config.steps) {
         PatternReference *reference = std::get_if<PatternReference>(&step);
         if (reference == nullptr) {
             continue;
@@ -697,7 +697,7 @@ namespace {
         PatternConfig config = load_pattern_config(normalized);
         merge_macros(macros, config.macros);
         std::optional<CanvasConfig> canvas = config.canvas;
-        for (const PipelineStep &entry: config.steps) {
+        for (const PipelineStage &entry: config.steps) {
             if (const StepSpec *step_spec =
                     std::get_if<StepSpec>(&entry)) {
                 steps.push_back(*step_spec);
@@ -721,7 +721,7 @@ namespace {
 }
 
 ResolvedPipeline resolve_pipeline_steps(
-    const std::vector<PipelineStep> &steps,
+    const std::vector<PipelineStage> &steps,
     bool has_source,
     const MacroMap &cli_macros
 ) {

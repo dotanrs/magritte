@@ -11,7 +11,7 @@
 struct CommandLineArguments {
     std::optional<std::filesystem::path> source;
     std::optional<std::filesystem::path> output;
-    std::vector<PipelineStep> steps;
+    std::vector<PipelineStage> steps;
     MacroMap macros;
     bool overwrite = false;
     bool debug = false;
