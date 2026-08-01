@@ -20,58 +20,6 @@
 #include "magritte/utils/logging.h"
 
 namespace {
-    bool confirm_overwrite(const fs::path &output) {
-        std::cerr << "Output file already exists: " << output.string() << '\n'
-                << "Continue and overwrite it? [y/N] " << std::flush;
-
-        std::string response;
-        if (!std::getline(std::cin, response)) {
-            std::cerr << '\n';
-            return false;
-        }
-
-        response.erase(
-            response.begin(),
-            std::find_if(
-                response.begin(),
-                response.end(),
-                [](unsigned char character) {
-                    return !std::isspace(character);
-                }
-            )
-        );
-        response.erase(
-            std::find_if(
-                response.rbegin(),
-                response.rend(),
-                [](unsigned char character) {
-                    return !std::isspace(character);
-                }
-            ).base(),
-            response.end()
-        );
-        std::transform(
-            response.begin(),
-            response.end(),
-            response.begin(),
-            [](unsigned char character) {
-                return static_cast<char>(std::tolower(character));
-            }
-        );
-        return response == "y" || response == "yes";
-    }
-
-    bool should_write_output(const fs::path &output, bool overwrite) {
-        std::error_code error;
-        const bool output_exists = fs::exists(output, error);
-        if (error) {
-            throw std::runtime_error(
-                "could not inspect output path: " + error.message()
-            );
-        }
-        return !output_exists || overwrite || confirm_overwrite(output);
-    }
-
     struct StepError {
         std::string command;
         std::string message;
@@ -172,56 +120,21 @@ namespace {
 } // namespace
 
 
-void process_image(const MagritteRunOptions &options) {
-    auto [input, output] = validate_input(options);
-    if (!should_write_output(output, options.overwrite)) {
-        log(LogLevel::info, "Output file was not overwritten");
-        return;
-    }
-
+FileData process_image(const MagritteRunOptions &options) {
     auto [commands, results] = parse_steps(options.steps);
 
     const FileData data = run_steps(
-        read_file(input),
+        std::move(options.file_data),
         commands,
         options.debug,
         &options.macros
     );
 
-    save_file(output, data);
     log(
         LogLevel::info,
         "Processing complete (" + std::to_string(commands.size()) +
         " steps applied)"
     );
     print_step_results(results);
-    std::clog << "\nFile saved to " + output.filename().string() << '\n';
-}
-
-void process_created_image(
-    const fs::path &output,
-    FileData data,
-    const std::vector<StepSpec> &steps,
-    bool overwrite,
-    bool debug,
-    const MacroMap &macros
-) {
-    const fs::path normalized_output =
-            fs::absolute(output).lexically_normal();
-    if (!should_write_output(normalized_output, overwrite)) {
-        log(LogLevel::info, "Output file was not overwritten");
-        return;
-    }
-
-    auto [commands, results] = parse_steps(steps);
-    data = run_steps(std::move(data), commands, debug, &macros);
-    save_file(normalized_output, data);
-    log(
-        LogLevel::info,
-        "Generated image complete (" + std::to_string(commands.size()) +
-        " steps applied)"
-    );
-    print_step_results(results);
-    log(LogLevel::info,
-        "File saved to " + normalized_output.filename().string());
+    return data;
 }

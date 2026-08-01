@@ -43,7 +43,7 @@ add_executable(magritte main.cpp
         include/magritte/utils/logging.h
         src/io/input_validation.cpp
         include/magritte/io/input_validation.h
-        src/step.cpp
+        src/step_runner.cpp
         include/magritte/step.h
         src/io/file.cpp
         include/magritte/io/file.h
@@ -99,7 +99,9 @@ add_executable(magritte main.cpp
         src/utils/string.cpp
         include/magritte/utils/string.h
         include/magritte/inputs.h
-        src/pipeline.cpp)
+        src/pipeline.cpp
+        src/io/output_file_validation.cpp
+        include/magritte/io/output_file_validation.h)
 
 target_include_directories(magritte PRIVATE
         "${CMAKE_CURRENT_SOURCE_DIR}/include"
@@ -179,7 +181,9 @@ if (BUILD_TESTING)
             src/steps/formulas/utils/image_sample.cpp
             src/utils/logging.cpp
             src/utils/string.cpp
-            include/magritte/utils/string.h)
+            include/magritte/utils/string.h
+            src/io/output_file_validation.cpp
+            include/magritte/io/output_file_validation.h)
     target_include_directories(magritte_step_tests PRIVATE
             "${CMAKE_CURRENT_SOURCE_DIR}/include")
     target_compile_features(magritte_step_tests PRIVATE cxx_std_20)

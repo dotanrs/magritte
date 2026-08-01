@@ -5,7 +5,7 @@ passes `FileData` from one step to the next.
 
 The main implementation points are
 [`parser.cpp`](parser.cpp),
-[`step.cpp`](step.cpp), and
+[`step_runner.cpp`](step_runner.cpp), and
 [`ImageStep`](../include/magritte/steps/image_step.h).
 
 ## Preparing a pipeline
