@@ -10,8 +10,8 @@
 #include <vector>
 
 #include "common/file_data.h"
-#include "magritte/macro.h"
-#include "magritte/inputs.h"
+#include "magritte/input_parsing/macro_parser.h"
+#include "input_parsing/inputs.h"
 
 namespace fs = std::filesystem;
 

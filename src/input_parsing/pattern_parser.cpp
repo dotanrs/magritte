@@ -11,7 +11,7 @@
 #include <utility>
 #include <vector>
 
-#include "magritte/macro.h"
+#include "magritte/input_parsing/macro_parser.h"
 
 namespace fs = std::filesystem;
 

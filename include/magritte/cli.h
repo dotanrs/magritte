@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "magritte/pipeline.h"
-#include "magritte/macro.h"
+#include "magritte/input_parsing/macro_parser.h"
 
 struct CommandLineArguments {
     std::optional<std::filesystem::path> source;

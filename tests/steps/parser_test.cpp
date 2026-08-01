@@ -1,6 +1,6 @@
 #include <optional>
 #include "../common/test_support.h"
-#include "magritte/parser.h"
+#include "magritte/input_parsing/step_command_parser.h"
 #include "magritte/steps/black_and_white.h"
 #include "magritte/steps/blur.h"
 #include "magritte/steps/contrast.h"

@@ -8,7 +8,7 @@
 
 #include "common/test_support.h"
 #include "magritte/pipeline.h"
-#include "magritte/parser.h"
+#include "magritte/input_parsing/step_command_parser.h"
 
 namespace {
     namespace fs = std::filesystem;

@@ -4,7 +4,7 @@
 #include <string>
 #include <string_view>
 
-#include "magritte/macro.h"
+#include "magritte/input_parsing/macro_parser.h"
 
 namespace fs = std::filesystem;
 

@@ -4,7 +4,7 @@ This document explains how Magritte selects steps for command strings and
 passes `FileData` from one step to the next.
 
 The main implementation points are
-[`parser.cpp`](parser.cpp),
+[`input_parsing/step_command_parser.cpp`](input_parsing/step_command_parser.cpp),
 [`step_runner.cpp`](step_runner.cpp), and
 [`ImageStep`](../include/magritte/steps/image_step.h).
 
@@ -75,7 +75,7 @@ flowchart TD
 ```
 
 Registry order matters when syntaxes overlap. The registry in
-[`parser.cpp`](parser.cpp) currently contains:
+[`input_parsing/step_command_parser.cpp`](input_parsing/step_command_parser.cpp) currently contains:
 
 1. Rotate, mirror, blur.
 2. Black-and-white, contrast, fisheye, twist, spin.
@@ -210,7 +210,6 @@ before its result reaches the next command.
 After the last step:
 
 - A source-based run sends the final `FileData` to `save_file()`.
-- A generated-canvas run does the same through `process_created_image()`.
 - Valid and invalid step summaries are printed.
 
 Output overwrite checks happen before decoding or processing. The file is only

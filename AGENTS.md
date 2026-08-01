@@ -11,7 +11,7 @@ from left to right and applied sequentially to a `FileData` image.
   `common/` contains the image data types, `io/` exposes file I/O, and `utils/`
   contains general helpers.
 - `src/` contains the CLI workflow, pattern-file support, and the step
-  registry in `src/parser.cpp`.
+  registry in `src/input_parsing/step_command_parser.cpp`.
 - `src/io/` contains JPEG input/output formatting, path and input validation,
   and its implementation notes.
 - `src/steps/` contains step implementations, grouped by behavior:
@@ -31,7 +31,7 @@ from left to right and applied sequentially to a `FileData` image.
   - `formulas/utils/` contains shared formula parsing, evaluation, and image
     sampling code.
 - `tests/steps/` contains focused step tests. Shared assertions and
-  image helpers live in `tests/common/`; `tests/steps_test.cpp` is the test
+  image helpers live in `tests/common/`; `tests/main.cpp` is the test
   runner.
 - `patterns/` contains runnable YAML patterns that demonstrate supported step
   commands.
@@ -74,11 +74,11 @@ For every new step:
 
 1. Add its declaration under `include/magritte/steps/` and place its
    implementation in the matching `src/steps/` behavior folder.
-2. Register it in `src/parser.cpp`. Registry order matters when command
+2. Register it in `src/input_parsing/step_command_parser.cpp`. Registry order matters when command
    syntaxes can overlap.
 3. Add the new files to the CLI and test targets in `CMakeLists.txt`.
 4. Add a focused test in `tests/steps/`, then declare and invoke that test
-   from `tests/steps_test.cpp`. Cover command recognition and invalid
+   from `tests/main.cpp`. Cover command recognition and invalid
    arguments as well as the transformation when applicable.
 5. Add a runnable example to an appropriate YAML pattern in `patterns/` (or create a
    focused pattern there) and document the command in `README.md`.

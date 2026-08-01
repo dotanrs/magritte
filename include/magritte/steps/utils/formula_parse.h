@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-#include "magritte/macro.h"
+#include "magritte/input_parsing/macro_parser.h"
 
 enum class FormulaNodeKind {
     number,

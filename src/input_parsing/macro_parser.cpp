@@ -1,4 +1,4 @@
-#include "magritte/macro.h"
+#include "magritte/input_parsing/macro_parser.h"
 
 #include <algorithm>
 #include <cctype>

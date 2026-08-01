@@ -6,7 +6,7 @@
 #include <string>
 #include <string_view>
 #include <vector>
-#include "magritte/macro.h"
+#include "magritte/input_parsing/macro_parser.h"
 #include "magritte/step.h"
 
 /// Interface for recognizing, validating, and applying one kind of image

@@ -1,5 +1,5 @@
 #include "../common/test_support.h"
-#include "magritte/parser.h"
+#include "magritte/input_parsing/step_command_parser.h"
 #include "magritte/steps/rgb_formula.h"
 
 void test_red_formula_and_clamping() {
